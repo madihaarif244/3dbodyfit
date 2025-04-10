@@ -6,6 +6,7 @@ import {
   Monitor, 
   CheckCircle 
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const useCases = [
   {
@@ -35,35 +36,63 @@ const useCases = [
 ];
 
 export default function UseCasesSection() {
+  const [visibleItems, setVisibleItems] = useState<number[]>([]);
+  
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = Number(entry.target.getAttribute('data-case-id'));
+          setVisibleItems(prev => [...prev, id]);
+        }
+      });
+    }, { threshold: 0.2 });
+    
+    document.querySelectorAll('[data-case-id]').forEach(el => {
+      observer.observe(el);
+    });
+    
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section id="use-cases" className="section-padding bg-gradient-to-b from-white to-gray-50">
+    <section id="use-cases" className="section-padding bg-gradient-to-b from-background to-secondary">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Use Cases</h2>
-          <p className="text-lg text-gray-700">
+        <div className="text-center max-w-3xl mx-auto mb-16 fade-in">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">Use Cases</h2>
+          <p className="text-lg text-muted-foreground">
             Our technology powers innovation across industries, transforming how businesses engage with customers.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {useCases.map((useCase, index) => (
-            <div key={index} className="card-hover bg-white p-8 rounded-xl shadow-md border border-gray-100">
-              <div className="flex items-start">
-                <div className="bg-electric/10 p-3 rounded-full mr-4">
-                  <useCase.icon className="w-6 h-6 text-electric" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-medium mb-2">{useCase.title}</h3>
-                  <p className="text-gray-600 mb-4">{useCase.description}</p>
-                  
-                  <ul className="space-y-2">
-                    {useCase.benefits.map((benefit, i) => (
-                      <li key={i} className="flex items-center">
-                        <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                        <span className="text-sm text-gray-700">{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
+            <div 
+              key={index} 
+              data-case-id={index}
+              className={`${
+                visibleItems.includes(index) ? (index % 2 === 0 ? 'fade-in-left' : 'fade-in-right') : 'opacity-0'
+              }`}
+              style={{ animationDelay: `${index * 200}ms` }}
+            >
+              <div className="card-hover bg-card p-8 rounded-xl shadow-md border border-border">
+                <div className="flex items-start">
+                  <div className="bg-primary/10 p-3 rounded-full mr-4">
+                    <useCase.icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-medium mb-2 text-foreground">{useCase.title}</h3>
+                    <p className="text-muted-foreground mb-4">{useCase.description}</p>
+                    
+                    <ul className="space-y-2">
+                      {useCase.benefits.map((benefit, i) => (
+                        <li key={i} className="flex items-center">
+                          <CheckCircle className="w-4 h-4 text-primary mr-2" />
+                          <span className="text-sm text-foreground">{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>

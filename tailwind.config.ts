@@ -58,14 +58,14 @@ export default {
           foreground: 'hsl(var(--card-foreground))'
         },
         electric: {
-          DEFAULT: '#1EAEDB',
-          light: '#4BC4E7',
-          dark: '#0E8AAF'
+          DEFAULT: '#4876FF',
+          light: '#7DA0FF',
+          dark: '#2851D9'
         },
         darkblue: {
-          DEFAULT: '#14253D',
-          light: '#1C325A',
-          dark: '#0C1A2C'
+          DEFAULT: '#000A35',
+          light: '#000C52',
+          dark: '#00083D'
         },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',
@@ -103,6 +103,22 @@ export default {
         'pulse-light': {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.8' }
+        },
+        'float': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' }
+        },
+        'slide-in-right': {
+          '0%': { transform: 'translateX(100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' }
+        },
+        'slide-in-left': {
+          '0%': { transform: 'translateX(-100%)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' }
+        },
+        'scale-up': {
+          '0%': { transform: 'scale(0.8)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' }
         }
       },
       animation: {
@@ -110,7 +126,11 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in': 'fade-in 0.5s ease-out forwards',
         'fade-out': 'fade-out 0.5s ease-out forwards',
-        'pulse-light': 'pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+        'pulse-light': 'pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'float': 'float 3s ease-in-out infinite',
+        'slide-in-right': 'slide-in-right 0.5s ease-out forwards',
+        'slide-in-left': 'slide-in-left 0.5s ease-out forwards',
+        'scale-up': 'scale-up 0.5s ease-out forwards'
       }
     }
   },
