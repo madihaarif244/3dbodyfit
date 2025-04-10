@@ -6,11 +6,11 @@ import Floating3DModel from './Floating3DModel';
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center hero-gradient pt-16">
-      <div className="container mx-auto px-6 py-16 lg:py-24 flex flex-col lg:flex-row items-center">
-        <div className="lg:w-1/2 text-center lg:text-left mb-10 lg:mb-0">
-          <div className="max-w-xl mx-auto lg:mx-0">
-            <div className="flex items-center justify-center lg:justify-start mb-6 fade-in-left">
+    <section className="relative min-h-screen flex items-center hero-gradient pt-16">
+      <div className="container mx-auto px-4 lg:px-6 py-8 lg:py-12 flex flex-col lg:flex-row items-center">
+        <div className="lg:w-1/2 text-left mb-10 lg:mb-0">
+          <div className="max-w-xl">
+            <div className="flex items-center mb-6 fade-in-left">
               <div className="bg-primary rounded-md p-2 mr-3">
                 <Box className="h-8 w-8 text-white" />
               </div>
@@ -24,7 +24,7 @@ export default function HeroSection() {
             <p className="text-lg md:text-xl text-muted-foreground mb-8 fade-in-left" style={{ animationDelay: '400ms' }}>
               No tape. No guesswork. Just a quick scan for perfectly tailored experiences.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start fade-in-left" style={{ animationDelay: '600ms' }}>
+            <div className="flex flex-row gap-4 fade-in-left" style={{ animationDelay: '600ms' }}>
               <Button size="lg" className="bg-primary hover:bg-primary/90 transition-transform hover:scale-105" asChild>
                 <Link to="/try-it-now">Try It Now</Link>
               </Button>

@@ -63,15 +63,15 @@ export default function HowItWorksSection() {
 
   return (
     <section id="how-it-works" className="section-padding bg-secondary">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16 fade-in">
+      <div className="container mx-auto px-4">
+        <div className="text-center max-w-3xl mx-auto mb-10 fade-in">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">How It Works</h2>
           <p className="text-lg text-muted-foreground">
             Our technology transforms smartphone images into precise body measurements in seconds.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 max-w-6xl mx-auto">
           {steps.map((step, index) => (
             <div 
               key={step.id} 
@@ -83,28 +83,28 @@ export default function HowItWorksSection() {
             >
               <div 
                 className={cn(
-                  "card-hover flex flex-col items-center p-6 bg-card rounded-xl shadow-md h-full",
+                  "card-hover flex flex-col items-center p-4 bg-card rounded-xl shadow-md h-full",
                   visibleItems.includes(step.id) ? "fade-in-up" : "opacity-0"
                 )}
               >
-                <div className={cn("flex items-center justify-center w-16 h-16 rounded-full mb-4", step.color)}>
-                  <step.icon className="w-8 h-8 text-primary" />
+                <div className={cn("flex items-center justify-center w-14 h-14 rounded-full mb-3", step.color)}>
+                  <step.icon className="w-7 h-7 text-primary" />
                 </div>
-                <h3 className="text-xl font-medium mb-2 text-foreground">{step.title}</h3>
-                <p className="text-muted-foreground text-center">{step.description}</p>
+                <h3 className="text-lg font-medium mb-2 text-foreground">{step.title}</h3>
+                <p className="text-muted-foreground text-center text-sm">{step.description}</p>
               </div>
               
               {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 animate-pulse-blue">
-                  <ArrowRight className="w-6 h-6 text-primary" />
+                <div className="hidden lg:block absolute top-1/2 -right-3 transform -translate-y-1/2 animate-pulse-blue">
+                  <ArrowRight className="w-5 h-5 text-primary" />
                 </div>
               )}
             </div>
           ))}
         </div>
 
-        <div className="mt-16 text-center fade-in" style={{ animationDelay: '600ms' }}>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+        <div className="mt-10 text-center fade-in" style={{ animationDelay: '600ms' }}>
+          <p className="text-base text-muted-foreground max-w-2xl mx-auto">
             Our AI ensures that your measurements are delivered with exceptional accuracy, making online shopping and custom clothing a breeze.
           </p>
         </div>
