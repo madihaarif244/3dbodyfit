@@ -1,3 +1,4 @@
+
 import { Download, Mail, RotateCcw, Info, AlertCircle, HelpCircle, Shirt, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
@@ -597,7 +598,7 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
             <TabsContent value="measurements" className="space-y-6 pt-4">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">Measurements</h3>
+                  <h3 className="text-lg font-medium text-gray-900">Measurements</h3>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -620,7 +621,7 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
                   <AlertCircle size={18} className="text-blue-500 mt-0.5 flex-shrink-0" />
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">Measurement Confidence:</span>
+                      <span className="text-sm font-medium text-gray-900">Measurement Confidence:</span>
                       <span className={`text-sm font-semibold ${confidenceLevel.color}`}>{confidenceLevel.text}</span>
                     </div>
                     <Progress value={confidencePercentage} className="h-1.5" />
@@ -632,11 +633,11 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
                 
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>Measurement</TableHead>
-                      <TableHead className="text-right">Centimeters</TableHead>
-                      <TableHead className="text-right">Inches</TableHead>
-                      <TableHead className="text-right w-10">Info</TableHead>
+                    <TableRow className="border-b border-gray-200">
+                      <TableHead className="text-gray-900">Measurement</TableHead>
+                      <TableHead className="text-right text-gray-900">Centimeters</TableHead>
+                      <TableHead className="text-right text-gray-900">Inches</TableHead>
+                      <TableHead className="text-right w-10 text-gray-900">Info</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -644,10 +645,10 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
                       Object.entries(measurements).map(([key, value]) => {
                         const inches = cmToInches(value);
                         return (
-                          <TableRow key={key}>
-                            <TableCell>{MEASUREMENT_DISPLAY_MAP[key] || key}</TableCell>
-                            <TableCell className="text-right font-medium">{value.toFixed(1)} cm</TableCell>
-                            <TableCell className="text-right font-medium">{inches.toFixed(1)} in</TableCell>
+                          <TableRow key={key} className="border-b border-gray-100">
+                            <TableCell className="text-gray-900">{MEASUREMENT_DISPLAY_MAP[key] || key}</TableCell>
+                            <TableCell className="text-right font-medium text-gray-900">{value.toFixed(1)} cm</TableCell>
+                            <TableCell className="text-right font-medium text-gray-900">{inches.toFixed(1)} in</TableCell>
                             <TableCell className="text-right">
                               <TooltipProvider>
                                 <Tooltip>
@@ -680,7 +681,7 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
             <TabsContent value="analysis" className="space-y-6 pt-4">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">Size Recommendations</h3>
+                  <h3 className="text-lg font-medium text-gray-900">Size Recommendations</h3>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -699,7 +700,7 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
                   </TooltipProvider>
                 </div>
                 
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-700">
                   Based on your measurements, here are clothing size recommendations:
                 </p>
                 
@@ -707,12 +708,12 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
                   {Object.entries(clothingSizes).map(([category, details]) => (
                     <div key={category} className="border rounded-lg p-4 bg-gray-50">
                       <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-medium capitalize">{category}</h4>
+                        <h4 className="font-medium capitalize text-gray-900">{category}</h4>
                         <Shirt size={16} className="text-electric" />
                       </div>
                       
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-2xl font-bold">{details[0]}</span>
+                        <span className="text-2xl font-bold text-gray-900">{details[0]}</span>
                         {details[0].includes('XS') && <Badge variant="outline" className="text-xs">Extra Small</Badge>}
                         {details[0].includes('S') && !details[0].includes('XS') && <Badge variant="outline" className="text-xs">Small</Badge>}
                         {details[0].includes('M') && <Badge variant="outline" className="text-xs">Medium</Badge>}
@@ -723,15 +724,15 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
                       
                       <div className="space-y-1 mt-2">
                         {details.slice(1).map((detail, index) => (
-                          <p key={index} className="text-xs text-gray-600">{detail}</p>
+                          <p key={index} className="text-xs text-gray-700">{detail}</p>
                         ))}
                       </div>
                     </div>
                   ))}
                 </div>
                 
-                <h3 className="text-lg font-medium pt-4">Body Composition Analysis</h3>
-                <p className="text-sm text-gray-600 mb-3">
+                <h3 className="text-lg font-medium pt-4 text-gray-900">Body Composition Analysis</h3>
+                <p className="text-sm text-gray-700 mb-3">
                   These estimates are based on your measurements and statistical models:
                 </p>
                 
@@ -739,10 +740,10 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
                   {getWaistToHipRatio() && (
                     <div className="p-3 border rounded-lg bg-white">
                       <div className="flex justify-between">
-                        <span className="text-gray-700">Waist-to-Hip Ratio:</span>
-                        <span className="font-medium">{getWaistToHipRatio()?.toFixed(2)}</span>
+                        <span className="text-gray-800">Waist-to-Hip Ratio:</span>
+                        <span className="font-medium text-gray-900">{getWaistToHipRatio()?.toFixed(2)}</span>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-600 mt-1">
                         Helps estimate body fat distribution
                       </p>
                     </div>
@@ -750,14 +751,14 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
                   
                   <div className="p-3 border rounded-lg bg-white">
                     <div className="flex justify-between">
-                      <span className="text-gray-700">Body Proportions:</span>
-                      <span className="font-medium">
+                      <span className="text-gray-800">Body Proportions:</span>
+                      <span className="font-medium text-gray-900">
                         {measurements.shoulder && measurements.hips && 
                           (measurements.shoulder / measurements.hips > 1.05 ? "Athletic" : 
                            measurements.shoulder / measurements.hips < 0.95 ? "Hourglass" : "Balanced")}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-600 mt-1">
                       Based on shoulder-to-hip ratio
                     </p>
                   </div>
