@@ -62,6 +62,11 @@ export default {
           light: '#4BC4E7',
           dark: '#0E8AAF'
         },
+        darkblue: {
+          DEFAULT: '#14253D',
+          light: '#1C325A',
+          dark: '#0C1A2C'
+        },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',
           foreground: 'hsl(var(--sidebar-foreground))',
