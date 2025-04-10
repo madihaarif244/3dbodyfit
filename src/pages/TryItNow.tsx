@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -274,22 +273,6 @@ export default function TryItNow() {
     }
   };
 
-  const renderSystemRequirements = () => (
-    <Alert className="mb-6 bg-amber-50 border-amber-200">
-      <Info className="h-5 w-5 text-amber-600" />
-      <AlertTitle className="text-amber-800">System Requirements</AlertTitle>
-      <AlertDescription className="text-amber-700">
-        <p className="mb-2">For best results with our AI body measurement tool:</p>
-        <ul className="list-disc pl-5 space-y-1">
-          <li>Use a modern browser with WebGPU support (Chrome 113+)</li>
-          <li>Allow camera access when prompted</li>
-          <li>Make sure you have a stable internet connection</li>
-          <li>First-time processing may take up to 60 seconds to download AI models</li>
-        </ul>
-      </AlertDescription>
-    </Alert>
-  );
-
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -305,7 +288,6 @@ export default function TryItNow() {
             
             {scanStatus === "input" && (
               <>
-                {renderSystemRequirements()}
                 {browserSupportsWebGPU === false && (
                   <Alert className="mb-6 bg-red-50 border-red-200">
                     <Info className="h-5 w-5 text-red-600" />
