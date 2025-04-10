@@ -93,13 +93,66 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-    background: linear-gradient(135deg, #000a35 0%, #000c52 50%, #00105c 100%);
+    background: linear-gradient(180deg, #010b34 0%, #051155 100%);
+  }
+
+  /* Starry background effect */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background-image: 
+      radial-gradient(1px 1px at 25% 30%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 50% 50%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 75% 10%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 10% 60%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 35% 75%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 20% 20%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 65% 25%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 85% 70%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 90% 40%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 45% 95%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 15% 85%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 30% 65%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 80% 15%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 55% 80%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 70% 60%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 40% 40%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 60% 35%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 5% 45%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 95% 90%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 25% 5%, white, rgba(255, 255, 255, 0));
+    background-size: 200% 200%;
+    opacity: 0.3;
   }
 }
 
 @layer components {
   .hero-gradient {
-    background: linear-gradient(135deg, #000a35 0%, #000c52 50%, #00105c 100%);
+    background: linear-gradient(180deg, #010b34 0%, #051155 100%);
+    position: relative;
+  }
+  
+  .hero-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    background-image: 
+      radial-gradient(1px 1px at 25% 30%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 50% 50%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 75% 10%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 10% 60%, white, rgba(255, 255, 255, 0)),
+      radial-gradient(1px 1px at 35% 75%, white, rgba(255, 255, 255, 0));
+    background-size: 200% 200%;
+    opacity: 0.3;
   }
   
   .card-hover {

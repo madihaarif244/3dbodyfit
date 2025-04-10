@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 export default function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center hero-gradient pt-16">
-      <div className="container mx-auto px-4 lg:px-6 py-8 lg:py-12 flex flex-col items-center text-center">
+      <div className="container mx-auto px-4 lg:px-6 py-8 lg:py-12 flex flex-col items-center text-center z-10">
         <div className="max-w-xl">
           <h1 className="font-bold text-4xl sm:text-5xl md:text-6xl leading-tight mb-6 fade-in-left" style={{ animationDelay: '200ms' }}>
             Accurate Body Measurements in <span className="text-primary">Seconds</span> with AI
@@ -27,7 +27,7 @@ export default function HeroSection() {
         </div>
       </div>
 
-      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce z-10">
         <a href="#how-it-works" aria-label="Scroll down" className="text-foreground hover:text-primary transition-colors">
           <ArrowDown className="h-6 w-6" />
         </a>
