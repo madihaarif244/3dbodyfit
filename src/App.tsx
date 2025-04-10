@@ -19,9 +19,9 @@ const AppContent = () => {
   // Add classes for mobile preview
   const getPreviewClass = () => {
     if (devicePreview === "mobile") {
-      return "mx-auto w-[375px] h-[667px] overflow-y-auto shadow-xl border border-gray-300 rounded-xl";
+      return "mx-auto w-[375px] h-[667px] overflow-y-auto shadow-xl border border-gray-300 rounded-xl mobile-preview-container";
     } else if (devicePreview === "tablet") {
-      return "mx-auto w-[768px] h-[1024px] overflow-y-auto shadow-xl border border-gray-300 rounded-xl";
+      return "mx-auto w-[768px] h-[1024px] overflow-y-auto shadow-xl border border-gray-300 rounded-xl tablet-preview-container";
     }
     return "";
   };

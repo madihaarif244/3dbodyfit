@@ -13,16 +13,16 @@ export default function DevicePreview() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 flex gap-2 z-50 bg-card p-2 rounded-lg shadow-lg border border-border">
+    <div className="fixed bottom-4 right-4 flex gap-1 z-50 bg-card/90 backdrop-blur-sm p-1.5 rounded-lg shadow-lg border border-border">
       <Tooltip>
         <TooltipTrigger asChild>
           <Button 
             variant={devicePreview === "mobile" ? "default" : "outline"} 
             size="icon" 
             onClick={() => handleDeviceChange("mobile")}
-            className="h-8 w-8"
+            className="h-7 w-7 sm:h-8 sm:w-8"
           >
-            <Smartphone className="h-4 w-4" />
+            <Smartphone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>
@@ -36,9 +36,9 @@ export default function DevicePreview() {
             variant={devicePreview === "tablet" ? "default" : "outline"} 
             size="icon" 
             onClick={() => handleDeviceChange("tablet")}
-            className="h-8 w-8"
+            className="h-7 w-7 sm:h-8 sm:w-8"
           >
-            <Tablet className="h-4 w-4" />
+            <Tablet className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>
@@ -52,9 +52,9 @@ export default function DevicePreview() {
             variant={devicePreview === "none" ? "default" : "outline"} 
             size="icon" 
             onClick={() => setDevicePreview("none")}
-            className="h-8 w-8"
+            className="h-7 w-7 sm:h-8 sm:w-8"
           >
-            <Monitor className="h-4 w-4" />
+            <Monitor className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>

@@ -34,6 +34,42 @@
   filter: drop-shadow(0 0 2em #1eaedbaa);
 }
 
+/* Mobile Preview Styling */
+.mobile-preview-container {
+  font-size: 0.85rem;
+}
+
+.mobile-preview-container h1 {
+  font-size: 1.5rem;
+}
+
+.mobile-preview-container h2 {
+  font-size: 1.25rem;
+}
+
+.mobile-preview-container h3 {
+  font-size: 1.1rem;
+}
+
+.mobile-preview-container p {
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.mobile-preview-container .container {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.mobile-preview-container button {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.tablet-preview-container {
+  font-size: 0.95rem;
+}
+
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
