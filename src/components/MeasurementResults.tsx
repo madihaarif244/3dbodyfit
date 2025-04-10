@@ -714,12 +714,12 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
                       
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-2xl font-bold text-gray-900">{details[0]}</span>
-                        {details[0].includes('XS') && <Badge variant="outline" className="text-xs">Extra Small</Badge>}
-                        {details[0].includes('S') && !details[0].includes('XS') && <Badge variant="outline" className="text-xs">Small</Badge>}
-                        {details[0].includes('M') && <Badge variant="outline" className="text-xs">Medium</Badge>}
-                        {details[0].includes('L') && !details[0].includes('XL') && <Badge variant="outline" className="text-xs">Large</Badge>}
-                        {details[0].includes('XL') && !details[0].includes('XXL') && <Badge variant="outline" className="text-xs">Extra Large</Badge>}
-                        {details[0].includes('XXL') && <Badge variant="outline" className="text-xs">Double XL</Badge>}
+                        {details[0].includes('XS') && <Badge variant="outline" className="text-xs bg-white/80 text-gray-900">Extra Small</Badge>}
+                        {details[0].includes('S') && !details[0].includes('XS') && <Badge variant="outline" className="text-xs bg-white/80 text-gray-900">Small</Badge>}
+                        {details[0].includes('M') && <Badge variant="outline" className="text-xs bg-white/80 text-gray-900">Medium</Badge>}
+                        {details[0].includes('L') && !details[0].includes('XL') && <Badge variant="outline" className="text-xs bg-white/80 text-gray-900">Large</Badge>}
+                        {details[0].includes('XL') && !details[0].includes('XXL') && <Badge variant="outline" className="text-xs bg-white/80 text-gray-900">Extra Large</Badge>}
+                        {details[0].includes('XXL') && <Badge variant="outline" className="text-xs bg-white/80 text-gray-900">Double XL</Badge>}
                       </div>
                       
                       <div className="space-y-1 mt-2">
