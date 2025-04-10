@@ -22,13 +22,21 @@ const MEASUREMENT_DISPLAY_MAP: Record<string, string> = {
   thigh: "Thigh"
 };
 
+// Helper function to convert cm to inches
+const cmToInches = (cm: number): number => {
+  return cm / 2.54;
+};
+
 export default function MeasurementResults({ measurements, onReset, confidenceScore = 0.85 }: MeasurementResultsProps) {
   console.log("Rendering MeasurementResults with:", measurements, "confidence:", confidenceScore);
   
   const handleDownload = () => {
-    // Create a downloadable text file with measurements
+    // Create a downloadable text file with measurements in both cm and inches
     const text = Object.entries(measurements)
-      .map(([key, value]) => `${MEASUREMENT_DISPLAY_MAP[key] || key}: ${value.toFixed(1)} cm`)
+      .map(([key, value]) => {
+        const inches = cmToInches(value);
+        return `${MEASUREMENT_DISPLAY_MAP[key] || key}: ${value.toFixed(1)} cm / ${inches.toFixed(1)} inches`;
+      })
       .join('\n');
     
     const blob = new Blob([text], { type: 'text/plain' });
@@ -77,7 +85,7 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
         <p className="opacity-90">Generated with AI precision</p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 md:p-8">
+      <div className="p-6 md:p-8">
         <div className="space-y-6">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -116,12 +124,27 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
             
             <div className="space-y-2">
               {Object.entries(measurements).length > 0 ? (
-                Object.entries(measurements).map(([key, value]) => (
-                  <div key={key} className="flex justify-between border-b pb-2">
-                    <span className="text-gray-700">{MEASUREMENT_DISPLAY_MAP[key] || key}</span>
-                    <span className="font-medium">{value.toFixed(1)} cm</span>
-                  </div>
-                ))
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-2 font-medium">Measurement</th>
+                      <th className="text-right py-2 font-medium">Centimeters</th>
+                      <th className="text-right py-2 font-medium">Inches</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(measurements).map(([key, value]) => {
+                      const inches = cmToInches(value);
+                      return (
+                        <tr key={key} className="border-b">
+                          <td className="py-2 text-gray-700">{MEASUREMENT_DISPLAY_MAP[key] || key}</td>
+                          <td className="py-2 text-right font-medium">{value.toFixed(1)} cm</td>
+                          <td className="py-2 text-right font-medium">{inches.toFixed(1)} in</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               ) : (
                 <div className="text-center py-6 text-red-500">
                   <p>No measurements available</p>
@@ -149,19 +172,6 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
               <Mail size={16} />
               Email Results
             </Button>
-          </div>
-        </div>
-        
-        <div className="border rounded-lg p-6 bg-gray-50 flex flex-col items-center justify-center">
-          <div className="text-center">
-            <img 
-              src="https://images.unsplash.com/photo-1566241440091-ec10de8db2e1"
-              alt="Body measurement visualization" 
-              className="w-full max-w-xs rounded-lg mb-4 shadow-sm"
-            />
-            <p className="text-sm text-gray-600 mt-4">
-              Visualization based on your measurements
-            </p>
           </div>
         </div>
       </div>
