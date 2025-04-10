@@ -155,7 +155,7 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
         <div className="border rounded-lg p-6 bg-gray-50 flex flex-col items-center justify-center">
           <div className="text-center">
             <img 
-              src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
+              src="https://images.unsplash.com/photo-1566241440091-ec10de8db2e1"
               alt="Body measurement visualization" 
               className="w-full max-w-xs rounded-lg mb-4 shadow-sm"
             />
