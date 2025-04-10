@@ -1,4 +1,3 @@
-
 import { Download, Mail, RotateCcw, Info, AlertCircle, HelpCircle, Shirt, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
@@ -13,6 +12,7 @@ interface MeasurementResultsProps {
   measurements: Record<string, number>;
   onReset: () => void;
   confidenceScore?: number;
+  isEstimated?: boolean;
 }
 
 const MEASUREMENT_DISPLAY_MAP: Record<string, string> = {
@@ -26,14 +26,11 @@ const MEASUREMENT_DISPLAY_MAP: Record<string, string> = {
   thigh: "Thigh"
 };
 
-// Helper function to convert cm to inches
 const cmToInches = (cm: number): number => {
   return cm / 2.54;
 };
 
-// Helper function to get sizing information based on measurements
 const getSizingSuggestion = (measurement: string, value: number, gender: string = "neutral"): string => {
-  // These are approximate size ranges - would be more sophisticated in production
   type SizingRange = [number, number, string];
   
   const sizingCharts: Record<string, Record<string, SizingRange[]>> = {
@@ -60,7 +57,7 @@ const getSizingSuggestion = (measurement: string, value: number, gender: string 
       neutral: [
         [79, 84, "XXS"],
         [84, 89, "XS"],
-        [89, 94, "S"], 
+        [89, 94, "S"],
         [94, 99, "M"],
         [99, 104, "L"],
         [104, 109, "XL"],
@@ -93,8 +90,8 @@ const getSizingSuggestion = (measurement: string, value: number, gender: string 
         [66, 71, "XS"],
         [71, 76, "S"],
         [76, 81, "M"],
-        [81, 86, "L"],
-        [86, 91, "XL"],
+        [81, 86, "XL"],
+        [86, 91, "XXL"],
         [91, 96, "XXL"],
         [96, 999, "3XL"]
       ]
@@ -210,11 +207,9 @@ const getSizingSuggestion = (measurement: string, value: number, gender: string 
     }
   };
   
-  // Get appropriate sizing chart
   const chart = sizingCharts[measurement] || sizingCharts.default;
   const sizeRanges = chart[gender] || chart.neutral;
   
-  // Find matching size
   for (const [min, max, size] of sizeRanges) {
     if (value >= min && value < max) {
       return size;
@@ -224,11 +219,9 @@ const getSizingSuggestion = (measurement: string, value: number, gender: string 
   return "Custom fit";
 };
 
-// Detailed clothing size recommendations based on measurements
 const getClothingSizeRecommendations = (measurements: Record<string, number>, gender: string = "neutral"): Record<string, string[]> => {
   const recommendations: Record<string, string[]> = {};
   
-  // Tops sizing (based on chest, shoulders, and sometimes sleeve length)
   if (measurements.chest) {
     const chestSize = getSizingSuggestion('chest', measurements.chest, gender);
     let shoulderNote = "";
@@ -249,7 +242,6 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
       recommendations.tops.push(`Shoulder: ${measurements.shoulder.toFixed(1)} cm / ${cmToInches(measurements.shoulder).toFixed(1)} in`);
     }
     
-    // Add specific fit recommendations based on measurements
     if (gender === 'male' || gender === 'neutral') {
       if (measurements.chest < 96) recommendations.tops.push('Slim fit recommended');
       else if (measurements.chest > 106) recommendations.tops.push('Regular/relaxed fit recommended');
@@ -259,13 +251,11 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
     }
   }
   
-  // Bottoms sizing (based on waist, hips, and inseam)
   if (measurements.waist) {
     const waistSize = getSizingSuggestion('waist', measurements.waist, gender);
     let hipsNote = "";
     let inseamSize = "";
     
-    // Check if hip measurement suggests a different size
     if (measurements.hips) {
       const hipSize = getSizingSuggestion('hips', measurements.hips, gender);
       if (hipSize !== waistSize) {
@@ -273,12 +263,10 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
       }
     }
     
-    // Get inseam length recommendation
     if (measurements.inseam) {
       inseamSize = getSizingSuggestion('inseam', measurements.inseam, gender);
     }
     
-    // Convert letter sizes to numeric sizes (more accurate now)
     let numericSize = '';
     if (gender === 'male') {
       switch(waistSize) {
@@ -319,7 +307,6 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
       recommendations.bottoms.push(`Length: ${inseamSize}`);
     }
     
-    // Add fit recommendations based on waist-hip ratio
     if (measurements.waist && measurements.hips) {
       const waistHipRatio = measurements.waist / measurements.hips;
       if (gender === 'female' && waistHipRatio < 0.8) {
@@ -330,10 +317,8 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
     }
   }
   
-  // Outerwear sizing (often based on chest + allowance for layers)
   if (measurements.chest) {
-    // Outerwear typically needs more room
-    const outerwearChest = measurements.chest + 5; // Add 5cm for layering
+    const outerwearChest = measurements.chest + 5;
     const outerwearSize = getSizingSuggestion('chest', outerwearChest, gender);
     
     recommendations.outerwear = [
@@ -342,12 +327,10 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
       `Chest (with layering): ${outerwearChest.toFixed(1)} cm / ${cmToInches(outerwearChest).toFixed(1)} in`
     ];
     
-    // Add sleeve recommendation if available
     if (measurements.sleeve) {
       const sleeveInches = cmToInches(measurements.sleeve).toFixed(1);
       recommendations.outerwear.push(`Sleeve length: ${sleeveInches}″`);
       
-      // Add sleeve length classification
       if (Number(sleeveInches) < 32) {
         recommendations.outerwear.push('Short sleeve length');
       } else if (Number(sleeveInches) > 35) {
@@ -356,7 +339,6 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
     }
   }
   
-  // Dress shirts (based on neck and sleeve measurements) - more precise now
   if (measurements.neck && (gender === 'male' || gender === 'neutral')) {
     const neckInches = cmToInches(measurements.neck).toFixed(1);
     const neckSize = getSizingSuggestion('neck', measurements.neck, gender);
@@ -376,7 +358,6 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
       recommendations.dressShirts.push(`Sleeve: ${measurements.sleeve.toFixed(1)} cm / ${cmToInches(measurements.sleeve).toFixed(1)} in`);
     }
     
-    // Add fit recommendation based on neck to chest ratio
     if (measurements.chest && measurements.neck) {
       const neckToChestRatio = measurements.neck / measurements.chest;
       if (neckToChestRatio > 0.41) {
@@ -387,14 +368,12 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
     }
   }
   
-  // Dress/suit sizing for women - more detailed now
   if (gender === 'female' && measurements.chest && measurements.waist && measurements.hips) {
     let dressSize = '';
     const chestSize = getSizingSuggestion('chest', measurements.chest, gender);
     const waistSize = getSizingSuggestion('waist', measurements.waist, gender);
     const hipSize = getSizingSuggestion('hips', measurements.hips, gender);
     
-    // Use the largest size among chest, waist, and hips for dresses
     const allSizes = [chestSize, waistSize, hipSize];
     const sizeOrder = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
     let maxSizeIndex = -1;
@@ -408,7 +387,6 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
     
     const recommendedSize = maxSizeIndex >= 0 ? sizeOrder[maxSizeIndex] : 'Custom';
     
-    // Convert letter size to numeric
     switch(recommendedSize) {
       case 'XXS': dressSize = '00'; break;
       case 'XS': dressSize = '0-2'; break;
@@ -428,26 +406,20 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
       `Hip: ${measurements.hips.toFixed(1)} cm / ${cmToInches(measurements.hips).toFixed(1)} in`
     ];
     
-    // Add dress type recommendation based on measurements
-    const waistHipRatio = measurements.waist / measurements.hips;
-    const chestHipRatio = measurements.chest / measurements.hips;
-    
-    if (waistHipRatio < 0.75) {
+    if (measurements.waist / measurements.hips < 0.75) {
       recommendations.dresses.push('A-line or fit-and-flare styles recommended');
-    } else if (chestHipRatio > 1.05) {
+    } else if (measurements.chest / measurements.hips > 1.05) {
       recommendations.dresses.push('Empire waist or A-line styles recommended');
     } else if (Math.abs(measurements.chest - measurements.hips) < 5 && measurements.waist / measurements.hips > 0.8) {
       recommendations.dresses.push('Sheath or shift dress styles recommended');
     }
   }
   
-  // Suits and blazers for men - more customized now
   if (gender === 'male' && measurements.chest) {
     const chestInches = Math.round(cmToInches(measurements.chest));
     let fitType = 'Regular';
     let lengthType = 'Regular';
     
-    // Determine fit type based on chest-to-waist difference
     if (measurements.waist) {
       const drop = measurements.chest - measurements.waist;
       if (drop > 18) {
@@ -457,7 +429,6 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
       }
     }
     
-    // Determine length type based on height
     if (measurements.height) {
       if (measurements.height < 170) {
         lengthType = 'Short';
@@ -471,19 +442,16 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
       `Chest: ${measurements.chest.toFixed(1)} cm / ${chestInches} in`
     ];
     
-    // Add trouser recommendation
     if (measurements.waist) {
       const trouserInches = Math.round(cmToInches(measurements.waist));
       recommendations.suits.push(`Trouser waist: ${trouserInches}″`);
     }
     
-    // Add inseam recommendation
     if (measurements.inseam) {
       const inseamInfo = getSizingSuggestion('inseam', measurements.inseam, gender);
       recommendations.suits.push(`Trouser length: ${inseamInfo}`);
     }
     
-    // Add fit detail based on shoulder measurement
     if (measurements.shoulder) {
       if (measurements.shoulder > 46) {
         recommendations.suits.push('Consider a wider lapel for proportion');
@@ -496,11 +464,10 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
   return recommendations;
 };
 
-export default function MeasurementResults({ measurements, onReset, confidenceScore = 0.85 }: MeasurementResultsProps) {
-  console.log("Rendering MeasurementResults with:", measurements, "confidence:", confidenceScore);
+export default function MeasurementResults({ measurements, onReset, confidenceScore = 0.85, isEstimated = false }: MeasurementResultsProps) {
+  console.log("Rendering MeasurementResults with:", measurements, "confidence:", confidenceScore, "isEstimated:", isEstimated);
   
   const handleDownload = () => {
-    // Create a downloadable text file with measurements in both cm and inches
     const text = Object.entries(measurements)
       .map(([key, value]) => {
         const inches = cmToInches(value);
@@ -517,7 +484,6 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
     document.body.appendChild(a);
     a.click();
     
-    // Clean up
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
@@ -528,14 +494,12 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
   };
   
   const handleEmailResults = () => {
-    // In a real app, this would connect to an API to send email
     toast({
       title: "Email Feature",
       description: "In a production app, this would send measurements to your email.",
     });
   };
 
-  // Calculate the confidence level text and color
   const getConfidenceLevel = () => {
     if (confidenceScore >= 0.9) return { text: "Very High", color: "text-green-600" };
     if (confidenceScore >= 0.8) return { text: "High", color: "text-green-500" };
@@ -547,29 +511,21 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
   const confidenceLevel = getConfidenceLevel();
   const confidencePercentage = Math.round(confidenceScore * 100);
 
-  // Calculate BMI (basic implementation)
   const calculateBMI = () => {
     if (!measurements.waist || !measurements.height) return null;
-    // This is a simplified estimation - actual BMI requires height & weight
-    // This is just a placeholder calculation
     const estimatedWeight = (measurements.waist * measurements.chest) / 3000;
-    const heightInMeters = 1.75; // Placeholder height
+    const heightInMeters = 1.75;
     return estimatedWeight / (heightInMeters * heightInMeters);
   };
   
-  // Get waist-to-hip ratio
   const getWaistToHipRatio = () => {
     if (!measurements.waist || !measurements.hips) return null;
     return measurements.waist / measurements.hips;
   };
   
-  // Determine gender based on measurements (simplified approach)
-  // In a real app, we'd get this from user input
   const determineGender = (): 'male' | 'female' | 'neutral' => {
     if (!measurements.chest || !measurements.hips) return 'neutral';
     
-    // This is a very simplified approach for demo purposes
-    // A real app would get this from user input
     const chestHipRatio = measurements.chest / measurements.hips;
     
     if (chestHipRatio > 1.05) return 'male';

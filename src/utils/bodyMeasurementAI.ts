@@ -1,4 +1,3 @@
-
 // Body measurement AI processing utility
 import { toast } from "@/components/ui/use-toast";
 import { Pose, Results } from "@mediapipe/pose";
@@ -567,7 +566,7 @@ export const calculateBodyMeasurements = async (
       toast({
         title: "Limited Browser Support",
         description: "Your browser doesn't support WebGPU. AI processing capabilities will be limited.",
-        variant: "warning",
+        variant: "default",
       });
       // Continue with limited capabilities (will fall back to CPU or other methods)
     } else {
@@ -652,4 +651,3 @@ export const calculateBodyMeasurements = async (
     throw error; // Rethrow the error to be handled by the caller
   }
 };
-
