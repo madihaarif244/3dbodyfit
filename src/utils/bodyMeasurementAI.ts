@@ -38,6 +38,33 @@ const BODY_MODEL = {
   }
 };
 
+// Body proportion factors - used to estimate related measurements
+// For example, if we're very confident about the chest measurement,
+// we can use these ratios to refine other measurements
+const PROPORTION_FACTORS = {
+  male: {
+    chest_to_waist: 0.86,
+    chest_to_hip: 0.97,
+    chest_to_neck: 0.41,
+    height_to_inseam: 0.45,
+    shoulder_to_sleeve: 1.47
+  },
+  female: {
+    chest_to_waist: 0.84,
+    chest_to_hip: 1.11,
+    chest_to_neck: 0.37,
+    height_to_inseam: 0.44,
+    shoulder_to_sleeve: 1.48
+  },
+  other: {
+    chest_to_waist: 0.85,
+    chest_to_hip: 1.05,
+    chest_to_neck: 0.39,
+    height_to_inseam: 0.445,
+    shoulder_to_sleeve: 1.475
+  }
+};
+
 // Calculate confidence score based on image quality
 const calculateConfidence = (frontImageQuality: number, sideImageQuality: number): number => {
   return Math.min(0.98, (frontImageQuality * 0.6 + sideImageQuality * 0.4));
@@ -132,6 +159,47 @@ const validateImageDimensions = async (image: File): Promise<[boolean, number]> 
   });
 };
 
+// Refine measurements using body proportion relationships
+const refineMeasurementsWithProportions = (
+  measurements: Record<string, number>,
+  gender: 'male' | 'female' | 'other',
+  confidenceScore: number
+): Record<string, number> => {
+  const proportions = PROPORTION_FACTORS[gender];
+  const refined = { ...measurements };
+  
+  // Only apply proportion-based refinement when confidence is high enough
+  // as proportions work best when primary measurements are accurate
+  if (confidenceScore > 0.8) {
+    // Cross-check chest and waist
+    if (refined.chest && !refined.waist) {
+      refined.waist = refined.chest * proportions.chest_to_waist;
+    } else if (!refined.chest && refined.waist) {
+      refined.chest = refined.waist / proportions.chest_to_waist;
+    }
+    
+    // Cross-check chest and hip
+    if (refined.chest && !refined.hips) {
+      refined.hips = refined.chest * proportions.chest_to_hip;
+    } else if (!refined.chest && refined.hips) {
+      refined.chest = refined.hips / proportions.chest_to_hip;
+    }
+    
+    // For high confidence, blend the measured and proportion-based values
+    if (refined.chest && refined.waist) {
+      const proportionWaist = refined.chest * proportions.chest_to_waist;
+      refined.waist = (refined.waist * 0.7) + (proportionWaist * 0.3);
+    }
+    
+    if (refined.chest && refined.hips) {
+      const proportionHips = refined.chest * proportions.chest_to_hip;
+      refined.hips = (refined.hips * 0.7) + (proportionHips * 0.3);
+    }
+  }
+  
+  return refined;
+};
+
 // Calculate measurements based on the advanced body model
 export const calculateBodyMeasurements = async (
   gender: 'male' | 'female' | 'other',
@@ -223,9 +291,19 @@ export const calculateBodyMeasurements = async (
     measurements.chest = parseFloat((measurements.chest * chestAdjustment).toFixed(1));
     measurements.waist = parseFloat((measurements.waist * waistAdjustment).toFixed(1));
     
-    console.log("Generated measurements:", measurements);
+    // Store height in measurements for calculations
+    measurements.height = heightCm;
     
-    return measurements;
+    // Apply body proportion analysis for more consistent results
+    const refinedMeasurements = refineMeasurementsWithProportions(
+      measurements, 
+      gender,
+      confidenceScore
+    );
+    
+    console.log("Generated measurements:", refinedMeasurements);
+    
+    return refinedMeasurements;
   } catch (error) {
     console.error("Error calculating measurements:", error);
     toast({
