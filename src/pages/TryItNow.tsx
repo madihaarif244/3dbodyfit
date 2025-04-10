@@ -54,7 +54,8 @@ export default function TryItNow() {
         toast({
           title: "Scan Complete",
           description: "Your body measurements have been calculated successfully.",
-          variant: "success",
+          // Fix the TypeScript error by using a valid variant
+          variant: "default",
         });
       } else {
         // If measurement calculation failed, return to input state
