@@ -61,8 +61,8 @@ export default function FeaturesSection() {
     <section id="features" className="section-padding bg-background">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">Our Technology</h2>
-          <p className="text-lg text-muted-foreground">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Our Technology</h2>
+          <p className="text-lg text-gray-300">
             Powered by cutting-edge AI and computer vision to deliver unparalleled accuracy.
           </p>
         </div>
@@ -73,23 +73,23 @@ export default function FeaturesSection() {
               <div className="bg-electric/10 p-3 rounded-full mb-4">
                 <feature.icon className="w-6 h-6 text-electric" />
               </div>
-              <h3 className="text-xl font-medium mb-2 text-foreground">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.description}</p>
+              <h3 className="text-xl font-medium mb-2 text-white">{feature.title}</h3>
+              <p className="text-gray-300">{feature.description}</p>
             </div>
           ))}
         </div>
 
         <div className="bg-muted p-8 rounded-2xl">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold mb-2 text-foreground">Why Trust Our Solution?</h3>
-            <p className="text-muted-foreground">Our technology is built on trust, accuracy, and security.</p>
+            <h3 className="text-2xl font-bold mb-2 text-white">Why Trust Our Solution?</h3>
+            <p className="text-gray-300">Our technology is built on trust, accuracy, and security.</p>
           </div>
 
           <div className="flex flex-wrap justify-center gap-4">
             {trustIndicators.map((indicator, index) => (
               <div key={index} className="flex items-center gap-2 bg-card px-4 py-2 rounded-full shadow-sm">
                 <indicator.icon className="w-5 h-5 text-electric" />
-                <span className="text-sm font-medium text-foreground">{indicator.text}</span>
+                <span className="text-sm font-medium text-white">{indicator.text}</span>
               </div>
             ))}
           </div>

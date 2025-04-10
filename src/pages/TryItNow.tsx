@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -53,7 +54,6 @@ export default function TryItNow() {
         toast({
           title: "Scan Complete",
           description: "Your body measurements have been calculated successfully.",
-          // Fix the TypeScript error by using a valid variant
           variant: "default",
         });
       } else {
@@ -87,10 +87,10 @@ export default function TryItNow() {
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2 text-center">
+            <h1 className="text-3xl md:text-4xl font-bold mb-2 text-center text-white">
               AI Body Measurement Tool
             </h1>
-            <p className="text-gray-600 text-center mb-8">
+            <p className="text-gray-300 text-center mb-8">
               Get accurate body measurements in seconds using our advanced AI model
             </p>
             
@@ -99,15 +99,15 @@ export default function TryItNow() {
             )}
             
             {scanStatus === "processing" && (
-              <div className="text-center py-16">
+              <div className="text-center py-16 bg-card rounded-xl p-8">
                 <div className="w-24 h-24 rounded-full bg-electric/20 mx-auto mb-6 animate-pulse flex items-center justify-center">
                   <div className="w-16 h-16 rounded-full bg-electric/30 flex items-center justify-center">
                     <div className="w-8 h-8 rounded-full bg-electric"></div>
                   </div>
                 </div>
-                <h2 className="text-xl font-semibold mb-2">Processing Your Scan</h2>
-                <p className="text-gray-600">Our AI model is analyzing your images to calculate accurate measurements...</p>
-                <p className="text-gray-500 text-sm mt-4">This may take up to 30 seconds</p>
+                <h2 className="text-xl font-semibold mb-2 text-white">Processing Your Scan</h2>
+                <p className="text-gray-300">Our AI model is analyzing your images to calculate accurate measurements...</p>
+                <p className="text-gray-400 text-sm mt-4">This may take up to 30 seconds</p>
               </div>
             )}
             

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Camera, Upload, Info } from "lucide-react";
 import { z } from "zod";
@@ -104,14 +105,14 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Personal Information</h2>
+            <h2 className="text-xl font-semibold text-gray-800">Personal Information</h2>
             
             <FormField
               control={form.control}
               name="gender"
               render={({ field }) => (
                 <FormItem className="space-y-1">
-                  <FormLabel>Gender</FormLabel>
+                  <FormLabel className="text-gray-800">Gender</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -122,19 +123,19 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
                         <FormControl>
                           <RadioGroupItem value="male" />
                         </FormControl>
-                        <FormLabel className="cursor-pointer">Male</FormLabel>
+                        <FormLabel className="cursor-pointer text-gray-800">Male</FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-2">
                         <FormControl>
                           <RadioGroupItem value="female" />
                         </FormControl>
-                        <FormLabel className="cursor-pointer">Female</FormLabel>
+                        <FormLabel className="cursor-pointer text-gray-800">Female</FormLabel>
                       </FormItem>
                       <FormItem className="flex items-center space-x-2">
                         <FormControl>
                           <RadioGroupItem value="other" />
                         </FormControl>
-                        <FormLabel className="cursor-pointer">Other</FormLabel>
+                        <FormLabel className="cursor-pointer text-gray-800">Other</FormLabel>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
@@ -148,7 +149,7 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
               name="measurementSystem"
               render={({ field }) => (
                 <FormItem className="space-y-1">
-                  <FormLabel>Measurement System</FormLabel>
+                  <FormLabel className="text-gray-800">Measurement System</FormLabel>
                   <FormControl>
                     <ToggleGroup
                       type="single"
@@ -158,8 +159,8 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
                       }}
                       defaultValue={field.value}
                     >
-                      <ToggleGroupItem value="metric">Metric (cm)</ToggleGroupItem>
-                      <ToggleGroupItem value="imperial">Imperial (in)</ToggleGroupItem>
+                      <ToggleGroupItem value="metric" className="text-gray-800">Metric (cm)</ToggleGroupItem>
+                      <ToggleGroupItem value="imperial" className="text-gray-800">Imperial (in)</ToggleGroupItem>
                     </ToggleGroup>
                   </FormControl>
                   <FormMessage />
@@ -172,20 +173,21 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
               name="height"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Height</FormLabel>
+                  <FormLabel className="text-gray-800">Height</FormLabel>
                   <FormControl>
                     <div className="flex gap-2">
                       <Input
                         placeholder={measurementSystem === "metric" ? "Height in cm" : "Height in inches"}
                         {...field}
                         type="number"
+                        className="text-gray-800"
                       />
-                      <span className="flex items-center text-sm text-gray-600">
+                      <span className="flex items-center text-sm text-gray-800">
                         {measurementSystem === "metric" ? "cm" : "in"}
                       </span>
                     </div>
                   </FormControl>
-                  <FormDescription>
+                  <FormDescription className="text-gray-600">
                     This helps our AI calculate accurate proportions.
                   </FormDescription>
                   <FormMessage />
@@ -195,7 +197,7 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
           </div>
           
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Upload Images</h2>
+            <h2 className="text-xl font-semibold text-gray-800">Upload Images</h2>
             <p className="text-sm text-gray-600">
               For best results, please upload full-body images with a neutral background.
               Stand straight with arms slightly away from your body.
@@ -203,7 +205,7 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <Label htmlFor="frontImage">Front View</Label>
+                <Label htmlFor="frontImage" className="text-gray-800">Front View</Label>
                 <div 
                   className={`border-2 border-dashed rounded-lg p-4 h-64 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors ${
                     frontImagePreview ? "border-electric" : "border-gray-300"
@@ -236,7 +238,7 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
               </div>
               
               <div className="space-y-3">
-                <Label htmlFor="sideImage">Side View</Label>
+                <Label htmlFor="sideImage" className="text-gray-800">Side View</Label>
                 <div 
                   className={`border-2 border-dashed rounded-lg p-4 h-64 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors ${
                     sideImagePreview ? "border-electric" : "border-gray-300"
@@ -282,10 +284,10 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>
+                  <FormLabel className="text-gray-800">
                     I consent to the processing of my data for measurement purposes
                   </FormLabel>
-                  <FormDescription>
+                  <FormDescription className="text-gray-600">
                     Your images are processed securely and not stored unless you opt in.
                   </FormDescription>
                 </div>
