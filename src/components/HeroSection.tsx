@@ -2,7 +2,6 @@
 import { ArrowDown, Box } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import Floating3DModel from './Floating3DModel';
 
 export default function HeroSection() {
   return (
@@ -33,27 +32,6 @@ export default function HeroSection() {
                   See How It Works
                 </a>
               </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="lg:w-1/2 flex justify-center lg:justify-end fade-in-right" style={{ animationDelay: '300ms' }}>
-          <div className="relative w-full max-w-md">
-            {/* 3D model visualization */}
-            <div className="relative rounded-2xl overflow-hidden shadow-xl bg-gradient-to-br from-background to-secondary aspect-[9/16] border border-border">
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                <Floating3DModel />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent"></div>
-            </div>
-            
-            {/* Mobile scan overlay */}
-            <div className="absolute -right-4 -bottom-4 w-32 h-64 bg-card rounded-2xl shadow-lg border border-border rotate-6 overflow-hidden animate-float">
-              <div className="h-full w-full bg-gradient-to-br from-black/5 to-black/10 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full border-2 border-primary flex items-center justify-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/20 animate-pulse"></div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
