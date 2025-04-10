@@ -1,19 +1,8 @@
 
-import { useEffect, useRef, useState } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
-import AvatarModel from './AvatarModel';
+import { useEffect, useRef } from 'react';
 
 export default function Floating3DModel() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [measurements] = useState({
-    height: 175,
-    chest: 95,
-    waist: 80,
-    hips: 98,
-    shoulder: 45,
-    inseam: 78
-  });
   
   useEffect(() => {
     const container = containerRef.current;
@@ -30,8 +19,8 @@ export default function Floating3DModel() {
       const x = (e.clientX - left) / width - 0.5;
       const y = (e.clientY - top) / height - 0.5;
       
-      mouseX = x * 20;
-      mouseY = -y * 20;
+      mouseX = x * 10; // Reduced effect intensity to be more subtle
+      mouseY = -y * 10;
     };
     
     const animate = () => {
@@ -64,37 +53,27 @@ export default function Floating3DModel() {
       <div className="model transform-style-3d transition-transform duration-300 ease-out flex flex-col items-center justify-center h-full">
         <div className="animate-float w-full h-full">
           <div className="relative w-full h-full">
-            {/* Dark background for wireframe effect */}
-            <div className="absolute inset-0 bg-black rounded-xl"></div>
+            {/* Dark background with gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent rounded-xl"></div>
             
-            <Canvas className="w-full h-full" camera={{ position: [0, 0, 8], fov: 30 }}>
-              {/* Subtle ambient light */}
-              <ambientLight intensity={0.3} />
-              
-              {/* Key light to highlight the wireframe */}
-              <directionalLight position={[5, 5, 5]} intensity={0.7} />
-              <directionalLight position={[-5, 5, -5]} intensity={0.5} color="#4080ff" />
-              <directionalLight position={[0, -5, 2]} intensity={0.2} color="#80c0ff" />
-              
-              {/* Improved wireframe human body model */}
-              <AvatarModel measurements={measurements} />
-              
-              <OrbitControls 
-                enableZoom={false}
-                enablePan={false}
-                minPolarAngle={Math.PI / 4}
-                maxPolarAngle={Math.PI / 1.5}
-                autoRotate
-                autoRotateSpeed={0.4}
+            {/* Image of a girl */}
+            <div className="relative w-full h-full flex items-center justify-center overflow-hidden rounded-xl">
+              <img 
+                src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
+                alt="Woman using 3D Body Fit technology"
+                className="w-full h-full object-cover"
               />
-            </Canvas>
+              
+              {/* Overlay for better visibility of text */}
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60"></div>
+            </div>
             
             {/* Particle effect overlay */}
             <div className="absolute inset-0 pointer-events-none">
-              {Array.from({ length: 40 }).map((_, i) => (
+              {Array.from({ length: 30 }).map((_, i) => (
                 <div 
                   key={i}
-                  className="absolute rounded-full bg-white/30 animate-pulse"
+                  className="absolute rounded-full bg-primary/30 animate-pulse"
                   style={{
                     width: `${Math.random() * 4 + 1}px`,
                     height: `${Math.random() * 4 + 1}px`,
