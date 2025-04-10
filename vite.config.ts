@@ -12,8 +12,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react({
-      // Ensure compatibility
-      jsxImportSource: '@react',
+      jsxImportSource: 'react',
       plugins: []
     }),
     mode === 'development' &&
@@ -24,4 +23,7 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  esbuild: {
+    jsx: 'automatic'
+  }
 }));
