@@ -1,3 +1,4 @@
+
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
@@ -459,8 +460,9 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     ...rightFootConnections,
   ];
   
+  // Adjusted position to better fit in the box and show the whole model
   return (
-    <group ref={modelRef} position={[0, -0.9, 0]} scale={1}>
+    <group ref={modelRef} position={[0, -1.3, 0]} scale={0.7}>
       {bodyConnections.map((line, index) => (
         <Line
           key={index}
