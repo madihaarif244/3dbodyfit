@@ -4,10 +4,6 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
-import { useRef } from "react";
-import AvatarModel from "./AvatarModel";
 
 interface MeasurementResultsProps {
   measurements: Record<string, number>;
@@ -28,8 +24,6 @@ const MEASUREMENT_DISPLAY_MAP: Record<string, string> = {
 
 export default function MeasurementResults({ measurements, onReset, confidenceScore = 0.85 }: MeasurementResultsProps) {
   console.log("Rendering MeasurementResults with:", measurements, "confidence:", confidenceScore);
-  
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   
   const handleDownload = () => {
     // Create a downloadable text file with measurements
@@ -158,24 +152,16 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
           </div>
         </div>
         
-        <div className="border rounded-lg p-6 bg-gray-50">
+        <div className="border rounded-lg p-6 bg-gray-50 flex flex-col items-center justify-center">
           <div className="text-center">
-            <div className="h-64 w-full relative">
-              <Canvas className="w-full h-full">
-                <ambientLight intensity={0.5} />
-                <directionalLight position={[10, 10, 5]} intensity={1} />
-                <AvatarModel measurements={measurements} />
-                <OrbitControls enableZoom={true} />
-                <PerspectiveCamera makeDefault position={[0, 0, 5]} />
-              </Canvas>
-            </div>
+            <img 
+              src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
+              alt="Body measurement visualization" 
+              className="w-full max-w-xs rounded-lg mb-4 shadow-sm"
+            />
             <p className="text-sm text-gray-600 mt-4">
-              Interactive 3D avatar based on your measurements
+              Visualization based on your measurements
             </p>
-            <div className="mt-4 p-2 bg-blue-50 rounded-lg text-xs text-blue-700 flex items-center gap-2">
-              <Info size={14} />
-              <span>Drag to rotate. Scroll to zoom.</span>
-            </div>
           </div>
         </div>
       </div>
