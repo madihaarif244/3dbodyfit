@@ -1,7 +1,8 @@
 
-import { Download, Mail, RotateCcw } from "lucide-react";
+import { Download, Mail, RotateCcw, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface MeasurementResultsProps {
   measurements: Record<string, number>;
@@ -63,7 +64,25 @@ export default function MeasurementResults({ measurements, onReset }: Measuremen
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 md:p-8">
         <div className="space-y-6">
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Measurements</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-medium">Measurements</h3>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Info size={18} className="text-gray-500" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs text-xs">
+                      These measurements are calculated using advanced computer vision algorithms that
+                      analyze your uploaded images together with your provided height.
+                      Accuracy may vary based on image quality and positioning.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <div className="space-y-2">
               {Object.entries(measurements).map(([key, value]) => (
                 <div key={key} className="flex justify-between border-b pb-2">
@@ -94,17 +113,25 @@ export default function MeasurementResults({ measurements, onReset }: Measuremen
           </div>
         </div>
         
-        <div className="border rounded-lg p-6 bg-gray-50 flex items-center justify-center">
+        <div className="border rounded-lg p-6 bg-gray-50">
           <div className="text-center">
-            <div className="mx-auto w-32 h-64 bg-gray-200 rounded-full mb-4 relative">
+            <div className="mx-auto w-32 h-64 bg-gray-200 rounded-full mb-4 relative overflow-hidden">
               {/* This would be a 3D avatar in a real implementation */}
-              <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                3D Avatar Placeholder
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+                <svg className="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <span>3D Avatar</span>
+                <span className="text-xs mt-1">Coming soon</span>
               </div>
             </div>
             <p className="text-sm text-gray-600">
-              In a production app, this would display a 3D avatar using your measurements
+              Based on your measurements, we would generate a personalized 3D avatar in our full version
             </p>
+            <div className="mt-4 p-2 bg-blue-50 rounded-lg text-xs text-blue-700 flex items-center gap-2">
+              <Info size={14} />
+              <span>Our AI measurement technology integrates advanced anthropometric models with computer vision to provide accurate estimations.</span>
+            </div>
           </div>
         </div>
       </div>
