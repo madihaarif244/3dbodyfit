@@ -1,6 +1,6 @@
 
 import { useEffect, useRef } from 'react';
-import { Box3d } from 'lucide-react';
+import { Cube } from 'lucide-react';
 
 export default function Floating3DModel() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -89,7 +89,7 @@ export default function Floating3DModel() {
             
             {/* Logo overlay */}
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <Box3d className="h-12 w-12 text-primary/80" />
+              <Cube className="h-12 w-12 text-primary/80" />
             </div>
           </div>
         </div>
