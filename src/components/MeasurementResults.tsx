@@ -1,4 +1,3 @@
-
 import { Download, Mail, RotateCcw, Info, AlertCircle, HelpCircle, Shirt, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
@@ -34,7 +33,6 @@ const cmToInches = (cm: number): number => {
 // Helper function to get sizing information based on measurements
 const getSizingSuggestion = (measurement: string, value: number, gender: string = "neutral"): string => {
   // These are approximate size ranges - would be more sophisticated in production
-  // Update: Fixed the type error by properly typing the arrays with [number, number, string]
   type SizingRange = [number, number, string];
   
   const sizingCharts: Record<string, Record<string, SizingRange[]>> = {
@@ -45,52 +43,165 @@ const getSizingSuggestion = (measurement: string, value: number, gender: string 
         [96, 101, "M"],
         [101, 106, "L"],
         [106, 111, "XL"],
-        [111, 116, "XXL"]
+        [111, 116, "XXL"],
+        [116, 999, "3XL"]
       ],
       female: [
+        [76, 81, "XXS"],
         [81, 86, "XS"],
         [86, 91, "S"],
         [91, 96, "M"],
         [96, 101, "L"],
         [101, 106, "XL"],
-        [106, 111, "XXL"]
+        [106, 111, "XXL"],
+        [111, 999, "3XL"]
       ],
       neutral: [
+        [79, 84, "XXS"],
         [84, 89, "XS"],
         [89, 94, "S"], 
         [94, 99, "M"],
         [99, 104, "L"],
         [104, 109, "XL"],
-        [109, 114, "XXL"]
+        [109, 114, "XXL"],
+        [114, 999, "3XL"]
       ]
     },
     waist: {
       male: [
-        [71, 76, "XS"],
-        [76, 81, "S"],
-        [81, 86, "M"],
-        [86, 91, "L"],
-        [91, 96, "XL"],
-        [96, 101, "XXL"]
-      ],
-      female: [
-        [61, 66, "XS"],
-        [66, 71, "S"],
-        [71, 76, "M"],
-        [76, 81, "L"],
-        [81, 86, "XL"],
-        [86, 91, "XXL"]
-      ],
-      neutral: [
         [66, 71, "XS"],
         [71, 76, "S"],
         [76, 81, "M"],
         [81, 86, "L"],
         [86, 91, "XL"],
-        [91, 96, "XXL"]
+        [91, 96, "XXL"],
+        [96, 999, "3XL"]
+      ],
+      female: [
+        [56, 61, "XXS"],
+        [61, 66, "XS"],
+        [66, 71, "S"],
+        [71, 76, "M"],
+        [76, 81, "L"],
+        [81, 86, "XL"],
+        [86, 91, "XXL"],
+        [91, 999, "3XL"]
+      ],
+      neutral: [
+        [61, 66, "XXS"],
+        [66, 71, "XS"],
+        [71, 76, "S"],
+        [76, 81, "M"],
+        [81, 86, "L"],
+        [86, 91, "XL"],
+        [91, 96, "XXL"],
+        [96, 999, "3XL"]
       ]
     },
-    // Could add more detailed sizing charts for other measurements
+    hips: {
+      male: [
+        [86, 91, "XS"],
+        [91, 96, "S"],
+        [96, 101, "M"],
+        [101, 106, "L"],
+        [106, 111, "XL"],
+        [111, 116, "XXL"],
+        [116, 999, "3XL"]
+      ],
+      female: [
+        [86, 91, "XXS"],
+        [91, 96, "XS"],
+        [96, 101, "S"],
+        [101, 106, "M"],
+        [106, 111, "L"],
+        [111, 116, "XL"],
+        [116, 121, "XXL"],
+        [121, 999, "3XL"]
+      ],
+      neutral: [
+        [86, 91, "XS"],
+        [91, 96, "S"],
+        [96, 101, "M"],
+        [101, 106, "L"],
+        [106, 111, "XL"],
+        [111, 116, "XXL"],
+        [116, 999, "3XL"]
+      ]
+    },
+    neck: {
+      male: [
+        [33, 36, "13-14″"],
+        [36, 38, "14.5-15″"],
+        [38, 40, "15.5-16″"],
+        [40, 42, "16.5-17″"],
+        [42, 44, "17.5-18″"],
+        [44, 999, "18.5″+"]
+      ],
+      female: [
+        [30, 32, "XXS"],
+        [32, 34, "XS"],
+        [34, 36, "S"],
+        [36, 38, "M"],
+        [38, 40, "L"],
+        [40, 42, "XL"],
+        [42, 999, "XXL"]
+      ],
+      neutral: [
+        [31, 34, "XS"],
+        [34, 36, "S"],
+        [36, 38, "M"],
+        [38, 40, "L"],
+        [40, 42, "XL"],
+        [42, 999, "XXL"]
+      ]
+    },
+    shoulder: {
+      male: [
+        [40, 42, "XS"],
+        [42, 44, "S"],
+        [44, 46, "M"],
+        [46, 48, "L"],
+        [48, 50, "XL"],
+        [50, 999, "XXL"]
+      ],
+      female: [
+        [36, 38, "XXS"],
+        [38, 40, "XS"],
+        [40, 42, "S"],
+        [42, 44, "M"],
+        [44, 46, "L"],
+        [46, 48, "XL"],
+        [48, 999, "XXL"]
+      ],
+      neutral: [
+        [38, 40, "XS"],
+        [40, 42, "S"],
+        [42, 44, "M"],
+        [44, 46, "L"],
+        [46, 48, "XL"],
+        [48, 999, "XXL"]
+      ]
+    },
+    inseam: {
+      male: [
+        [74, 77, "Short (28-30″)"],
+        [77, 82, "Regular (30-32″)"],
+        [82, 87, "Long (32-34″)"],
+        [87, 999, "Extra Long (34″+)"]
+      ],
+      female: [
+        [68, 71, "Petite (26-28″)"],
+        [71, 76, "Regular (28-30″)"],
+        [76, 81, "Long (30-32″)"],
+        [81, 999, "Extra Long (32″+)"]
+      ],
+      neutral: [
+        [71, 74, "Short (28″)"],
+        [74, 79, "Regular (30″)"],
+        [79, 84, "Long (32″)"],
+        [84, 999, "Extra Long (34″+)"]
+      ]
+    },
     default: {
       neutral: [
         [0, Infinity, "Custom fit recommended"]
@@ -116,15 +227,28 @@ const getSizingSuggestion = (measurement: string, value: number, gender: string 
 const getClothingSizeRecommendations = (measurements: Record<string, number>, gender: string = "neutral"): Record<string, string[]> => {
   const recommendations: Record<string, string[]> = {};
   
-  // Tops sizing (based on chest and sometimes shoulders)
+  // Tops sizing (based on chest, shoulders, and sometimes sleeve length)
   if (measurements.chest) {
     const chestSize = getSizingSuggestion('chest', measurements.chest, gender);
+    let shoulderNote = "";
+    
+    if (measurements.shoulder) {
+      const shoulderSize = getSizingSuggestion('shoulder', measurements.shoulder, gender);
+      if (shoulderSize !== chestSize) {
+        shoulderNote = ` (shoulder fit may need ${shoulderSize})`;
+      }
+    }
+    
     recommendations.tops = [
-      `${chestSize} (${gender === 'female' ? 'Women' : 'Men'}'s)`,
+      `${chestSize}${shoulderNote}`,
       `Chest: ${measurements.chest.toFixed(1)} cm / ${cmToInches(measurements.chest).toFixed(1)} in`
     ];
     
-    // Add specific recommendations for different clothing types
+    if (measurements.shoulder) {
+      recommendations.tops.push(`Shoulder: ${measurements.shoulder.toFixed(1)} cm / ${cmToInches(measurements.shoulder).toFixed(1)} in`);
+    }
+    
+    // Add specific fit recommendations based on measurements
     if (gender === 'male' || gender === 'neutral') {
       if (measurements.chest < 96) recommendations.tops.push('Slim fit recommended');
       else if (measurements.chest > 106) recommendations.tops.push('Regular/relaxed fit recommended');
@@ -134,43 +258,68 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
     }
   }
   
-  // Bottoms sizing (based on waist and hips)
+  // Bottoms sizing (based on waist, hips, and inseam)
   if (measurements.waist) {
     const waistSize = getSizingSuggestion('waist', measurements.waist, gender);
-    let numericSize = '';
+    let hipsNote = "";
+    let inseamSize = "";
     
-    // Convert letter sizes to numeric sizes (approximations)
+    // Check if hip measurement suggests a different size
+    if (measurements.hips) {
+      const hipSize = getSizingSuggestion('hips', measurements.hips, gender);
+      if (hipSize !== waistSize) {
+        hipsNote = ` (may need ${hipSize} for hips)`;
+      }
+    }
+    
+    // Get inseam length recommendation
+    if (measurements.inseam) {
+      inseamSize = getSizingSuggestion('inseam', measurements.inseam, gender);
+    }
+    
+    // Convert letter sizes to numeric sizes (more accurate now)
+    let numericSize = '';
     if (gender === 'male') {
       switch(waistSize) {
+        case 'XXS': numericSize = '26-28'; break;
         case 'XS': numericSize = '28-30'; break;
         case 'S': numericSize = '30-32'; break;
         case 'M': numericSize = '32-34'; break;
         case 'L': numericSize = '36-38'; break;
         case 'XL': numericSize = '40-42'; break;
         case 'XXL': numericSize = '44-46'; break;
+        case '3XL': numericSize = '48-50'; break;
         default: numericSize = waistSize;
       }
     } else {
       switch(waistSize) {
+        case 'XXS': numericSize = '00'; break;
         case 'XS': numericSize = '0-2'; break;
         case 'S': numericSize = '4-6'; break;
         case 'M': numericSize = '8-10'; break;
         case 'L': numericSize = '12-14'; break;
         case 'XL': numericSize = '16-18'; break;
         case 'XXL': numericSize = '20-22'; break;
+        case '3XL': numericSize = '24-26'; break;
         default: numericSize = waistSize;
       }
     }
     
     recommendations.bottoms = [
-      `${waistSize} (${numericSize})`,
+      `${waistSize}${hipsNote} (${numericSize})`,
       `Waist: ${measurements.waist.toFixed(1)} cm / ${cmToInches(measurements.waist).toFixed(1)} in`
     ];
     
     if (measurements.hips) {
       recommendations.bottoms.push(`Hip: ${measurements.hips.toFixed(1)} cm / ${cmToInches(measurements.hips).toFixed(1)} in`);
-      
-      // Add fit recommendations based on waist-hip ratio
+    }
+    
+    if (inseamSize) {
+      recommendations.bottoms.push(`Length: ${inseamSize}`);
+    }
+    
+    // Add fit recommendations based on waist-hip ratio
+    if (measurements.waist && measurements.hips) {
       const waistHipRatio = measurements.waist / measurements.hips;
       if (gender === 'female' && waistHipRatio < 0.8) {
         recommendations.bottoms.push('Curvy fit recommended');
@@ -189,66 +338,157 @@ const getClothingSizeRecommendations = (measurements: Record<string, number>, ge
     recommendations.outerwear = [
       `${outerwearSize}`,
       `Allow extra room for layering`,
-      `Consider ${(gender === 'male' || gender === 'neutral') ? 'sleeve and shoulder width' : 'hip clearance'}`
+      `Chest (with layering): ${outerwearChest.toFixed(1)} cm / ${cmToInches(outerwearChest).toFixed(1)} in`
     ];
+    
+    // Add sleeve recommendation if available
+    if (measurements.sleeve) {
+      const sleeveInches = cmToInches(measurements.sleeve).toFixed(1);
+      recommendations.outerwear.push(`Sleeve length: ${sleeveInches}″`);
+      
+      // Add sleeve length classification
+      if (Number(sleeveInches) < 32) {
+        recommendations.outerwear.push('Short sleeve length');
+      } else if (Number(sleeveInches) > 35) {
+        recommendations.outerwear.push('Long sleeve length');
+      }
+    }
   }
   
-  // Dress shirts (based on neck and sleeve measurements)
-  if (measurements.neck && measurements.sleeve && (gender === 'male' || gender === 'neutral')) {
+  // Dress shirts (based on neck and sleeve measurements) - more precise now
+  if (measurements.neck && (gender === 'male' || gender === 'neutral')) {
     const neckInches = cmToInches(measurements.neck).toFixed(1);
-    const sleeveInches = cmToInches(measurements.sleeve).toFixed(1);
+    const neckSize = getSizingSuggestion('neck', measurements.neck, gender);
+    let sleeveInfo = "";
+    
+    if (measurements.sleeve) {
+      const sleeveInches = cmToInches(measurements.sleeve).toFixed(1);
+      sleeveInfo = `, Sleeve: ${sleeveInches}″`;
+    }
     
     recommendations.dressShirts = [
-      `Neck: ${neckInches}″, Sleeve: ${sleeveInches}″`,
-      `Neck: ${measurements.neck.toFixed(1)} cm, Sleeve: ${measurements.sleeve.toFixed(1)} cm`
+      `${neckSize}${sleeveInfo}`,
+      `Neck: ${measurements.neck.toFixed(1)} cm / ${neckInches} in`
     ];
+    
+    if (measurements.sleeve) {
+      recommendations.dressShirts.push(`Sleeve: ${measurements.sleeve.toFixed(1)} cm / ${cmToInches(measurements.sleeve).toFixed(1)} in`);
+    }
+    
+    // Add fit recommendation based on neck to chest ratio
+    if (measurements.chest && measurements.neck) {
+      const neckToChestRatio = measurements.neck / measurements.chest;
+      if (neckToChestRatio > 0.41) {
+        recommendations.dressShirts.push('Consider regular fit');
+      } else {
+        recommendations.dressShirts.push('Consider slim/tailored fit');
+      }
+    }
   }
   
-  // Dress/suit sizing
+  // Dress/suit sizing for women - more detailed now
   if (gender === 'female' && measurements.chest && measurements.waist && measurements.hips) {
     let dressSize = '';
     const chestSize = getSizingSuggestion('chest', measurements.chest, gender);
+    const waistSize = getSizingSuggestion('waist', measurements.waist, gender);
+    const hipSize = getSizingSuggestion('hips', measurements.hips, gender);
     
-    switch(chestSize) {
+    // Use the largest size among chest, waist, and hips for dresses
+    const allSizes = [chestSize, waistSize, hipSize];
+    const sizeOrder = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
+    let maxSizeIndex = -1;
+    
+    for (const size of allSizes) {
+      const sizeIndex = sizeOrder.indexOf(size);
+      if (sizeIndex > maxSizeIndex) {
+        maxSizeIndex = sizeIndex;
+      }
+    }
+    
+    const recommendedSize = maxSizeIndex >= 0 ? sizeOrder[maxSizeIndex] : 'Custom';
+    
+    // Convert letter size to numeric
+    switch(recommendedSize) {
+      case 'XXS': dressSize = '00'; break;
       case 'XS': dressSize = '0-2'; break;
       case 'S': dressSize = '4-6'; break;
       case 'M': dressSize = '8-10'; break;
       case 'L': dressSize = '12-14'; break;
       case 'XL': dressSize = '16-18'; break;
       case 'XXL': dressSize = '20-22'; break;
+      case '3XL': dressSize = '24-26'; break;
       default: dressSize = 'Custom';
     }
     
     recommendations.dresses = [
-      `Size ${dressSize}`,
+      `Size ${dressSize} (${recommendedSize})`,
       `Bust: ${measurements.chest.toFixed(1)} cm / ${cmToInches(measurements.chest).toFixed(1)} in`,
       `Waist: ${measurements.waist.toFixed(1)} cm / ${cmToInches(measurements.waist).toFixed(1)} in`,
       `Hip: ${measurements.hips.toFixed(1)} cm / ${cmToInches(measurements.hips).toFixed(1)} in`
     ];
+    
+    // Add dress type recommendation based on measurements
+    const waistHipRatio = measurements.waist / measurements.hips;
+    const chestHipRatio = measurements.chest / measurements.hips;
+    
+    if (waistHipRatio < 0.75) {
+      recommendations.dresses.push('A-line or fit-and-flare styles recommended');
+    } else if (chestHipRatio > 1.05) {
+      recommendations.dresses.push('Empire waist or A-line styles recommended');
+    } else if (Math.abs(measurements.chest - measurements.hips) < 5 && measurements.waist / measurements.hips > 0.8) {
+      recommendations.dresses.push('Sheath or shift dress styles recommended');
+    }
   }
   
-  // Suits and blazers for men
+  // Suits and blazers for men - more customized now
   if (gender === 'male' && measurements.chest) {
-    const jacketSize = Math.round(cmToInches(measurements.chest));
+    const chestInches = Math.round(cmToInches(measurements.chest));
+    let fitType = 'Regular';
+    let lengthType = 'Regular';
     
-    recommendations.suits = [
-      `Jacket size: ${jacketSize} Regular`,
-      `Chest: ${measurements.chest.toFixed(1)} cm / ${cmToInches(measurements.chest).toFixed(1)} in`
-    ];
-    
-    // Add length recommendation based on height
-    if (measurements.height) {
-      if (measurements.height < 170) {
-        recommendations.suits[0] = `Jacket size: ${jacketSize} Short`;
-      } else if (measurements.height > 185) {
-        recommendations.suits[0] = `Jacket size: ${jacketSize} Long`;
+    // Determine fit type based on chest-to-waist difference
+    if (measurements.waist) {
+      const drop = measurements.chest - measurements.waist;
+      if (drop > 18) {
+        fitType = 'Athletic';
+      } else if (drop < 12) {
+        fitType = 'Relaxed';
       }
     }
+    
+    // Determine length type based on height
+    if (measurements.height) {
+      if (measurements.height < 170) {
+        lengthType = 'Short';
+      } else if (measurements.height > 185) {
+        lengthType = 'Long';
+      }
+    }
+    
+    recommendations.suits = [
+      `${chestInches} ${lengthType} ${fitType}`,
+      `Chest: ${measurements.chest.toFixed(1)} cm / ${chestInches} in`
+    ];
     
     // Add trouser recommendation
     if (measurements.waist) {
       const trouserInches = Math.round(cmToInches(measurements.waist));
       recommendations.suits.push(`Trouser waist: ${trouserInches}″`);
+    }
+    
+    // Add inseam recommendation
+    if (measurements.inseam) {
+      const inseamInfo = getSizingSuggestion('inseam', measurements.inseam, gender);
+      recommendations.suits.push(`Trouser length: ${inseamInfo}`);
+    }
+    
+    // Add fit detail based on shoulder measurement
+    if (measurements.shoulder) {
+      if (measurements.shoulder > 46) {
+        recommendations.suits.push('Consider a wider lapel for proportion');
+      } else if (measurements.shoulder < 42) {
+        recommendations.suits.push('Consider a narrower lapel for proportion');
+      }
     }
   }
   
