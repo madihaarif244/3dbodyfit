@@ -2,6 +2,7 @@
 import { toast } from "@/components/ui/use-toast";
 import { Pose, Results } from "@mediapipe/pose";
 import { pipeline, env } from '@huggingface/transformers';
+import { processBodyMeasurements as apiProcessMeasurements } from './api';
 
 // Configure transformers.js
 env.allowLocalModels = false;
@@ -537,8 +538,34 @@ export const calculateBodyMeasurements = async (
   sideImage: File
 ): Promise<Record<string, number> | null> => {
   try {
-    console.log("Starting body measurement calculation with real AI models...");
-    console.log("Parameters:", { gender, heightValue, measurementSystem });
+    console.log("Starting body measurement calculation...");
+    
+    // Try to use the backend API first
+    try {
+      console.log("Attempting to use backend API...");
+      const apiMeasurements = await apiProcessMeasurements(
+        gender,
+        heightValue,
+        measurementSystem,
+        frontImage,
+        sideImage
+      );
+      
+      console.log("Successfully retrieved measurements from API:", apiMeasurements);
+      return apiMeasurements;
+    } catch (apiError) {
+      console.warn("Backend API unavailable or error occurred:", apiError);
+      console.log("Falling back to browser-based processing...");
+      
+      // Show fallback toast
+      toast({
+        title: "Using local processing",
+        description: "Could not connect to the measurement server. Using browser-based processing instead.",
+        variant: "default",
+      });
+      
+      // Continue with the existing local processing logic
+    }
     
     // Convert height to cm if imperial
     let heightCm = parseFloat(heightValue);
@@ -643,7 +670,7 @@ export const calculateBodyMeasurements = async (
       confidenceScore
     );
     
-    console.log("Generated measurements with real AI integration:", refinedMeasurements);
+    console.log("Generated measurements with AI integration:", refinedMeasurements);
     
     return refinedMeasurements;
   } catch (error) {
