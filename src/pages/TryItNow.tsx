@@ -150,8 +150,7 @@ export default function TryItNow() {
         formData.gender, 
         formData.height,
         formData.measurementSystem,
-        formData.frontImage,
-        null // No side image anymore
+        formData.frontImage
       ).catch(error => {
         console.error("Error in AI measurement calculation:", error);
         setErrorMessage(`AI model error: ${error.message || 'Unknown error processing images'}`);
