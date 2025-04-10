@@ -33,7 +33,10 @@ const cmToInches = (cm: number): number => {
 // Helper function to get sizing information based on measurements
 const getSizingSuggestion = (measurement: string, value: number, gender: string = "neutral"): string => {
   // These are approximate size ranges - would be more sophisticated in production
-  const sizingCharts: Record<string, Record<string, number[][]>> = {
+  // Update: Fixed the type error by properly typing the arrays with [number, number, string]
+  type SizingRange = [number, number, string];
+  
+  const sizingCharts: Record<string, Record<string, SizingRange[]>> = {
     chest: {
       male: [
         [86, 91, "XS"],
@@ -101,7 +104,7 @@ const getSizingSuggestion = (measurement: string, value: number, gender: string 
   // Find matching size
   for (const [min, max, size] of sizeRanges) {
     if (value >= min && value < max) {
-      return size as string;
+      return size;
     }
   }
   
