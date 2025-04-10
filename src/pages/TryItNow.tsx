@@ -134,7 +134,7 @@ export default function TryItNow() {
       toast({
         title: browserSupportsWebGPU ? "Loading AI Models" : "Processing Measurements",
         description: browserSupportsWebGPU 
-          ? "Initializing Hugging Face body segmentation and MediaPipe pose detection models..."
+          ? "Initializing Hugging Face body segmentation models..."
           : "Calculating your measurements based on provided information...",
       });
       
@@ -151,7 +151,7 @@ export default function TryItNow() {
         formData.height,
         formData.measurementSystem,
         formData.frontImage,
-        formData.sideImage
+        null // No side image anymore
       ).catch(error => {
         console.error("Error in AI measurement calculation:", error);
         setErrorMessage(`AI model error: ${error.message || 'Unknown error processing images'}`);
@@ -181,20 +181,15 @@ export default function TryItNow() {
           variant: "default",
         });
       } else if (retryCount >= 1) {
-        setScanStatus("error");
-        toast({
-          title: "AI Processing Failed",
-          description: "We'll offer you estimated measurements based on your height and gender.",
-          variant: "destructive",
-        });
+        useFallbackMeasurements();
       } else {
         setScanStatus("error");
         if (!errorMessage) {
-          setErrorMessage("Failed to calculate measurements. Please try again with different images or use estimated measurements.");
+          setErrorMessage("Failed to calculate measurements. Please try again with a different image or use estimated measurements.");
         }
         toast({
           title: "Processing Failed",
-          description: errorMessage || "No measurements could be calculated. Please try again with different images.",
+          description: errorMessage || "No measurements could be calculated. Please try again with a different image.",
           variant: "destructive",
         });
       }
@@ -205,7 +200,7 @@ export default function TryItNow() {
       setErrorMessage(`${error instanceof Error ? error.message : 'Unknown error occurred'}`);
       toast({
         title: "Processing Failed",
-        description: "We encountered an error while processing your images. Please try again.",
+        description: "We encountered an error while processing your image. Please try again.",
         variant: "destructive",
       });
     }
@@ -335,7 +330,7 @@ export default function TryItNow() {
                 </div>
                 <h2 className="text-xl font-semibold mb-4 text-white">Processing Failed</h2>
                 <p className="text-gray-300 mb-6">
-                  {errorMessage || "We couldn't process your images. Please try again with different images."}
+                  {errorMessage || "We couldn't process your images. Please try again with a different image."}
                 </p>
                 <Alert className="bg-gray-800 border border-gray-700 mb-6">
                   <AlertTitle>Troubleshooting Tips</AlertTitle>

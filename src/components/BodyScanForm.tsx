@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Camera, Upload, Info } from "lucide-react";
+import { Camera, Info } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,7 +22,6 @@ const formSchema = z.object({
   }),
   height: z.string().min(1, "Please enter your height."),
   frontImage: z.instanceof(File).optional(),
-  sideImage: z.instanceof(File).optional(),
   privacyConsent: z.literal(true, {
     invalid_type_error: "You must accept the privacy policy.",
   }),
@@ -36,7 +35,6 @@ interface BodyScanFormProps {
 
 export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
   const [frontImagePreview, setFrontImagePreview] = useState<string | null>(null);
-  const [sideImagePreview, setSideImagePreview] = useState<string | null>(null);
   
   const form = useForm<BodyScanFormValues>({
     resolver: zodResolver(formSchema),
@@ -49,7 +47,7 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
   
   const measurementSystem = form.watch("measurementSystem");
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, type: "front" | "side") => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       
@@ -74,24 +72,19 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
       
       const reader = new FileReader();
       reader.onload = (e) => {
-        if (type === "front") {
-          setFrontImagePreview(e.target?.result as string);
-          form.setValue("frontImage", file);
-        } else {
-          setSideImagePreview(e.target?.result as string);
-          form.setValue("sideImage", file);
-        }
+        setFrontImagePreview(e.target?.result as string);
+        form.setValue("frontImage", file);
       };
       reader.readAsDataURL(file);
     }
   };
   
   const handleFormSubmit = (data: BodyScanFormValues) => {
-    // Validate that images are uploaded before submission
-    if (!form.getValues("frontImage") || !form.getValues("sideImage")) {
+    // Validate that image is uploaded before submission
+    if (!form.getValues("frontImage")) {
       toast({
-        title: "Images required",
-        description: "Please upload both front and side view images",
+        title: "Image required",
+        description: "Please upload a front view image",
         variant: "destructive",
       });
       return;
@@ -197,77 +190,42 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
           </div>
           
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-800">Upload Images</h2>
+            <h2 className="text-xl font-semibold text-gray-800">Upload Front View Image</h2>
             <p className="text-sm text-gray-600">
-              For best results, please upload full-body images with a neutral background.
+              For best results, please upload a front-facing full-body image with a neutral background.
               Stand straight with arms slightly away from your body.
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <Label htmlFor="frontImage" className="text-gray-800">Front View</Label>
-                <div 
-                  className={`border-2 border-dashed rounded-lg p-4 h-64 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors ${
-                    frontImagePreview ? "border-electric" : "border-gray-300"
-                  }`}
-                  onClick={() => document.getElementById("frontImage")?.click()}
-                >
-                  {frontImagePreview ? (
-                    <div className="relative w-full h-full">
-                      <img 
-                        src={frontImagePreview} 
-                        alt="Front view preview" 
-                        className="h-full mx-auto object-contain"
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      <Camera className="w-12 h-12 text-gray-400 mb-2" />
-                      <p className="text-sm text-gray-500">Click to upload front view</p>
-                      <p className="text-xs text-gray-400 mt-1">or drag and drop</p>
-                    </>
-                  )}
-                  <Input 
-                    type="file"
-                    id="frontImage"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleImageChange(e, "front")}
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <Label htmlFor="sideImage" className="text-gray-800">Side View</Label>
-                <div 
-                  className={`border-2 border-dashed rounded-lg p-4 h-64 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors ${
-                    sideImagePreview ? "border-electric" : "border-gray-300"
-                  }`}
-                  onClick={() => document.getElementById("sideImage")?.click()}
-                >
-                  {sideImagePreview ? (
-                    <div className="relative w-full h-full">
-                      <img 
-                        src={sideImagePreview} 
-                        alt="Side view preview" 
-                        className="h-full mx-auto object-contain"
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      <Camera className="w-12 h-12 text-gray-400 mb-2" />
-                      <p className="text-sm text-gray-500">Click to upload side view</p>
-                      <p className="text-xs text-gray-400 mt-1">or drag and drop</p>
-                    </>
-                  )}
-                  <Input 
-                    type="file"
-                    id="sideImage"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleImageChange(e, "side")}
-                  />
-                </div>
+            <div className="space-y-3">
+              <Label htmlFor="frontImage" className="text-gray-800">Front View</Label>
+              <div 
+                className={`border-2 border-dashed rounded-lg p-4 h-64 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors ${
+                  frontImagePreview ? "border-electric" : "border-gray-300"
+                }`}
+                onClick={() => document.getElementById("frontImage")?.click()}
+              >
+                {frontImagePreview ? (
+                  <div className="relative w-full h-full">
+                    <img 
+                      src={frontImagePreview} 
+                      alt="Front view preview" 
+                      className="h-full mx-auto object-contain"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <Camera className="w-12 h-12 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-500">Click to upload front view</p>
+                    <p className="text-xs text-gray-400 mt-1">or drag and drop</p>
+                  </>
+                )}
+                <Input 
+                  type="file"
+                  id="frontImage"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
               </div>
             </div>
           </div>
