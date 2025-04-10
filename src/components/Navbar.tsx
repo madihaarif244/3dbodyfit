@@ -1,11 +1,14 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, Box } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -74,19 +77,21 @@ export default function Navbar() {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-              className="inline-flex items-center justify-center p-2 rounded-md text-foreground hover:text-primary focus:outline-none"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-          </div>
+          {isMobile && (
+            <div className="md:hidden">
+              <button 
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+                className="inline-flex items-center justify-center p-2 rounded-md text-foreground hover:text-primary focus:outline-none"
+              >
+                <Menu className="h-6 w-6" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Mobile menu */}
-      {mobileMenuOpen && (
+      {isMobile && mobileMenuOpen && (
         <div className="md:hidden bg-background/95 backdrop-blur-md shadow-lg animate-fade-in">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             <a
