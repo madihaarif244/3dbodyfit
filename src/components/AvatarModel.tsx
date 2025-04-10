@@ -69,8 +69,10 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     }
   });
   
-  const skinColor = new THREE.Color("#E0C8A0");
-  const clothColor = new THREE.Color("#4A5568");
+  // Define colors with proper React Three Fiber syntax
+  const skinColor = "#E0C8A0";
+  const clothColor = "#4A5568";
+  const pantsColor = "#2D3748";
   
   return (
     <group position={[0, -1, 0]} scale={[1, 1, 1]}>
@@ -144,7 +146,7 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
         ]}
       >
         <boxGeometry args={[0.6, 1, 0.4]} />
-        <meshStandardMaterial color={new THREE.Color("#2D3748")} />
+        <meshStandardMaterial color={pantsColor} />
       </mesh>
       
       {/* Left Leg */}
@@ -154,7 +156,7 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
         scale={[1, measurements.inseam ? measurements.inseam / 70 : 1, 1]}
       >
         <cylinderGeometry args={[0.12, 0.1, 1.2, 16]} />
-        <meshStandardMaterial color={new THREE.Color("#2D3748")} />
+        <meshStandardMaterial color={pantsColor} />
       </mesh>
       
       {/* Right Leg */}
@@ -164,7 +166,7 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
         scale={[1, measurements.inseam ? measurements.inseam / 70 : 1, 1]}
       >
         <cylinderGeometry args={[0.12, 0.1, 1.2, 16]} />
-        <meshStandardMaterial color={new THREE.Color("#2D3748")} />
+        <meshStandardMaterial color={pantsColor} />
       </mesh>
     </group>
   );
