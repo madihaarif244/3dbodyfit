@@ -67,7 +67,7 @@ export default function Floating3DModel() {
             {/* Dark background for wireframe effect */}
             <div className="absolute inset-0 bg-black rounded-xl"></div>
             
-            <Canvas className="w-full h-full" camera={{ position: [0, 0, 2.5], fov: 45 }}>
+            <Canvas className="w-full h-full" camera={{ position: [0, 0, 5], fov: 35 }}>
               {/* Subtle ambient light */}
               <ambientLight intensity={0.3} />
               
