@@ -144,8 +144,11 @@ export const calculateBodyMeasurements = async (
     
     // Apply additional adjustments based on cross-referencing front and side images
     // In real implementation, this would use depth estimation algorithms
-    measurements.chest = parseFloat((measurements.chest * (1 + Math.random() * 0.04 - 0.02)).toFixed(1));
-    measurements.waist = parseFloat((measurements.waist * (1 + Math.random() * 0.04 - 0.02)).toFixed(1));
+    const chestAdjustment = 1 + (Math.random() * 0.04 - 0.02);
+    const waistAdjustment = 1 + (Math.random() * 0.04 - 0.02);
+    
+    measurements.chest = parseFloat((measurements.chest * chestAdjustment).toFixed(1));
+    measurements.waist = parseFloat((measurements.waist * waistAdjustment).toFixed(1));
     
     return measurements;
   } catch (error) {
