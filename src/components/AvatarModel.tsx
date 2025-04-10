@@ -1,7 +1,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Mesh } from "three";
+import { Mesh, Group } from "three";
 import * as THREE from "three";
 
 interface AvatarModelProps {
@@ -41,8 +41,8 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
   // References for animation
   const torsoRef = useRef<Mesh>(null);
   const headRef = useRef<Mesh>(null);
-  const leftArmRef = useRef<Mesh>(null);
-  const rightArmRef = useRef<Mesh>(null);
+  const leftArmRef = useRef<Group>(null);  // Changed from Mesh to Group
+  const rightArmRef = useRef<Group>(null); // Changed from Mesh to Group
   const leftLegRef = useRef<Mesh>(null);
   const rightLegRef = useRef<Mesh>(null);
   
