@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Menu, Box } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Navbar() {
@@ -30,20 +30,11 @@ export default function Navbar() {
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="bg-primary rounded-md p-1 animate-pulse-blue">
-                <Box className="h-6 w-6 text-white" />
-              </div>
-              <span className="flex-shrink-0 font-bold text-xl">
-                <span className="text-primary">3D</span>Body<span className="text-primary">Fit</span>
-              </span>
-            </Link>
-          </div>
+          <div className="flex-1"></div>
 
           {/* Desktop menu */}
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
+            <div className="flex items-baseline space-x-4">
               <a
                 href="#how-it-works"
                 className="text-foreground hover:text-primary px-3 py-2 text-sm font-medium animated-underline"
@@ -71,10 +62,12 @@ export default function Navbar() {
             </div>
           </div>
 
-          <div className="hidden md:block">
-            <Button variant="default" className="bg-primary hover:bg-primary/90" asChild>
-              <Link to="/try-it-now">Try It Now</Link>
-            </Button>
+          <div className="flex-1 flex justify-end">
+            <div className="hidden md:block">
+              <Button variant="default" className="bg-primary hover:bg-primary/90" asChild>
+                <Link to="/try-it-now">Try It Now</Link>
+              </Button>
+            </div>
           </div>
 
           {/* Mobile menu button */}
