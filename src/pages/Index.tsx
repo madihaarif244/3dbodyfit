@@ -7,6 +7,7 @@ import UseCasesSection from "@/components/UseCasesSection";
 import ResultsSection from "@/components/ResultsSection";
 import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
+import PrivacyNotice from "@/components/PrivacyNotice";
 
 export default function Index() {
   return (
@@ -17,6 +18,7 @@ export default function Index() {
       <FeaturesSection />
       <UseCasesSection />
       <ResultsSection />
+      <PrivacyNotice />
       <CTASection />
       <Footer />
     </div>

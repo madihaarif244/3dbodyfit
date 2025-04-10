@@ -1,9 +1,20 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Box } from 'lucide-react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
+import AvatarModel from './AvatarModel';
 
 export default function Floating3DModel() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [measurements] = useState({
+    height: 175,
+    chest: 95,
+    waist: 80,
+    hips: 98,
+    shoulder: 45,
+    inseam: 78
+  });
   
   useEffect(() => {
     const container = containerRef.current;
@@ -52,51 +63,43 @@ export default function Floating3DModel() {
       className="perspective-[1000px] w-full h-full"
     >
       <div className="model transform-style-3d transition-transform duration-300 ease-out flex flex-col items-center justify-center h-full">
-        <div className="animate-float">
-          <div className="relative w-36 h-64">
-            {/* Body outline */}
-            <div className="absolute inset-0 bg-primary/10 rounded-full w-24 mx-auto">
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-16 h-16 rounded-full bg-primary/20"></div>
-            </div>
+        <div className="animate-float w-full h-full">
+          {/* Replace the simple model with a proper 3D mannequin */}
+          <div className="relative w-full h-full">
+            <Canvas className="w-full h-full">
+              <ambientLight intensity={0.8} />
+              <directionalLight position={[5, 5, 5]} intensity={1} />
+              <AvatarModel measurements={measurements} />
+              <OrbitControls 
+                enableZoom={false}
+                enablePan={false}
+                minPolarAngle={Math.PI / 4}
+                maxPolarAngle={Math.PI / 1.5}
+              />
+            </Canvas>
             
-            {/* 3D grid effect */}
-            <div className="absolute inset-0 grid grid-cols-6 grid-rows-12 gap-1">
-              {Array.from({ length: 72 }).map((_, i) => (
+            {/* Particle effect overlay */}
+            <div className="absolute inset-0 pointer-events-none">
+              {Array.from({ length: 20 }).map((_, i) => (
                 <div 
                   key={i}
-                  className="bg-primary/5 rounded-sm"
+                  className="absolute rounded-full bg-primary/30 animate-pulse"
                   style={{
-                    opacity: Math.random() * 0.5 + 0.1
+                    width: `${Math.random() * 6 + 2}px`,
+                    height: `${Math.random() * 6 + 2}px`,
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                    animationDelay: `${Math.random() * 2}s`
                   }}
                 ></div>
               ))}
             </div>
-            
-            {/* Particle effect */}
-            {Array.from({ length: 20 }).map((_, i) => (
-              <div 
-                key={i}
-                className="absolute rounded-full bg-primary/30 animate-pulse"
-                style={{
-                  width: `${Math.random() * 6 + 2}px`,
-                  height: `${Math.random() * 6 + 2}px`,
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 2}s`
-                }}
-              ></div>
-            ))}
-            
-            {/* Logo overlay */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <Box className="h-12 w-12 text-primary/80" />
-            </div>
           </div>
         </div>
         
-        <div className="mt-4 text-center">
+        <div className="mt-4 text-center z-10">
           <div className="text-sm text-primary font-semibold">3D BODY SCAN</div>
-          <div className="text-xs text-muted-foreground mt-1">Powered by AI</div>
+          <div className="text-xs text-white mt-1">Powered by AI</div>
         </div>
       </div>
     </div>
