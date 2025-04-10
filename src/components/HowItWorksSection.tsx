@@ -5,7 +5,7 @@ import {
   Cpu, 
   Ruler, 
   ArrowRight,
-  Box3d
+  Box
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';

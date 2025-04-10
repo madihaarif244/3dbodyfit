@@ -1,5 +1,4 @@
-
-import { Facebook, Twitter, Linkedin, Instagram, Cube } from 'lucide-react';
+import { Facebook, Twitter, Linkedin, Instagram, Box } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -9,7 +8,7 @@ export default function Footer() {
           <div>
             <div className="font-bold text-xl text-white mb-4 flex items-center gap-2">
               <div className="bg-primary rounded-md p-1">
-                <Cube className="h-5 w-5 text-white" />
+                <Box className="h-5 w-5 text-white" />
               </div>
               <span className="flex-shrink-0 font-bold">
                 <span className="text-primary">3D</span>Body<span className="text-primary">Fit</span>

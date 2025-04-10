@@ -1,5 +1,5 @@
 
-import { ArrowDown, Cube } from 'lucide-react';
+import { ArrowDown, Box } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import Floating3DModel from './Floating3DModel';
@@ -12,7 +12,7 @@ export default function HeroSection() {
           <div className="max-w-xl mx-auto lg:mx-0">
             <div className="flex items-center justify-center lg:justify-start mb-6 fade-in-left">
               <div className="bg-primary rounded-md p-2 mr-3">
-                <Cube className="h-8 w-8 text-white" />
+                <Box className="h-8 w-8 text-white" />
               </div>
               <span className="text-2xl font-bold">
                 <span className="text-primary">3D</span>Body<span className="text-primary">Fit</span>
