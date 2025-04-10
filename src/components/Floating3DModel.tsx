@@ -76,7 +76,7 @@ export default function Floating3DModel() {
               <directionalLight position={[-5, 5, -5]} intensity={0.5} color="#4080ff" />
               <directionalLight position={[0, -5, 2]} intensity={0.2} color="#80c0ff" />
               
-              {/* Wireframe human body model */}
+              {/* Improved wireframe human body model */}
               <AvatarModel measurements={measurements} />
               
               <OrbitControls 

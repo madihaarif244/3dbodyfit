@@ -28,7 +28,7 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     }
   });
 
-  // Generate a more anatomically correct human body
+  // Create a more detailed human body
   const createHumanBody = () => {
     // Scale factors based on measurements
     const heightScale = measurements.height ? measurements.height / 170 : 1;
@@ -37,13 +37,25 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     const waistScale = measurements.waist ? measurements.waist / 80 : 0.9;
     const hipsScale = measurements.hips ? measurements.hips / 98 : 1;
     
-    // Base height (1.8 units in 3D space)
+    // Base height
     const baseHeight = 1.8 * heightScale;
     
-    // Head
-    const headPoints = generateSphere([0, baseHeight * 0.85, 0], baseHeight * 0.08, 8, 8);
+    // Head (more detailed sphere)
+    const headRadius = baseHeight * 0.08;
+    const headCenter: [number, number, number] = [0, baseHeight * 0.85, 0];
+    const headPoints = generateDetailedSphere(headCenter, headRadius, 12, 12);
     
-    // Torso (trapezoid shape)
+    // Neck
+    const neckTop = baseHeight * 0.82;
+    const neckBottom = baseHeight * 0.78;
+    const neckWidth = baseHeight * 0.025;
+    const neckPoints = generateCylinder(
+      [0, neckTop, 0],
+      [0, neckBottom, 0],
+      neckWidth, 8
+    );
+    
+    // Torso (more detailed)
     const shoulderWidth = baseHeight * 0.25 * shoulderScale;
     const waistWidth = baseHeight * 0.15 * waistScale;
     const torsoHeight = baseHeight * 0.35;
@@ -57,8 +69,12 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     for (let i = 0; i <= torsoSegments; i++) {
       const t = i / torsoSegments;
       const y = torsoTop - t * torsoHeight;
+      // Create natural body curve
+      const curveT = Math.sin(t * Math.PI);
       const width = shoulderWidth * (1 - t) + waistWidth * t;
-      const depth = width * 0.7;
+      // Chest bulge in the upper part of torso
+      const chestFactor = Math.sin(t * Math.PI * 0.5) * chestScale;
+      const depth = width * 0.6 * (1 + chestFactor * 0.3);
       
       // Add points around the circumference at this height
       for (let j = 0; j < 16; j++) {
@@ -81,7 +97,8 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     for (let i = 0; i <= hipsSegments; i++) {
       const t = i / hipsSegments;
       const y = hipsTop - t * hipsHeight;
-      const width = waistWidth * (1 - t) + hipsWidth * t;
+      const hipCurve = Math.sin(t * Math.PI * 0.5);
+      const width = waistWidth * (1 - t) + hipsWidth * t * (1 + hipCurve * 0.2);
       const depth = width * 0.7;
       
       // Add points around the circumference at this height
@@ -93,92 +110,258 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
       }
     }
     
-    // Arms
+    // Arms with hands
     const shoulderY = torsoTop - baseHeight * 0.02;
-    const armLength = baseHeight * 0.45;
-    const armWidth = baseHeight * 0.05;
+    const armLength = baseHeight * 0.3;
+    const armWidth = baseHeight * 0.04;
+    const forearmLength = baseHeight * 0.25;
     
-    // Left arm
-    const leftArmPoints = generateCylinder(
-      [-shoulderWidth, shoulderY, 0],
-      [-shoulderWidth - armLength * 0.45, shoulderY - armLength * 0.55, 0],
+    // Left arm (upper arm + forearm + hand)
+    const leftShoulderX = -shoulderWidth;
+    const leftElbowX = leftShoulderX - armLength * 0.2;
+    const leftElbowY = shoulderY - armLength;
+    const leftWristX = leftElbowX - forearmLength * 0.2;
+    const leftWristY = leftElbowY - forearmLength;
+    
+    // Upper left arm
+    const leftUpperArmPoints = generateCylinder(
+      [leftShoulderX, shoulderY, 0],
+      [leftElbowX, leftElbowY, 0],
       armWidth, 8
     );
     
-    // Right arm
-    const rightArmPoints = generateCylinder(
-      [shoulderWidth, shoulderY, 0],
-      [shoulderWidth + armLength * 0.45, shoulderY - armLength * 0.55, 0],
+    // Forearm left
+    const leftForearmPoints = generateCylinder(
+      [leftElbowX, leftElbowY, 0],
+      [leftWristX, leftWristY, 0],
+      armWidth * 0.8, 8
+    );
+    
+    // Hand left
+    const leftHandPoints = generateDetailedHand(
+      [leftWristX, leftWristY, 0],
+      baseHeight * 0.1,
+      baseHeight * 0.02,
+      -1 // Left hand
+    );
+    
+    // Right arm (upper arm + forearm + hand)
+    const rightShoulderX = shoulderWidth;
+    const rightElbowX = rightShoulderX + armLength * 0.2;
+    const rightElbowY = shoulderY - armLength;
+    const rightWristX = rightElbowX + forearmLength * 0.2;
+    const rightWristY = rightElbowY - forearmLength;
+    
+    // Upper right arm
+    const rightUpperArmPoints = generateCylinder(
+      [rightShoulderX, shoulderY, 0],
+      [rightElbowX, rightElbowY, 0],
       armWidth, 8
     );
     
-    // Legs
-    const legLength = baseHeight * 0.5;
-    const legWidth = baseHeight * 0.07;
+    // Forearm right
+    const rightForearmPoints = generateCylinder(
+      [rightElbowX, rightElbowY, 0],
+      [rightWristX, rightWristY, 0],
+      armWidth * 0.8, 8
+    );
+    
+    // Hand right
+    const rightHandPoints = generateDetailedHand(
+      [rightWristX, rightWristY, 0],
+      baseHeight * 0.1,
+      baseHeight * 0.02,
+      1 // Right hand
+    );
+    
+    // Legs with feet
+    const legLength = baseHeight * 0.45;
+    const lowerLegLength = baseHeight * 0.4;
+    const legWidth = baseHeight * 0.06;
     
     // Left leg
-    const leftLegPoints = generateCylinder(
-      [-hipsWidth * 0.6, hipsBottom, 0],
-      [-hipsWidth * 0.4, hipsBottom - legLength, 0],
+    const leftHipX = -hipsWidth * 0.6;
+    const leftKneeX = leftHipX;
+    const leftKneeY = hipsBottom - legLength;
+    const leftAnkleX = leftKneeX;
+    const leftAnkleY = leftKneeY - lowerLegLength;
+    
+    // Upper left leg
+    const leftUpperLegPoints = generateCylinder(
+      [leftHipX, hipsBottom, 0],
+      [leftKneeX, leftKneeY, 0],
       legWidth, 8
+    );
+    
+    // Lower left leg
+    const leftLowerLegPoints = generateCylinder(
+      [leftKneeX, leftKneeY, 0],
+      [leftAnkleX, leftAnkleY, 0],
+      legWidth * 0.8, 8
+    );
+    
+    // Left foot
+    const leftFootPoints = generateFoot(
+      [leftAnkleX, leftAnkleY, 0],
+      baseHeight * 0.15, // foot length
+      baseHeight * 0.04, // foot width
+      -1 // Left foot
     );
     
     // Right leg
-    const rightLegPoints = generateCylinder(
-      [hipsWidth * 0.6, hipsBottom, 0],
-      [hipsWidth * 0.4, hipsBottom - legLength, 0],
+    const rightHipX = hipsWidth * 0.6;
+    const rightKneeX = rightHipX;
+    const rightKneeY = hipsBottom - legLength;
+    const rightAnkleX = rightKneeX;
+    const rightAnkleY = rightKneeY - lowerLegLength;
+    
+    // Upper right leg
+    const rightUpperLegPoints = generateCylinder(
+      [rightHipX, hipsBottom, 0],
+      [rightKneeX, rightKneeY, 0],
       legWidth, 8
     );
     
-    // Combine all points
+    // Lower right leg
+    const rightLowerLegPoints = generateCylinder(
+      [rightKneeX, rightKneeY, 0],
+      [rightAnkleX, rightAnkleY, 0],
+      legWidth * 0.8, 8
+    );
+    
+    // Right foot
+    const rightFootPoints = generateFoot(
+      [rightAnkleX, rightAnkleY, 0],
+      baseHeight * 0.15, // foot length
+      baseHeight * 0.04, // foot width
+      1 // Right foot
+    );
+    
     return {
       headPoints,
+      neckPoints,
       torsoPoints,
       hipsPoints,
-      leftArmPoints,
-      rightArmPoints,
-      leftLegPoints,
-      rightLegPoints
+      leftUpperArmPoints,
+      leftForearmPoints,
+      leftHandPoints,
+      rightUpperArmPoints,
+      rightForearmPoints,
+      rightHandPoints,
+      leftUpperLegPoints,
+      leftLowerLegPoints,
+      leftFootPoints,
+      rightUpperLegPoints,
+      rightLowerLegPoints,
+      rightFootPoints
     };
   };
 
-  // Generate connections for a part of the body
-  const generateConnections = (points: [number, number, number][], looped = true, density = 0.3) => {
-    const connections: Array<[number, number, number][]> = [];
+  // Function to generate a more detailed hand with fingers
+  const generateDetailedHand = (
+    wristPos: [number, number, number],
+    handLength: number,
+    fingerWidth: number,
+    side: number // -1 for left, 1 for right
+  ) => {
+    const points: [number, number, number][] = [];
     
-    // Connect sequential points
-    for (let i = 0; i < points.length - 1; i++) {
-      connections.push([points[i], points[i + 1]]);
+    // Palm
+    const palmWidth = handLength * 0.4;
+    const palmLength = handLength * 0.5;
+    const palmPoints = generateBox(
+      [wristPos[0], wristPos[1] - palmLength * 0.5, wristPos[2]],
+      side * palmWidth,
+      palmLength,
+      fingerWidth * 2
+    );
+    points.push(...palmPoints);
+    
+    // Fingers
+    const fingerCount = 5;
+    const fingerSpacing = palmWidth * 2 / (fingerCount - 1);
+    const fingerLength = handLength * 0.5;
+    
+    for (let i = 0; i < fingerCount; i++) {
+      const fingerBaseX = wristPos[0] + side * (palmWidth - i * fingerSpacing);
+      const fingerBaseY = wristPos[1] - palmLength;
+      const fingerBaseZ = 0;
+      
+      // Different lengths for different fingers
+      let thisFingerLength = fingerLength;
+      if (i === 0) thisFingerLength *= 0.8; // Thumb shorter
+      if (i === 2) thisFingerLength *= 1.1; // Middle finger longer
+      if (i === 3) thisFingerLength *= 0.9; // Ring finger
+      if (i === 4) thisFingerLength *= 0.7; // Pinky shorter
+      
+      // Each finger made of cylindrical segments
+      points.push(...generateCylinder(
+        [fingerBaseX, fingerBaseY, fingerBaseZ],
+        [fingerBaseX, fingerBaseY - thisFingerLength, fingerBaseZ],
+        fingerWidth,
+        4
+      ));
     }
     
-    // Close the loop if needed
-    if (looped && points.length > 2) {
-      connections.push([points[points.length - 1], points[0]]);
-    }
-    
-    // Add some cross connections for more complex mesh look
-    const crossCount = Math.floor(points.length * density);
-    for (let i = 0; i < crossCount; i++) {
-      const randomPoint1 = Math.floor(Math.random() * points.length);
-      const randomPoint2 = Math.floor(Math.random() * points.length);
-      if (randomPoint1 !== randomPoint2) {
-        const dist = Math.sqrt(
-          Math.pow(points[randomPoint1][0] - points[randomPoint2][0], 2) +
-          Math.pow(points[randomPoint1][1] - points[randomPoint2][1], 2) +
-          Math.pow(points[randomPoint1][2] - points[randomPoint2][2], 2)
-        );
-        // Only connect if points are close enough
-        if (dist < 0.5) {
-          connections.push([points[randomPoint1], points[randomPoint2]]);
-        }
-      }
-    }
-    
-    return connections;
+    return points;
   };
 
-  // Helper function to generate sphere points
-  const generateSphere = (center: [number, number, number], radius: number, segments: number, rings: number) => {
+  // Function to generate a foot
+  const generateFoot = (
+    anklePos: [number, number, number],
+    footLength: number,
+    footWidth: number,
+    side: number // -1 for left, 1 for right
+  ) => {
+    const points: [number, number, number][] = [];
+    
+    // Main foot body
+    const footCenter: [number, number, number] = [
+      anklePos[0] + side * footLength * 0.3,
+      anklePos[1] - footWidth,
+      anklePos[2]
+    ];
+    
+    points.push(...generateBox(
+      footCenter,
+      footLength,
+      footWidth * 2,
+      footWidth * 3
+    ));
+    
+    return points;
+  };
+
+  // Helper function to generate box points
+  const generateBox = (
+    center: [number, number, number],
+    width: number,
+    height: number,
+    depth: number
+  ) => {
+    const points: [number, number, number][] = [];
+    const halfWidth = width * 0.5;
+    const halfHeight = height * 0.5;
+    const halfDepth = depth * 0.5;
+    
+    // Vertices of the box
+    const vertices: [number, number, number][] = [
+      [center[0] - halfWidth, center[1] - halfHeight, center[2] - halfDepth],
+      [center[0] + halfWidth, center[1] - halfHeight, center[2] - halfDepth],
+      [center[0] + halfWidth, center[1] + halfHeight, center[2] - halfDepth],
+      [center[0] - halfWidth, center[1] + halfHeight, center[2] - halfDepth],
+      [center[0] - halfWidth, center[1] - halfHeight, center[2] + halfDepth],
+      [center[0] + halfWidth, center[1] - halfHeight, center[2] + halfDepth],
+      [center[0] + halfWidth, center[1] + halfHeight, center[2] + halfDepth],
+      [center[0] - halfWidth, center[1] + halfHeight, center[2] + halfDepth],
+    ];
+    
+    points.push(...vertices);
+    return points;
+  };
+
+  // Helper function to generate detailed sphere points
+  const generateDetailedSphere = (center: [number, number, number], radius: number, segments: number, rings: number) => {
     const points: [number, number, number][] = [];
     
     for (let i = 0; i <= rings; i++) {
@@ -220,7 +403,7 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     const sideVec = new THREE.Vector3().crossVectors(direction, perpVec).normalize();
     const upVec = new THREE.Vector3().crossVectors(sideVec, direction).normalize();
     
-    const cylinderSegments = 10; // segments along the cylinder length
+    const cylinderSegments = 5; // reduced for performance
     
     for (let i = 0; i <= cylinderSegments; i++) {
       const t = i / cylinderSegments;
@@ -243,57 +426,81 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     return points;
   };
 
-  // Generate the human body
+  // Generate connections for a part of the body
+  const generateConnections = (points: [number, number, number][], looped = true, density = 0.3) => {
+    const connections: Array<[number, number, number][]> = [];
+    
+    // Connect sequential points
+    for (let i = 0; i < points.length - 1; i++) {
+      connections.push([points[i], points[i + 1]]);
+    }
+    
+    // Close the loop if needed
+    if (looped && points.length > 2) {
+      connections.push([points[points.length - 1], points[0]]);
+    }
+    
+    // Add some cross connections for more complex mesh look
+    const crossCount = Math.floor(points.length * density);
+    for (let i = 0; i < crossCount; i++) {
+      const randomPoint1 = Math.floor(Math.random() * points.length);
+      const randomPoint2 = Math.floor(Math.random() * points.length);
+      if (randomPoint1 !== randomPoint2) {
+        const dist = Math.sqrt(
+          Math.pow(points[randomPoint1][0] - points[randomPoint2][0], 2) +
+          Math.pow(points[randomPoint1][1] - points[randomPoint2][1], 2) +
+          Math.pow(points[randomPoint1][2] - points[randomPoint2][2], 2)
+        );
+        // Only connect if points are close enough
+        if (dist < 0.3) {
+          connections.push([points[randomPoint1], points[randomPoint2]]);
+        }
+      }
+    }
+    
+    return connections;
+  };
+
+  // Generate the human body with all parts
   const bodyParts = createHumanBody();
   
   // Generate connections for each body part
   const headConnections = generateConnections(bodyParts.headPoints, true, 0.2);
+  const neckConnections = generateConnections(bodyParts.neckPoints, true, 0.1);
   const torsoConnections = generateConnections(bodyParts.torsoPoints, true, 0.1);
   const hipsConnections = generateConnections(bodyParts.hipsPoints, true, 0.1);
-  const leftArmConnections = generateConnections(bodyParts.leftArmPoints, true, 0.1);
-  const rightArmConnections = generateConnections(bodyParts.rightArmPoints, true, 0.1);
-  const leftLegConnections = generateConnections(bodyParts.leftLegPoints, true, 0.1);
-  const rightLegConnections = generateConnections(bodyParts.rightLegPoints, true, 0.1);
+  const leftUpperArmConnections = generateConnections(bodyParts.leftUpperArmPoints, true, 0.1);
+  const leftForearmConnections = generateConnections(bodyParts.leftForearmPoints, true, 0.1);
+  const leftHandConnections = generateConnections(bodyParts.leftHandPoints, true, 0.1);
+  const rightUpperArmConnections = generateConnections(bodyParts.rightUpperArmPoints, true, 0.1);
+  const rightForearmConnections = generateConnections(bodyParts.rightForearmPoints, true, 0.1);
+  const rightHandConnections = generateConnections(bodyParts.rightHandPoints, true, 0.1);
+  const leftUpperLegConnections = generateConnections(bodyParts.leftUpperLegPoints, true, 0.1);
+  const leftLowerLegConnections = generateConnections(bodyParts.leftLowerLegPoints, true, 0.1);
+  const leftFootConnections = generateConnections(bodyParts.leftFootPoints, true, 0.1);
+  const rightUpperLegConnections = generateConnections(bodyParts.rightUpperLegPoints, true, 0.1);
+  const rightLowerLegConnections = generateConnections(bodyParts.rightLowerLegPoints, true, 0.1);
+  const rightFootConnections = generateConnections(bodyParts.rightFootPoints, true, 0.1);
   
   // Combine all connections
   const bodyConnections = [
     ...headConnections,
+    ...neckConnections,
     ...torsoConnections,
     ...hipsConnections,
-    ...leftArmConnections,
-    ...rightArmConnections,
-    ...leftLegConnections,
-    ...rightLegConnections,
+    ...leftUpperArmConnections,
+    ...leftForearmConnections,
+    ...leftHandConnections,
+    ...rightUpperArmConnections,
+    ...rightForearmConnections,
+    ...rightHandConnections,
+    ...leftUpperLegConnections,
+    ...leftLowerLegConnections,
+    ...leftFootConnections,
+    ...rightUpperLegConnections,
+    ...rightLowerLegConnections,
+    ...rightFootConnections,
   ];
-  
-  // Generate additional connections between body parts
-  const additionalConnections: Array<[number, number, number][]> = [];
-  
-  // All points for random connections
-  const allPoints = [
-    ...bodyParts.headPoints,
-    ...bodyParts.torsoPoints,
-    ...bodyParts.hipsPoints,
-    ...bodyParts.leftArmPoints,
-    ...bodyParts.rightArmPoints,
-    ...bodyParts.leftLegPoints,
-    ...bodyParts.rightLegPoints,
-  ];
-  
-  // Add some random connections for complex network effect
-  for (let i = 0; i < 150; i++) {
-    const point1 = allPoints[Math.floor(Math.random() * allPoints.length)];
-    const point2 = allPoints[Math.floor(Math.random() * allPoints.length)];
-    const distance = Math.sqrt(
-      Math.pow(point1[0] - point2[0], 2) +
-      Math.pow(point1[1] - point2[1], 2) +
-      Math.pow(point1[2] - point2[2], 2)
-    );
-    
-    if (distance < 0.4) {
-      additionalConnections.push([point1, point2]);
-    }
-  }
   
   return (
     <group ref={modelRef} position={[0, -0.5, 0]} scale={1}>
@@ -309,17 +516,40 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
         />
       ))}
       
-      {/* Additional random connections for complex network effect */}
-      {additionalConnections.map((line, index) => (
-        <Line
-          key={`additional-${index}`}
-          points={line}
-          color="white"
-          lineWidth={0.3}
-          transparent
-          opacity={0.4}
-        />
-      ))}
+      {/* Add a few additional connections between close body parts for more network-like appearance */}
+      {Array.from({ length: 50 }).map((_, index) => {
+        // Choose two random body parts to potentially connect
+        const allBodyPartsArrays = Object.values(bodyParts);
+        const randomBodyPart1 = allBodyPartsArrays[Math.floor(Math.random() * allBodyPartsArrays.length)];
+        const randomBodyPart2 = allBodyPartsArrays[Math.floor(Math.random() * allBodyPartsArrays.length)];
+        
+        if (randomBodyPart1 && randomBodyPart2) {
+          const point1 = randomBodyPart1[Math.floor(Math.random() * randomBodyPart1.length)];
+          const point2 = randomBodyPart2[Math.floor(Math.random() * randomBodyPart2.length)];
+          
+          const distance = Math.sqrt(
+            Math.pow(point1[0] - point2[0], 2) +
+            Math.pow(point1[1] - point2[1], 2) +
+            Math.pow(point1[2] - point2[2], 2)
+          );
+          
+          // Only add connection if points are reasonably close
+          if (distance < 0.4) {
+            return (
+              <Line
+                key={`additional-${index}`}
+                points={[point1, point2]}
+                color="white"
+                lineWidth={0.3}
+                transparent
+                opacity={0.4}
+              />
+            );
+          }
+        }
+        return null;
+      })}
     </group>
   );
 }
+
