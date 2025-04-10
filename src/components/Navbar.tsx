@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, Box } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Navbar() {
@@ -30,7 +30,17 @@ export default function Navbar() {
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex-1"></div>
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="bg-primary rounded-md p-1">
+                <Box className="h-5 w-5 text-white" />
+              </div>
+              <span className="font-bold text-xl hidden sm:flex">
+                <span className="text-primary">3D</span>Body<span className="text-primary">Fit</span>
+              </span>
+            </Link>
+          </div>
 
           {/* Desktop menu */}
           <div className="hidden md:block">
