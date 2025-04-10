@@ -1,6 +1,5 @@
 
 import { useEffect, useRef, useState } from 'react';
-import { Box } from 'lucide-react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import AvatarModel from './AvatarModel';
@@ -70,11 +69,11 @@ export default function Floating3DModel() {
             
             <Canvas className="w-full h-full" camera={{ position: [0, 0, 2.5], fov: 45 }}>
               {/* Subtle ambient light */}
-              <ambientLight intensity={0.2} />
+              <ambientLight intensity={0.3} />
               
               {/* Key light to highlight the wireframe */}
-              <directionalLight position={[5, 5, 5]} intensity={0.5} />
-              <directionalLight position={[-5, 5, -5]} intensity={0.3} color="#4080ff" />
+              <directionalLight position={[5, 5, 5]} intensity={0.7} />
+              <directionalLight position={[-5, 5, -5]} intensity={0.4} color="#4080ff" />
               
               {/* Wireframe avatar model */}
               <AvatarModel measurements={measurements} />
