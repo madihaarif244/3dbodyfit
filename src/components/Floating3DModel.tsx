@@ -73,9 +73,10 @@ export default function Floating3DModel() {
               
               {/* Key light to highlight the wireframe */}
               <directionalLight position={[5, 5, 5]} intensity={0.7} />
-              <directionalLight position={[-5, 5, -5]} intensity={0.4} color="#4080ff" />
+              <directionalLight position={[-5, 5, -5]} intensity={0.5} color="#4080ff" />
+              <directionalLight position={[0, -5, 2]} intensity={0.2} color="#80c0ff" />
               
-              {/* Wireframe avatar model */}
+              {/* Wireframe human body model */}
               <AvatarModel measurements={measurements} />
               
               <OrbitControls 
@@ -84,22 +85,23 @@ export default function Floating3DModel() {
                 minPolarAngle={Math.PI / 4}
                 maxPolarAngle={Math.PI / 1.5}
                 autoRotate
-                autoRotateSpeed={0.5}
+                autoRotateSpeed={0.4}
               />
             </Canvas>
             
             {/* Particle effect overlay */}
             <div className="absolute inset-0 pointer-events-none">
-              {Array.from({ length: 30 }).map((_, i) => (
+              {Array.from({ length: 40 }).map((_, i) => (
                 <div 
                   key={i}
                   className="absolute rounded-full bg-white/30 animate-pulse"
                   style={{
-                    width: `${Math.random() * 3 + 1}px`,
-                    height: `${Math.random() * 3 + 1}px`,
+                    width: `${Math.random() * 4 + 1}px`,
+                    height: `${Math.random() * 4 + 1}px`,
                     left: `${Math.random() * 100}%`,
                     top: `${Math.random() * 100}%`,
-                    animationDelay: `${Math.random() * 2}s`
+                    animationDelay: `${Math.random() * 5}s`,
+                    animationDuration: `${Math.random() * 3 + 2}s`
                   }}
                 ></div>
               ))}
