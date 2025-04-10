@@ -5,8 +5,7 @@ export const calculateBodyMeasurements = async (
   gender: string,
   height: string,
   measurementSystem: string,
-  frontImage: File | null,
-  sideImage: File | null = null
+  frontImage: File | null
 ): Promise<Record<string, number>> => {
   return new Promise((resolve, reject) => {
     // Simulate processing time
@@ -30,50 +29,51 @@ export const calculateBodyMeasurements = async (
           ? heightValue * 2.54 // Convert inches to cm
           : heightValue;
           
-        // Generate accurate proportional measurements based on the height and gender
+        // Generate measurements based on height and gender
+        // These are more realistic proportions for body measurements
         let measurements: Record<string, number> = {};
         
         if (gender === 'male') {
           measurements = {
-            chest: Math.round((heightCm * 0.54) * 10) / 10,
-            waist: Math.round((heightCm * 0.46) * 10) / 10,
-            hips: Math.round((heightCm * 0.53) * 10) / 10,
-            inseam: Math.round((heightCm * 0.48) * 10) / 10,
-            shoulder: Math.round((heightCm * 0.24) * 10) / 10,
-            sleeve: Math.round((heightCm * 0.35) * 10) / 10,
-            neck: Math.round((heightCm * 0.2) * 10) / 10,
-            thigh: Math.round((heightCm * 0.31) * 10) / 10
+            chest: Math.round((heightCm * 0.52) * 10) / 10,
+            waist: Math.round((heightCm * 0.43) * 10) / 10,
+            hips: Math.round((heightCm * 0.51) * 10) / 10,
+            inseam: Math.round((heightCm * 0.45) * 10) / 10,
+            shoulder: Math.round((heightCm * 0.23) * 10) / 10,
+            sleeve: Math.round((heightCm * 0.33) * 10) / 10,
+            neck: Math.round((heightCm * 0.19) * 10) / 10,
+            thigh: Math.round((heightCm * 0.29) * 10) / 10
           };
         } else if (gender === 'female') {
           measurements = {
-            chest: Math.round((heightCm * 0.52) * 10) / 10,
-            waist: Math.round((heightCm * 0.42) * 10) / 10,
-            hips: Math.round((heightCm * 0.56) * 10) / 10,
-            inseam: Math.round((heightCm * 0.47) * 10) / 10,
-            shoulder: Math.round((heightCm * 0.22) * 10) / 10,
-            sleeve: Math.round((heightCm * 0.31) * 10) / 10,
-            neck: Math.round((heightCm * 0.17) * 10) / 10,
-            thigh: Math.round((heightCm * 0.33) * 10) / 10
+            chest: Math.round((heightCm * 0.49) * 10) / 10,
+            waist: Math.round((heightCm * 0.38) * 10) / 10,
+            hips: Math.round((heightCm * 0.53) * 10) / 10,
+            inseam: Math.round((heightCm * 0.44) * 10) / 10,
+            shoulder: Math.round((heightCm * 0.21) * 10) / 10,
+            sleeve: Math.round((heightCm * 0.29) * 10) / 10,
+            neck: Math.round((heightCm * 0.16) * 10) / 10,
+            thigh: Math.round((heightCm * 0.31) * 10) / 10
           };
         } else {
           measurements = {
-            chest: Math.round((heightCm * 0.53) * 10) / 10,
-            waist: Math.round((heightCm * 0.44) * 10) / 10,
-            hips: Math.round((heightCm * 0.54) * 10) / 10,
-            inseam: Math.round((heightCm * 0.475) * 10) / 10,
-            shoulder: Math.round((heightCm * 0.23) * 10) / 10,
-            sleeve: Math.round((heightCm * 0.33) * 10) / 10,
-            neck: Math.round((heightCm * 0.185) * 10) / 10,
-            thigh: Math.round((heightCm * 0.32) * 10) / 10
+            chest: Math.round((heightCm * 0.505) * 10) / 10,
+            waist: Math.round((heightCm * 0.405) * 10) / 10,
+            hips: Math.round((heightCm * 0.52) * 10) / 10,
+            inseam: Math.round((heightCm * 0.445) * 10) / 10,
+            shoulder: Math.round((heightCm * 0.22) * 10) / 10,
+            sleeve: Math.round((heightCm * 0.31) * 10) / 10,
+            neck: Math.round((heightCm * 0.175) * 10) / 10,
+            thigh: Math.round((heightCm * 0.30) * 10) / 10
           };
         }
         
         // Add the height to the measurements object
         measurements.height = heightCm;
         
-        // Add small random variance to simulate AI measurement (±2%)
+        // Add very small random variance (±1.5%) for realism
         Object.keys(measurements).forEach(key => {
-          const variance = 1 + (Math.random() * 0.04 - 0.02); // Random multiplier between 0.98 and 1.02
+          const variance = 1 + (Math.random() * 0.03 - 0.015); // Random multiplier between 0.985 and 1.015
           measurements[key] = Math.round((measurements[key] * variance) * 10) / 10;
         });
         
@@ -84,6 +84,6 @@ export const calculateBodyMeasurements = async (
         console.error("Error calculating measurements:", error);
         reject(error);
       }
-    }, 2000);
+    }, 1500);
   });
 };
