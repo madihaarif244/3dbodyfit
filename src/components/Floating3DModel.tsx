@@ -58,40 +58,150 @@ export default function Floating3DModel() {
             
             {/* Body measurement visualization with actual body silhouette */}
             <div className="relative w-full h-full flex items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-black/40 to-primary/5">
-              {/* Human body silhouette */}
+              {/* Complete human body silhouette */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative h-4/5 w-1/2">
-                  {/* Body silhouette */}
+                <div className="relative h-4/5 w-2/3">
+                  {/* Detailed body silhouette */}
                   <svg 
-                    viewBox="0 0 100 240" 
+                    viewBox="0 0 100 280" 
                     className="h-full w-auto mx-auto opacity-80"
                   >
-                    <path 
-                      d="M50,10 
-                         C60,10 65,15 65,22 
-                         C65,29 60,32 60,35 
-                         C60,40 63,45 63,55 
-                         C63,65 57,75 53,85 
-                         L53,100
-                         C65,105 70,110 70,125
-                         C70,140 65,150 60,165
-                         L58,190
-                         C58,195 60,200 60,210
-                         C60,220 55,230 50,230
-                         C45,230 40,220 40,210
-                         C40,200 42,195 42,190
-                         L40,165
-                         C35,150 30,140 30,125
-                         C30,110 35,105 47,100
-                         L47,85
-                         C43,75 37,65 37,55
-                         C37,45 40,40 40,35
-                         C40,32 35,29 35,22
-                         C35,15 40,10 50,10Z" 
-                      fill="none"
-                      stroke="rgba(255,255,255,0.7)" 
+                    {/* Head */}
+                    <ellipse 
+                      cx="50" cy="25" rx="15" ry="17.5"
+                      className="fill-primary/10 stroke-white/70" 
                       strokeWidth="1"
-                      className="fill-primary/10"
+                    />
+                    
+                    {/* Neck */}
+                    <path 
+                      d="M45,40 L45,50 L55,50 L55,40"
+                      className="fill-primary/10 stroke-white/70" 
+                      strokeWidth="1" 
+                    />
+                    
+                    {/* Shoulders and Torso */}
+                    <path 
+                      d="M30,50 
+                         Q25,55 20,60
+                         L20,65
+                         Q25,70 15,75
+                         L15,120
+                         Q20,130 25,135
+                         L30,160
+                         
+                         Q35,165 45,160
+                         L50,160
+                         L55,160
+                         Q65,165 70,160
+                         
+                         L75,135
+                         Q80,130 85,120
+                         L85,75
+                         Q75,70 80,65
+                         L80,60
+                         Q75,55 70,50
+                         Z" 
+                      className="fill-primary/10 stroke-white/70" 
+                      strokeWidth="1"
+                    />
+                    
+                    {/* Left Arm */}
+                    <path 
+                      d="M20,60 
+                         L10,80 
+                         L5,100
+                         L5,110
+                         Q10,115 15,110
+                         L20,105"
+                      className="fill-primary/10 stroke-white/70" 
+                      strokeWidth="1" 
+                      fill="none"
+                    />
+                    
+                    {/* Left Hand */}
+                    <path 
+                      d="M5,110 
+                         Q3,115 0,118
+                         M5,110
+                         Q7,115 10,118
+                         M5,110
+                         Q5,118 5,125"
+                      className="fill-none stroke-white/70" 
+                      strokeWidth="1" 
+                    />
+                    
+                    {/* Right Arm */}
+                    <path 
+                      d="M80,60 
+                         L90,80 
+                         L95,100
+                         L95,110
+                         Q90,115 85,110
+                         L80,105"
+                      className="fill-primary/10 stroke-white/70" 
+                      strokeWidth="1"
+                      fill="none"
+                    />
+                    
+                    {/* Right Hand */}
+                    <path 
+                      d="M95,110 
+                         Q97,115 100,118
+                         M95,110
+                         Q93,115 90,118
+                         M95,110
+                         Q95,118 95,125"
+                      className="fill-none stroke-white/70" 
+                      strokeWidth="1" 
+                    />
+                    
+                    {/* Left Leg */}
+                    <path 
+                      d="M45,160 
+                         L40,200
+                         L35,240
+                         Q35,245 40,250
+                         Q45,255 50,250
+                         L45,240
+                         L45,200"
+                      className="fill-primary/10 stroke-white/70" 
+                      strokeWidth="1" 
+                    />
+                    
+                    {/* Left Foot */}
+                    <path 
+                      d="M35,245
+                         L25,245
+                         Q20,250 25,255
+                         L40,255
+                         L45,250"
+                      className="fill-primary/10 stroke-white/70" 
+                      strokeWidth="1" 
+                    />
+                    
+                    {/* Right Leg */}
+                    <path 
+                      d="M55,160 
+                         L60,200
+                         L65,240
+                         Q65,245 60,250
+                         Q55,255 50,250
+                         L55,240
+                         L55,200"
+                      className="fill-primary/10 stroke-white/70" 
+                      strokeWidth="1" 
+                    />
+                    
+                    {/* Right Foot */}
+                    <path 
+                      d="M65,245
+                         L75,245
+                         Q80,250 75,255
+                         L60,255
+                         L55,250"
+                      className="fill-primary/10 stroke-white/70" 
+                      strokeWidth="1" 
                     />
                   </svg>
                   
