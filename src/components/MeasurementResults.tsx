@@ -23,6 +23,8 @@ const MEASUREMENT_DISPLAY_MAP: Record<string, string> = {
 };
 
 export default function MeasurementResults({ measurements, onReset, confidenceScore = 0.85 }: MeasurementResultsProps) {
+  console.log("Rendering MeasurementResults with:", measurements, "confidence:", confidenceScore);
+  
   const handleDownload = () => {
     // Create a downloadable text file with measurements
     const text = Object.entries(measurements)
@@ -113,12 +115,18 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
             </div>
             
             <div className="space-y-2">
-              {Object.entries(measurements).map(([key, value]) => (
-                <div key={key} className="flex justify-between border-b pb-2">
-                  <span className="text-gray-700">{MEASUREMENT_DISPLAY_MAP[key] || key}</span>
-                  <span className="font-medium">{value.toFixed(1)} cm</span>
+              {Object.entries(measurements).length > 0 ? (
+                Object.entries(measurements).map(([key, value]) => (
+                  <div key={key} className="flex justify-between border-b pb-2">
+                    <span className="text-gray-700">{MEASUREMENT_DISPLAY_MAP[key] || key}</span>
+                    <span className="font-medium">{value.toFixed(1)} cm</span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-6 text-red-500">
+                  <p>No measurements available</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
           
@@ -127,6 +135,7 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
               variant="outline" 
               className="flex items-center gap-2"
               onClick={handleDownload}
+              disabled={Object.entries(measurements).length === 0}
             >
               <Download size={16} />
               Download Results
@@ -135,6 +144,7 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
               variant="outline" 
               className="flex items-center gap-2"
               onClick={handleEmailResults}
+              disabled={Object.entries(measurements).length === 0}
             >
               <Mail size={16} />
               Email Results

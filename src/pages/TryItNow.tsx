@@ -27,6 +27,8 @@ export default function TryItNow() {
         description: "Analyzing your photos with our advanced AI model...",
       });
       
+      console.log("Processing form data:", formData);
+      
       // Use our AI measurement system to calculate real measurements
       const result = await calculateBodyMeasurements(
         formData.gender, 
@@ -35,6 +37,8 @@ export default function TryItNow() {
         formData.frontImage,
         formData.sideImage
       );
+      
+      console.log("Measurement calculation result:", result);
       
       if (result) {
         // In a real implementation, the confidenceScore would come from the AI model
@@ -50,10 +54,16 @@ export default function TryItNow() {
         toast({
           title: "Scan Complete",
           description: "Your body measurements have been calculated successfully.",
+          variant: "success",
         });
       } else {
         // If measurement calculation failed, return to input state
         setScanStatus("input");
+        toast({
+          title: "Processing Failed",
+          description: "No measurements could be calculated. Please try again with different images.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Error in form submission:", error);

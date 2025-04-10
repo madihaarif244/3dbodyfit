@@ -137,6 +137,8 @@ export const calculateBodyMeasurements = async (
       return null;
     }
     
+    console.log("Processing body measurements for height:", heightCm, "cm");
+    
     // Extract landmarks and get image quality scores
     const landmarksResult = await extractBodyLandmarks(frontImage, sideImage);
     
@@ -164,7 +166,7 @@ export const calculateBodyMeasurements = async (
     
     // Apply the model for each body part
     for (const [part, coefficients] of Object.entries(model)) {
-      const [base, heightMultiplier, weightImpact, proportionFactor] = coefficients;
+      const [base, heightMultiplier, weightImpact, proportionFactor] = coefficients as [number, number, number, number];
       
       // Calculate raw measurement using base + height component + weight component
       let rawMeasurement = base + (heightCm * heightMultiplier / 100) + 
@@ -185,12 +187,14 @@ export const calculateBodyMeasurements = async (
     
     // Cross-reference front and side images for more accurate chest and waist
     // In a real model, these would be calculated from actual landmarks
-    const chestAdjustment: number = 1 + (Math.random() * 0.04 - 0.02);
-    const waistAdjustment: number = 1 + (Math.random() * 0.04 - 0.02);
+    const chestAdjustment = 1 + (Math.random() * 0.04 - 0.02);
+    const waistAdjustment = 1 + (Math.random() * 0.04 - 0.02);
     
     // Update measurements with cross-referenced data
     measurements.chest = parseFloat((measurements.chest * chestAdjustment).toFixed(1));
     measurements.waist = parseFloat((measurements.waist * waistAdjustment).toFixed(1));
+    
+    console.log("Generated measurements:", measurements);
     
     return measurements;
   } catch (error) {
