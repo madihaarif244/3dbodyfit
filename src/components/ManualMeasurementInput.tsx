@@ -59,18 +59,18 @@ const ManualMeasurementInput: React.FC<ManualMeasurementInputProps> = ({
   const measurementKeys = Object.keys(aiMeasurements).filter(key => key !== 'height');
   
   return (
-    <Card className="mb-6">
-      <CardHeader>
-        <CardTitle>Enter Your Manual Measurements</CardTitle>
-        <CardDescription>
-          Enter your own measurements to compare with AI-derived values. Leave fields blank if you don't have that measurement.
+    <Card className="mb-6 bg-blue-950 border-blue-800">
+      <CardHeader className="border-b border-blue-800">
+        <CardTitle className="text-white text-xl">Enter Your Manual Measurements</CardTitle>
+        <CardDescription className="text-blue-300">
+          Enter your own measurements to compare with {aiMeasurements.isEstimated ? "estimated" : "AI-derived"} values. Leave fields blank if you don't have that measurement.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {measurementKeys.map(key => (
             <div key={key} className="space-y-2">
-              <Label htmlFor={`manual-${key}`}>{formatMeasurementName(key)}</Label>
+              <Label htmlFor={`manual-${key}`} className="text-blue-100">{formatMeasurementName(key)}</Label>
               <div className="flex items-center">
                 <Input
                   id={`manual-${key}`}
@@ -79,17 +79,20 @@ const ManualMeasurementInput: React.FC<ManualMeasurementInputProps> = ({
                   placeholder={`Enter ${key}`}
                   value={measurements[key] || ''}
                   onChange={(e) => handleMeasurementChange(key, e.target.value)}
-                  className="text-right"
+                  className="text-right bg-blue-900/50 border-blue-700 text-white"
                 />
-                <span className="ml-2 text-muted-foreground">{unit}</span>
+                <span className="ml-2 text-blue-300">{unit}</span>
               </div>
             </div>
           ))}
         </div>
       </CardContent>
-      <CardFooter>
-        <Button onClick={handleSubmit} className="ml-auto">
-          Compare with AI Measurements
+      <CardFooter className="border-t border-blue-800 pt-4">
+        <Button 
+          onClick={handleSubmit} 
+          className="ml-auto bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          Compare with {aiMeasurements.isEstimated ? "Estimated" : "AI"} Measurements
         </Button>
       </CardFooter>
     </Card>

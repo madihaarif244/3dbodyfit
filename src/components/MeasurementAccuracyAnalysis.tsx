@@ -24,15 +24,21 @@ const MeasurementAccuracyAnalysis: React.FC<MeasurementAccuracyAnalysisProps> = 
   };
   
   return (
-    <div>
-      <h3 className="text-xl font-semibold mb-4 text-white">Measurement Accuracy Analysis</h3>
+    <div className="bg-blue-900/30 p-6 rounded-xl">
+      <h3 className="text-2xl font-semibold mb-6 text-white">Measurement Accuracy Analysis</h3>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-2 mb-4">
-          <TabsTrigger value="input">Enter Manual Measurements</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-2 w-full mb-6">
+          <TabsTrigger 
+            value="input" 
+            className="data-[state=active]:bg-blue-800 data-[state=active]:text-white text-blue-200"
+          >
+            Enter Manual Measurements
+          </TabsTrigger>
           <TabsTrigger 
             value="comparison" 
             disabled={!manualMeasurements}
+            className="data-[state=active]:bg-blue-800 data-[state=active]:text-white text-blue-200"
           >
             View Comparison
           </TabsTrigger>
