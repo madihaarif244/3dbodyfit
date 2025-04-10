@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BodyScanForm from "@/components/BodyScanForm";
@@ -10,24 +10,104 @@ import { calculateBodyMeasurements } from "@/utils/bodyMeasurementAI";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 
-type ScanStatus = "input" | "processing" | "complete" | "error";
+type ScanStatus = "input" | "processing" | "complete" | "error" | "fallback";
 
 interface MeasurementData {
   measurements: Record<string, number>;
   confidenceScore: number;
 }
 
+// Fallback measurements based on height and gender
+const generateFallbackMeasurements = (height: number, gender: 'male' | 'female' | 'other', measurementSystem: 'metric' | 'imperial'): Record<string, number> => {
+  // Convert height to cm if it's in imperial units
+  const heightCm = measurementSystem === 'imperial' ? height * 2.54 : height;
+  
+  // Base measurements adjusted by height
+  const heightFactor = heightCm / 170; // 170cm as baseline
+  
+  let measurements: Record<string, number> = {};
+  
+  if (gender === 'male') {
+    measurements = {
+      chest: Math.round(98 * heightFactor * 10) / 10,
+      waist: Math.round(82 * heightFactor * 10) / 10,
+      hips: Math.round(96 * heightFactor * 10) / 10,
+      inseam: Math.round(78 * heightFactor * 10) / 10,
+      shoulder: Math.round(45 * heightFactor * 10) / 10,
+      sleeve: Math.round(65 * heightFactor * 10) / 10,
+      neck: Math.round(38 * heightFactor * 10) / 10,
+      thigh: Math.round(56 * heightFactor * 10) / 10
+    };
+  } else if (gender === 'female') {
+    measurements = {
+      chest: Math.round(89 * heightFactor * 10) / 10,
+      waist: Math.round(74 * heightFactor * 10) / 10,
+      hips: Math.round(99 * heightFactor * 10) / 10,
+      inseam: Math.round(73 * heightFactor * 10) / 10,
+      shoulder: Math.round(39 * heightFactor * 10) / 10,
+      sleeve: Math.round(59 * heightFactor * 10) / 10,
+      neck: Math.round(34 * heightFactor * 10) / 10,
+      thigh: Math.round(58 * heightFactor * 10) / 10
+    };
+  } else {
+    measurements = {
+      chest: Math.round(94 * heightFactor * 10) / 10,
+      waist: Math.round(78 * heightFactor * 10) / 10,
+      hips: Math.round(98 * heightFactor * 10) / 10,
+      inseam: Math.round(75 * heightFactor * 10) / 10,
+      shoulder: Math.round(42 * heightFactor * 10) / 10,
+      sleeve: Math.round(62 * heightFactor * 10) / 10,
+      neck: Math.round(36 * heightFactor * 10) / 10,
+      thigh: Math.round(57 * heightFactor * 10) / 10
+    };
+  }
+  
+  // Add height to measurements
+  measurements.height = heightCm;
+  
+  return measurements;
+};
+
 export default function TryItNow() {
   const [scanStatus, setScanStatus] = useState<ScanStatus>("input");
   const [measurementData, setMeasurementData] = useState<MeasurementData | null>(null);
   const [modelLoading, setModelLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const [retryCount, setRetryCount] = useState<number>(0);
+  const [lastFormData, setLastFormData] = useState<any>(null);
+  const [browserSupportsWebGPU, setBrowserSupportsWebGPU] = useState<boolean | null>(null);
+  
+  // Check browser WebGPU support on component mount
+  useEffect(() => {
+    const checkWebGPUSupport = async () => {
+      try {
+        // Check if navigator.gpu exists (WebGPU API)
+        const hasWebGPU = !!(navigator as any).gpu;
+        setBrowserSupportsWebGPU(hasWebGPU);
+        
+        if (!hasWebGPU) {
+          toast({
+            title: "Limited Browser Support Detected",
+            description: "Your browser may not fully support WebGPU. Consider using Chrome 113+ for best results.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error checking WebGPU support:", error);
+        setBrowserSupportsWebGPU(false);
+      }
+    };
+    
+    checkWebGPUSupport();
+  }, []);
   
   const handleFormSubmit = async (formData: any) => {
     try {
       setScanStatus("processing");
       setModelLoading(true);
       setErrorMessage("");
+      setLastFormData(formData);
+      
       toast({
         title: "Loading AI Models",
         description: "Initializing Hugging Face body segmentation and MediaPipe pose detection models...",
@@ -67,6 +147,14 @@ export default function TryItNow() {
           description: "Your body measurements have been calculated using our AI models.",
           variant: "default",
         });
+      } else if (retryCount >= 1) {
+        // If we've already retried at least once, offer a fallback option
+        setScanStatus("error");
+        toast({
+          title: "AI Processing Failed",
+          description: "We'll offer you estimated measurements based on your height and gender.",
+          variant: "destructive",
+        });
       } else {
         // If measurement calculation failed, set error state
         setScanStatus("error");
@@ -96,6 +184,64 @@ export default function TryItNow() {
     setScanStatus("input");
     setMeasurementData(null);
     setErrorMessage("");
+    setRetryCount(0);
+  };
+  
+  const retryWithDifferentImages = () => {
+    setScanStatus("input");
+    setMeasurementData(null);
+    setErrorMessage("");
+    setRetryCount(retryCount + 1);
+  };
+  
+  const useFallbackMeasurements = () => {
+    if (!lastFormData) {
+      toast({
+        title: "Error",
+        description: "Missing form data for fallback measurements.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      // Generate fallback measurements based on height and gender
+      const height = parseFloat(lastFormData.height);
+      if (isNaN(height)) {
+        toast({
+          title: "Error",
+          description: "Invalid height value.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const fallbackMeasurements = generateFallbackMeasurements(
+        height, 
+        lastFormData.gender, 
+        lastFormData.measurementSystem
+      );
+      
+      // Set the measurement data with a lower confidence score
+      setMeasurementData({
+        measurements: fallbackMeasurements,
+        confidenceScore: 0.6 // Lower confidence for estimated measurements
+      });
+      
+      setScanStatus("fallback");
+      toast({
+        title: "Estimated Measurements Generated",
+        description: "We've generated estimated measurements based on your height and gender.",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error generating fallback measurements:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate estimated measurements.",
+        variant: "destructive",
+      });
+    }
   };
 
   const renderSystemRequirements = () => (
@@ -130,6 +276,16 @@ export default function TryItNow() {
             {scanStatus === "input" && (
               <>
                 {renderSystemRequirements()}
+                {browserSupportsWebGPU === false && (
+                  <Alert className="mb-6 bg-red-50 border-red-200">
+                    <Info className="h-5 w-5 text-red-600" />
+                    <AlertTitle className="text-red-800">Browser Compatibility Warning</AlertTitle>
+                    <AlertDescription className="text-red-700">
+                      Your browser doesn't fully support WebGPU, which is required for our AI models.
+                      Please use Google Chrome 113+ for the best experience.
+                    </AlertDescription>
+                  </Alert>
+                )}
                 <BodyScanForm onSubmit={handleFormSubmit} />
               </>
             )}
@@ -180,20 +336,29 @@ export default function TryItNow() {
                     </ul>
                   </AlertDescription>
                 </Alert>
-                <button 
-                  onClick={resetForm}
-                  className="px-6 py-2 bg-electric hover:bg-electric-dark rounded-md text-white transition-colors"
-                >
-                  Try Again
-                </button>
+                <div className="flex flex-col md:flex-row gap-4 justify-center">
+                  <button 
+                    onClick={retryWithDifferentImages}
+                    className="px-6 py-2 bg-electric hover:bg-electric-dark rounded-md text-white transition-colors"
+                  >
+                    Try Again
+                  </button>
+                  <button 
+                    onClick={useFallbackMeasurements}
+                    className="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-white transition-colors"
+                  >
+                    Use Estimated Measurements
+                  </button>
+                </div>
               </div>
             )}
             
-            {scanStatus === "complete" && measurementData && (
+            {(scanStatus === "complete" || scanStatus === "fallback") && measurementData && (
               <MeasurementResults 
                 measurements={measurementData.measurements} 
                 confidenceScore={measurementData.confidenceScore}
-                onReset={resetForm} 
+                onReset={resetForm}
+                isEstimated={scanStatus === "fallback"}
               />
             )}
           </div>
