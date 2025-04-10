@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -30,9 +31,9 @@ export default function Navbar() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <a href="#" className="flex-shrink-0 font-bold text-xl text-black">
+            <Link to="/" className="flex-shrink-0 font-bold text-xl text-black">
               <span className="text-electric">Body</span>Scan
-            </a>
+            </Link>
           </div>
 
           {/* Desktop menu */}
@@ -66,8 +67,8 @@ export default function Navbar() {
           </div>
 
           <div className="hidden md:block">
-            <Button variant="default" className="bg-electric hover:bg-electric-dark">
-              Try It Now
+            <Button variant="default" className="bg-electric hover:bg-electric-dark" asChild>
+              <Link to="/try-it-now">Try It Now</Link>
             </Button>
           </div>
 
@@ -120,8 +121,9 @@ export default function Navbar() {
                 variant="default" 
                 className="w-full bg-electric hover:bg-electric-dark"
                 onClick={() => setMobileMenuOpen(false)}
+                asChild
               >
-                Try It Now
+                <Link to="/try-it-now">Try It Now</Link>
               </Button>
             </div>
           </div>

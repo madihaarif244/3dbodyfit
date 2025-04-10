@@ -1,6 +1,7 @@
 
 import { ArrowDown } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 export default function HeroSection() {
   return (
@@ -15,8 +16,8 @@ export default function HeroSection() {
               No tape. No guesswork. Just a quick scan for perfectly tailored experiences.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button size="lg" className="bg-electric hover:bg-electric-dark">
-                Try It Now
+              <Button size="lg" className="bg-electric hover:bg-electric-dark" asChild>
+                <Link to="/try-it-now">Try It Now</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <a href="#how-it-works">
