@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
+import { useRef } from "react";
+import AvatarModel from "./AvatarModel";
 
 interface MeasurementResultsProps {
   measurements: Record<string, number>;
@@ -24,6 +28,8 @@ const MEASUREMENT_DISPLAY_MAP: Record<string, string> = {
 
 export default function MeasurementResults({ measurements, onReset, confidenceScore = 0.85 }: MeasurementResultsProps) {
   console.log("Rendering MeasurementResults with:", measurements, "confidence:", confidenceScore);
+  
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   
   const handleDownload = () => {
     // Create a downloadable text file with measurements
@@ -154,22 +160,21 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
         
         <div className="border rounded-lg p-6 bg-gray-50">
           <div className="text-center">
-            <div className="mx-auto w-32 h-64 bg-gray-200 rounded-full mb-4 relative overflow-hidden">
-              {/* This would be a 3D avatar in a real implementation */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
-                <svg className="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                </svg>
-                <span>3D Avatar</span>
-                <span className="text-xs mt-1">Coming soon</span>
-              </div>
+            <div className="h-64 w-full relative">
+              <Canvas className="w-full h-full">
+                <ambientLight intensity={0.5} />
+                <directionalLight position={[10, 10, 5]} intensity={1} />
+                <AvatarModel measurements={measurements} />
+                <OrbitControls enableZoom={true} />
+                <PerspectiveCamera makeDefault position={[0, 0, 5]} />
+              </Canvas>
             </div>
-            <p className="text-sm text-gray-600">
-              Based on your measurements, we would generate a personalized 3D avatar in our full version
+            <p className="text-sm text-gray-600 mt-4">
+              Interactive 3D avatar based on your measurements
             </p>
             <div className="mt-4 p-2 bg-blue-50 rounded-lg text-xs text-blue-700 flex items-center gap-2">
               <Info size={14} />
-              <span>Our AI measurement model integrates advanced anthropometric data with machine learning to provide accurate estimations.</span>
+              <span>Drag to rotate. Scroll to zoom.</span>
             </div>
           </div>
         </div>
