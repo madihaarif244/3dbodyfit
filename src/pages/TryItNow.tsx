@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -19,6 +20,9 @@ interface MeasurementData {
 
 const generateFallbackMeasurements = (height: number, gender: 'male' | 'female' | 'other', measurementSystem: 'metric' | 'imperial'): Record<string, number> => {
   const heightCm = measurementSystem === 'imperial' ? height * 2.54 : height;
+  
+  // Calculate height factor based on average human height (170cm)
+  const heightFactor = heightCm / 170;
   
   let measurements: Record<string, number> = {};
   
