@@ -1,5 +1,5 @@
 
-import { Download, Mail, RotateCcw, Info, AlertCircle, HelpCircle } from "lucide-react";
+import { Download, Mail, RotateCcw, Info, AlertCircle, HelpCircle, Shirt, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { MeasurementAccuracyGuide } from "@/components/MeasurementAccuracyGuide";
+import { Badge } from "@/components/ui/badge";
 
 interface MeasurementResultsProps {
   measurements: Record<string, number>;
@@ -111,6 +112,149 @@ const getSizingSuggestion = (measurement: string, value: number, gender: string 
   return "Custom fit";
 };
 
+// Detailed clothing size recommendations based on measurements
+const getClothingSizeRecommendations = (measurements: Record<string, number>, gender: string = "neutral"): Record<string, string[]> => {
+  const recommendations: Record<string, string[]> = {};
+  
+  // Tops sizing (based on chest and sometimes shoulders)
+  if (measurements.chest) {
+    const chestSize = getSizingSuggestion('chest', measurements.chest, gender);
+    recommendations.tops = [
+      `${chestSize} (${gender === 'female' ? 'Women' : 'Men'}'s)`,
+      `Chest: ${measurements.chest.toFixed(1)} cm / ${cmToInches(measurements.chest).toFixed(1)} in`
+    ];
+    
+    // Add specific recommendations for different clothing types
+    if (gender === 'male' || gender === 'neutral') {
+      if (measurements.chest < 96) recommendations.tops.push('Slim fit recommended');
+      else if (measurements.chest > 106) recommendations.tops.push('Regular/relaxed fit recommended');
+    } else {
+      if (measurements.chest < 86) recommendations.tops.push('Fitted style recommended');
+      else if (measurements.chest > 96) recommendations.tops.push('Relaxed fit recommended');
+    }
+  }
+  
+  // Bottoms sizing (based on waist and hips)
+  if (measurements.waist) {
+    const waistSize = getSizingSuggestion('waist', measurements.waist, gender);
+    let numericSize = '';
+    
+    // Convert letter sizes to numeric sizes (approximations)
+    if (gender === 'male') {
+      switch(waistSize) {
+        case 'XS': numericSize = '28-30'; break;
+        case 'S': numericSize = '30-32'; break;
+        case 'M': numericSize = '32-34'; break;
+        case 'L': numericSize = '36-38'; break;
+        case 'XL': numericSize = '40-42'; break;
+        case 'XXL': numericSize = '44-46'; break;
+        default: numericSize = waistSize;
+      }
+    } else {
+      switch(waistSize) {
+        case 'XS': numericSize = '0-2'; break;
+        case 'S': numericSize = '4-6'; break;
+        case 'M': numericSize = '8-10'; break;
+        case 'L': numericSize = '12-14'; break;
+        case 'XL': numericSize = '16-18'; break;
+        case 'XXL': numericSize = '20-22'; break;
+        default: numericSize = waistSize;
+      }
+    }
+    
+    recommendations.bottoms = [
+      `${waistSize} (${numericSize})`,
+      `Waist: ${measurements.waist.toFixed(1)} cm / ${cmToInches(measurements.waist).toFixed(1)} in`
+    ];
+    
+    if (measurements.hips) {
+      recommendations.bottoms.push(`Hip: ${measurements.hips.toFixed(1)} cm / ${cmToInches(measurements.hips).toFixed(1)} in`);
+      
+      // Add fit recommendations based on waist-hip ratio
+      const waistHipRatio = measurements.waist / measurements.hips;
+      if (gender === 'female' && waistHipRatio < 0.8) {
+        recommendations.bottoms.push('Curvy fit recommended');
+      } else if (gender === 'male' && waistHipRatio > 0.95) {
+        recommendations.bottoms.push('Athletic fit recommended');
+      }
+    }
+  }
+  
+  // Outerwear sizing (often based on chest + allowance for layers)
+  if (measurements.chest) {
+    // Outerwear typically needs more room
+    const outerwearChest = measurements.chest + 5; // Add 5cm for layering
+    const outerwearSize = getSizingSuggestion('chest', outerwearChest, gender);
+    
+    recommendations.outerwear = [
+      `${outerwearSize}`,
+      `Allow extra room for layering`,
+      `Consider ${(gender === 'male' || gender === 'neutral') ? 'sleeve and shoulder width' : 'hip clearance'}`
+    ];
+  }
+  
+  // Dress shirts (based on neck and sleeve measurements)
+  if (measurements.neck && measurements.sleeve && (gender === 'male' || gender === 'neutral')) {
+    const neckInches = cmToInches(measurements.neck).toFixed(1);
+    const sleeveInches = cmToInches(measurements.sleeve).toFixed(1);
+    
+    recommendations.dressShirts = [
+      `Neck: ${neckInches}″, Sleeve: ${sleeveInches}″`,
+      `Neck: ${measurements.neck.toFixed(1)} cm, Sleeve: ${measurements.sleeve.toFixed(1)} cm`
+    ];
+  }
+  
+  // Dress/suit sizing
+  if (gender === 'female' && measurements.chest && measurements.waist && measurements.hips) {
+    let dressSize = '';
+    const chestSize = getSizingSuggestion('chest', measurements.chest, gender);
+    
+    switch(chestSize) {
+      case 'XS': dressSize = '0-2'; break;
+      case 'S': dressSize = '4-6'; break;
+      case 'M': dressSize = '8-10'; break;
+      case 'L': dressSize = '12-14'; break;
+      case 'XL': dressSize = '16-18'; break;
+      case 'XXL': dressSize = '20-22'; break;
+      default: dressSize = 'Custom';
+    }
+    
+    recommendations.dresses = [
+      `Size ${dressSize}`,
+      `Bust: ${measurements.chest.toFixed(1)} cm / ${cmToInches(measurements.chest).toFixed(1)} in`,
+      `Waist: ${measurements.waist.toFixed(1)} cm / ${cmToInches(measurements.waist).toFixed(1)} in`,
+      `Hip: ${measurements.hips.toFixed(1)} cm / ${cmToInches(measurements.hips).toFixed(1)} in`
+    ];
+  }
+  
+  // Suits and blazers for men
+  if (gender === 'male' && measurements.chest) {
+    const jacketSize = Math.round(cmToInches(measurements.chest));
+    
+    recommendations.suits = [
+      `Jacket size: ${jacketSize} Regular`,
+      `Chest: ${measurements.chest.toFixed(1)} cm / ${cmToInches(measurements.chest).toFixed(1)} in`
+    ];
+    
+    // Add length recommendation based on height
+    if (measurements.height) {
+      if (measurements.height < 170) {
+        recommendations.suits[0] = `Jacket size: ${jacketSize} Short`;
+      } else if (measurements.height > 185) {
+        recommendations.suits[0] = `Jacket size: ${jacketSize} Long`;
+      }
+    }
+    
+    // Add trouser recommendation
+    if (measurements.waist) {
+      const trouserInches = Math.round(cmToInches(measurements.waist));
+      recommendations.suits.push(`Trouser waist: ${trouserInches}″`);
+    }
+  }
+  
+  return recommendations;
+};
+
 export default function MeasurementResults({ measurements, onReset, confidenceScore = 0.85 }: MeasurementResultsProps) {
   console.log("Rendering MeasurementResults with:", measurements, "confidence:", confidenceScore);
   
@@ -177,6 +321,23 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
     if (!measurements.waist || !measurements.hips) return null;
     return measurements.waist / measurements.hips;
   };
+  
+  // Determine gender based on measurements (simplified approach)
+  // In a real app, we'd get this from user input
+  const determineGender = (): 'male' | 'female' | 'neutral' => {
+    if (!measurements.chest || !measurements.hips) return 'neutral';
+    
+    // This is a very simplified approach for demo purposes
+    // A real app would get this from user input
+    const chestHipRatio = measurements.chest / measurements.hips;
+    
+    if (chestHipRatio > 1.05) return 'male';
+    if (chestHipRatio < 0.95) return 'female';
+    return 'neutral';
+  };
+  
+  const estimatedGender = determineGender();
+  const clothingSizes = getClothingSizeRecommendations(measurements, estimatedGender);
   
   return (
     <div className="bg-white shadow-md rounded-xl overflow-hidden">
@@ -278,20 +439,54 @@ export default function MeasurementResults({ measurements, onReset, confidenceSc
             
             <TabsContent value="analysis" className="space-y-6 pt-4">
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Size Recommendations</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-medium">Size Recommendations</h3>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <Ruler size={16} className="text-gray-500" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs text-xs">
+                          Size recommendations are based on standard clothing measurements.
+                          Actual fit may vary by brand and style. When in doubt, 
+                          refer to specific brand size charts.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                
                 <p className="text-sm text-gray-600">
-                  Based on your measurements, here are estimated clothing sizes:
+                  Based on your measurements, here are clothing size recommendations:
                 </p>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {Object.entries(measurements)
-                    .filter(([key]) => key === 'chest' || key === 'waist')  
-                    .map(([key, value]) => (
-                      <div key={key} className="border rounded-lg p-4 bg-gray-50">
-                        <h4 className="font-medium mb-2">{MEASUREMENT_DISPLAY_MAP[key] || key}</h4>
-                        <div className="text-2xl font-bold">{getSizingSuggestion(key, value)}</div>
-                        <p className="text-sm text-gray-600 mt-1">Standard fit</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(clothingSizes).map(([category, details]) => (
+                    <div key={category} className="border rounded-lg p-4 bg-gray-50">
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-medium capitalize">{category}</h4>
+                        <Shirt size={16} className="text-electric" />
                       </div>
+                      
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-2xl font-bold">{details[0]}</span>
+                        {details[0].includes('XS') && <Badge variant="outline" className="text-xs">Extra Small</Badge>}
+                        {details[0].includes('S') && !details[0].includes('XS') && <Badge variant="outline" className="text-xs">Small</Badge>}
+                        {details[0].includes('M') && <Badge variant="outline" className="text-xs">Medium</Badge>}
+                        {details[0].includes('L') && !details[0].includes('XL') && <Badge variant="outline" className="text-xs">Large</Badge>}
+                        {details[0].includes('XL') && !details[0].includes('XXL') && <Badge variant="outline" className="text-xs">Extra Large</Badge>}
+                        {details[0].includes('XXL') && <Badge variant="outline" className="text-xs">Double XL</Badge>}
+                      </div>
+                      
+                      <div className="space-y-1 mt-2">
+                        {details.slice(1).map((detail, index) => (
+                          <p key={index} className="text-xs text-gray-600">{detail}</p>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
                 
