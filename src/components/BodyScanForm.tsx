@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Camera, Upload, Info } from "lucide-react";
 import { z } from "zod";
@@ -44,7 +43,6 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
       gender: "male",
       measurementSystem: "metric",
       height: "",
-      privacyConsent: false,
     },
   });
   
