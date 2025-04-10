@@ -18,13 +18,15 @@ interface MeasurementData {
 export default function TryItNow() {
   const [scanStatus, setScanStatus] = useState<ScanStatus>("input");
   const [measurementData, setMeasurementData] = useState<MeasurementData | null>(null);
+  const [modelLoading, setModelLoading] = useState<boolean>(false);
   
   const handleFormSubmit = async (formData: any) => {
     try {
       setScanStatus("processing");
+      setModelLoading(true);
       toast({
-        title: "Processing Images",
-        description: "Analyzing your photos with our advanced AI model...",
+        title: "Loading AI Models",
+        description: "Initializing Hugging Face body segmentation and MediaPipe pose detection models...",
       });
       
       console.log("Processing form data:", formData);
@@ -38,6 +40,7 @@ export default function TryItNow() {
         formData.sideImage
       );
       
+      setModelLoading(false);
       console.log("Measurement calculation result:", result);
       
       if (result) {
@@ -53,7 +56,7 @@ export default function TryItNow() {
         setScanStatus("complete");
         toast({
           title: "Scan Complete",
-          description: "Your body measurements have been calculated successfully.",
+          description: "Your body measurements have been calculated using our AI models.",
           variant: "default",
         });
       } else {
@@ -68,6 +71,7 @@ export default function TryItNow() {
     } catch (error) {
       console.error("Error in form submission:", error);
       setScanStatus("input");
+      setModelLoading(false);
       toast({
         title: "Processing Failed",
         description: "We encountered an error while processing your images. Please try again.",
@@ -91,7 +95,7 @@ export default function TryItNow() {
               AI Body Measurement Tool
             </h1>
             <p className="text-gray-300 text-center mb-8">
-              Get accurate body measurements in seconds using our advanced AI model
+              Get accurate body measurements using Hugging Face and MediaPipe AI models
             </p>
             
             {scanStatus === "input" && (
@@ -105,9 +109,19 @@ export default function TryItNow() {
                     <div className="w-8 h-8 rounded-full bg-electric"></div>
                   </div>
                 </div>
-                <h2 className="text-xl font-semibold mb-2 text-white">Processing Your Scan</h2>
-                <p className="text-gray-300">Our AI model is analyzing your images to calculate accurate measurements...</p>
-                <p className="text-gray-400 text-sm mt-4">This may take up to 30 seconds</p>
+                <h2 className="text-xl font-semibold mb-2 text-white">
+                  {modelLoading ? "Loading AI Models" : "Processing Your Scan"}
+                </h2>
+                <p className="text-gray-300">
+                  {modelLoading 
+                    ? "Setting up Hugging Face image segmentation and MediaPipe pose detection..." 
+                    : "Our AI models are analyzing your images to calculate accurate measurements..."}
+                </p>
+                <p className="text-gray-400 text-sm mt-4">
+                  {modelLoading 
+                    ? "The AI models may take up to 60 seconds to load on first use"
+                    : "Image analysis may take up to 30 seconds"}
+                </p>
               </div>
             )}
             

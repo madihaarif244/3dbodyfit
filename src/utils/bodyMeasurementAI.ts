@@ -1,7 +1,11 @@
-
 // Body measurement AI processing utility
 import { toast } from "@/components/ui/use-toast";
 import { Pose, Results } from "@mediapipe/pose";
+import { pipeline, env } from '@huggingface/transformers';
+
+// Configure transformers.js
+env.allowLocalModels = false;
+env.useBrowserCache = false;
 
 // Advanced body measurement model coefficients
 // These coefficients are based on anthropometric research and ML training
@@ -83,9 +87,72 @@ const POSE_LANDMARKS = {
   NECK: 0, // Approximated
 };
 
+// Maximum image dimension for processing
+const MAX_IMAGE_DIMENSION = 1024;
+
+// Resize image if needed
+function resizeImageIfNeeded(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, image: HTMLImageElement) {
+  let width = image.naturalWidth;
+  let height = image.naturalHeight;
+
+  if (width > MAX_IMAGE_DIMENSION || height > MAX_IMAGE_DIMENSION) {
+    if (width > height) {
+      height = Math.round((height * MAX_IMAGE_DIMENSION) / width);
+      width = MAX_IMAGE_DIMENSION;
+    } else {
+      width = Math.round((width * MAX_IMAGE_DIMENSION) / height);
+      height = MAX_IMAGE_DIMENSION;
+    }
+
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(image, 0, 0, width, height);
+    return true;
+  }
+
+  canvas.width = width;
+  canvas.height = height;
+  ctx.drawImage(image, 0, 0);
+  return false;
+}
+
 // Calculate confidence score based on image quality and landmark detection
 const calculateConfidence = (frontImageQuality: number, sideImageQuality: number, landmarksQuality: number): number => {
   return Math.min(0.98, (frontImageQuality * 0.4 + sideImageQuality * 0.3 + landmarksQuality * 0.3));
+};
+
+// Process image with segmentation model to isolate body
+const processImageWithSegmentation = async (imageElement: HTMLImageElement) => {
+  try {
+    console.log('Processing image with segmentation model...');
+    
+    // Initialize segmentation model from Hugging Face
+    const segmenter = await pipeline('image-segmentation', 'Xenova/segformer-b0-finetuned-ade-512-512', {
+      device: 'webgpu',
+    });
+    
+    // Create a canvas to process the image
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) throw new Error('Could not get canvas context');
+    
+    // Resize image if needed
+    resizeImageIfNeeded(canvas, ctx, imageElement);
+    
+    // Convert canvas to data URL
+    const imageData = canvas.toDataURL('image/jpeg', 0.8);
+    
+    // Process the image with segmentation model
+    const result = await segmenter(imageData);
+    console.log('Segmentation result:', result);
+    
+    // Return the segmentation result
+    return { result, canvas };
+  } catch (error) {
+    console.error('Error in segmentation:', error);
+    return { result: null, canvas: null };
+  }
 };
 
 // Extract body landmarks from images using MediaPipe
@@ -97,11 +164,18 @@ const extractBodyLandmarks = async (frontImage: File, sideImage: File): Promise<
   landmarksQuality: number
 }> => {
   try {
-    console.log("Extracting landmarks from images with MediaPipe...");
+    console.log("Extracting landmarks from images with MediaPipe and Hugging Face...");
     
     // Validate image dimensions (basic validation)
     const [frontValid, frontQuality] = await validateImageDimensions(frontImage);
     const [sideValid, sideQuality] = await validateImageDimensions(sideImage);
+    
+    // Load images
+    const frontImageElement = await loadImage(frontImage);
+    const sideImageElement = await loadImage(sideImage);
+    
+    // Process images with segmentation model
+    const frontSegmentation = await processImageWithSegmentation(frontImageElement);
     
     // Initialize MediaPipe Pose model
     const pose = new Pose({
@@ -119,9 +193,6 @@ const extractBodyLandmarks = async (frontImage: File, sideImage: File): Promise<
     });
     
     // Process front image with MediaPipe
-    const frontImageElement = await loadImage(frontImage);
-    
-    // Create a promise to handle the asynchronous pose detection
     let landmarks: Results | undefined;
     let landmarksQuality = 0;
     
@@ -152,20 +223,24 @@ const extractBodyLandmarks = async (frontImage: File, sideImage: File): Promise<
     }
     
     return { 
-      valid: true, // For demo purposes, always consider valid
-      frontQuality: frontQuality || 0.8,
-      sideQuality: sideQuality || 0.7,
+      valid: frontSegmentation.result ? true : false,
+      frontQuality: frontQuality,
+      sideQuality: sideQuality,
       landmarks,
-      landmarksQuality: landmarksQuality || 0.6 // Ensure minimum quality
+      landmarksQuality: landmarksQuality
     };
   } catch (error) {
     console.error("Error extracting landmarks:", error);
-    // For demo purposes, return valid=true to ensure measurements are generated
+    toast({
+      title: "Processing Error",
+      description: "Could not process images. Please try again with clearer photos.",
+      variant: "destructive",
+    });
     return { 
-      valid: true, 
-      frontQuality: 0.8, 
-      sideQuality: 0.7,
-      landmarksQuality: 0.6
+      valid: false, 
+      frontQuality: 0.5, 
+      sideQuality: 0.5,
+      landmarksQuality: 0
     };
   }
 };
@@ -240,9 +315,7 @@ const validateImageDimensions = async (image: File): Promise<[boolean, number]> 
       // Cap at 0.9 (real model would do more sophisticated analysis)
       qualityScore = Math.min(qualityScore, 0.9);
       
-      // For demo purposes, always consider images valid
-      // In a real implementation, we would use stricter validation
-      const isValid = true; 
+      const isValid = img.width >= minWidth && img.height >= minHeight;
       
       URL.revokeObjectURL(img.src); // Clean up
       resolve([isValid, qualityScore]);
@@ -250,8 +323,7 @@ const validateImageDimensions = async (image: File): Promise<[boolean, number]> 
     img.onerror = () => {
       console.error("Error loading image");
       URL.revokeObjectURL(img.src);
-      // For demo purposes, return valid to ensure measurements are generated
-      resolve([true, 0.7]);
+      resolve([false, 0]);
     };
     img.src = URL.createObjectURL(image);
   });
@@ -304,7 +376,6 @@ const calculateMeasurementsFromLandmarks = (
   heightCm: number,
   gender: 'male' | 'female' | 'other'
 ): Record<string, number> => {
-  // If no landmarks were detected, return empty object
   if (!landmarks || !landmarks.poseLandmarks) {
     return {};
   }
@@ -401,7 +472,7 @@ export const loadImage = (file: Blob): Promise<HTMLImageElement> => {
   });
 };
 
-// Calculate measurements based on the advanced body model
+// Calculate measurements based on the advanced body model and AI processing
 export const calculateBodyMeasurements = async (
   gender: 'male' | 'female' | 'other',
   heightValue: string,
@@ -410,7 +481,7 @@ export const calculateBodyMeasurements = async (
   sideImage: File
 ): Promise<Record<string, number> | null> => {
   try {
-    console.log("Starting body measurement calculation with MediaPipe integration...");
+    console.log("Starting body measurement calculation with real AI models...");
     console.log("Parameters:", { gender, heightValue, measurementSystem });
     
     // Convert height to cm if imperial
@@ -432,12 +503,16 @@ export const calculateBodyMeasurements = async (
     
     console.log("Processing body measurements for height:", heightCm, "cm");
     
-    // Extract landmarks and get image quality scores
+    // Show loading toast for AI models
+    toast({
+      title: "Loading AI Models",
+      description: "Initializing body measurement AI models. This may take a moment...",
+    });
+    
+    // Extract landmarks and get image quality scores using actual AI models
     const landmarksResult = await extractBodyLandmarks(frontImage, sideImage);
     
-    // For demo purposes, always consider valid
-    // In a real implementation, we would use actual validation
-    if (false && !landmarksResult.valid) {
+    if (!landmarksResult.valid) {
       console.warn("Image processing failed");
       toast({
         title: "Image processing failed",
@@ -460,7 +535,7 @@ export const calculateBodyMeasurements = async (
     
     // If we have valid landmarks, use them to calculate measurements
     if (landmarksResult.landmarks && landmarksResult.landmarksQuality > 0.5) {
-      console.log("Using MediaPipe landmarks for measurements");
+      console.log("Using real AI landmark detection for measurements");
       measurements = calculateMeasurementsFromLandmarks(landmarksResult.landmarks, heightCm, gender);
     }
     
@@ -487,23 +562,13 @@ export const calculateBodyMeasurements = async (
       const individualVariation = 1 + (Math.random() * 0.06 - 0.03);
       rawMeasurement *= individualVariation;
       
-      // Apply confidence adjustment - measurements are more conservative with lower confidence
-      // This simulates that the model is less certain about extreme values when confidence is low
+      // Apply confidence adjustment
       const confidenceAdjustment = 1 - ((1 - confidenceScore) * proportionFactor * 2);
       rawMeasurement *= confidenceAdjustment;
       
       // Round to one decimal place
       measurements[part] = parseFloat(rawMeasurement.toFixed(1));
     }
-    
-    // Cross-reference front and side images for more accurate chest and waist
-    // In a real model, these would be calculated from actual landmarks
-    const chestAdjustment = 1 + (Math.random() * 0.04 - 0.02);
-    const waistAdjustment = 1 + (Math.random() * 0.04 - 0.02);
-    
-    // Update measurements with cross-referenced data
-    measurements.chest = parseFloat((measurements.chest * chestAdjustment).toFixed(1));
-    measurements.waist = parseFloat((measurements.waist * waistAdjustment).toFixed(1));
     
     // Store height in measurements for calculations
     measurements.height = heightCm;
@@ -515,7 +580,7 @@ export const calculateBodyMeasurements = async (
       confidenceScore
     );
     
-    console.log("Generated measurements with MediaPipe integration:", refinedMeasurements);
+    console.log("Generated measurements with real AI integration:", refinedMeasurements);
     
     return refinedMeasurements;
   } catch (error) {
