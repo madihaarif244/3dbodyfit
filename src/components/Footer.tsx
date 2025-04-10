@@ -3,7 +3,7 @@ import { Facebook, Twitter, Linkedin, Instagram } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="bg-sidebar-background text-sidebar-foreground">
       <div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
           <div>
@@ -14,16 +14,16 @@ export default function Footer() {
               Transforming how businesses capture and utilize body measurements through AI-powered technology.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-electric" aria-label="Facebook">
+              <a href="#" className="text-muted-foreground hover:text-electric" aria-label="Facebook">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-electric" aria-label="Twitter">
+              <a href="#" className="text-muted-foreground hover:text-electric" aria-label="Twitter">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-electric" aria-label="LinkedIn">
+              <a href="#" className="text-muted-foreground hover:text-electric" aria-label="LinkedIn">
                 <Linkedin className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-electric" aria-label="Instagram">
+              <a href="#" className="text-muted-foreground hover:text-electric" aria-label="Instagram">
                 <Instagram className="h-5 w-5" />
               </a>
             </div>
@@ -50,7 +50,7 @@ export default function Footer() {
           </div>
         </div>
         
-        <div className="mt-12 pt-8 border-t border-gray-800 text-sm text-gray-400">
+        <div className="mt-12 pt-8 border-t border-sidebar-border text-sm text-muted-foreground">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p>&copy; {new Date().getFullYear()} BodyScan AI. All rights reserved.</p>
             <p className="mt-2 md:mt-0">Made with cutting-edge AI technology</p>
