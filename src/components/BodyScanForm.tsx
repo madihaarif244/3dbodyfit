@@ -180,7 +180,7 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
                         placeholder={measurementSystem === "metric" ? "Height in cm" : "Height in inches"}
                         {...field}
                         type="number"
-                        className="text-gray-800"
+                        className="text-gray-800 font-medium bg-white border-gray-300" // Override styling for this input
                       />
                       <span className="flex items-center text-sm text-gray-800">
                         {measurementSystem === "metric" ? "cm" : "in"}
