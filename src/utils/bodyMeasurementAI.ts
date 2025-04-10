@@ -147,9 +147,9 @@ export const calculateBodyMeasurements = async (
     const chestAdjustment = 1 + (Math.random() * 0.04 - 0.02);
     const waistAdjustment = 1 + (Math.random() * 0.04 - 0.02);
     
-    // Fix the type issue by ensuring we're working with numbers
-    measurements.chest = parseFloat((measurements.chest * Number(chestAdjustment)).toFixed(1));
-    measurements.waist = parseFloat((measurements.waist * Number(waistAdjustment)).toFixed(1));
+    // Ensure we're multiplying by numbers
+    measurements.chest = parseFloat((measurements.chest * chestAdjustment).toFixed(1));
+    measurements.waist = parseFloat((measurements.waist * waistAdjustment).toFixed(1));
     
     return measurements;
   } catch (error) {
