@@ -15,6 +15,7 @@ type ScanStatus = "input" | "processing" | "complete" | "error" | "fallback";
 interface MeasurementData {
   measurements: Record<string, number>;
   confidenceScore: number;
+  isEstimated?: boolean;
 }
 
 // Fallback measurements based on height and gender
@@ -83,18 +84,46 @@ export default function TryItNow() {
       try {
         // Check if navigator.gpu exists (WebGPU API)
         const hasWebGPU = !!(navigator as any).gpu;
-        setBrowserSupportsWebGPU(hasWebGPU);
         
-        if (!hasWebGPU) {
+        if (hasWebGPU) {
+          // Try to request an adapter (more thorough test)
+          try {
+            const adapter = await (navigator as any).gpu.requestAdapter();
+            const isFullySupported = !!adapter;
+            setBrowserSupportsWebGPU(isFullySupported);
+            
+            if (!isFullySupported) {
+              toast({
+                title: "Limited Browser Support Detected",
+                description: "Your browser may not fully support WebGPU. Consider using Chrome 113+ for best results.",
+                variant: "warning",
+              });
+            }
+          } catch (error) {
+            console.error("Error requesting WebGPU adapter:", error);
+            setBrowserSupportsWebGPU(false);
+            toast({
+              title: "WebGPU Not Available",
+              description: "Your browser doesn't support WebGPU. Measurements will use estimated values.",
+              variant: "warning",
+            });
+          }
+        } else {
+          setBrowserSupportsWebGPU(false);
           toast({
-            title: "Limited Browser Support Detected",
-            description: "Your browser may not fully support WebGPU. Consider using Chrome 113+ for best results.",
-            variant: "destructive",
+            title: "WebGPU Not Supported",
+            description: "Your browser doesn't support WebGPU. Please use Chrome 113+ for AI-powered measurements.",
+            variant: "warning",
           });
         }
       } catch (error) {
         console.error("Error checking WebGPU support:", error);
         setBrowserSupportsWebGPU(false);
+        toast({
+          title: "WebGPU Check Failed",
+          description: "We couldn't determine WebGPU support. Using fallback processing.",
+          variant: "warning",
+        });
       }
     };
     
@@ -109,11 +138,20 @@ export default function TryItNow() {
       setLastFormData(formData);
       
       toast({
-        title: "Loading AI Models",
-        description: "Initializing Hugging Face body segmentation and MediaPipe pose detection models...",
+        title: browserSupportsWebGPU ? "Loading AI Models" : "Processing Measurements",
+        description: browserSupportsWebGPU 
+          ? "Initializing Hugging Face body segmentation and MediaPipe pose detection models..."
+          : "Calculating your measurements based on provided information...",
       });
       
       console.log("Processing form data:", formData);
+      
+      // If browser doesn't support WebGPU, go directly to fallback calculations
+      if (browserSupportsWebGPU === false && retryCount > 0) {
+        setModelLoading(false);
+        useFallbackMeasurements();
+        return;
+      }
       
       // Use our AI measurement system to calculate real measurements
       const result = await calculateBodyMeasurements(
@@ -134,17 +172,22 @@ export default function TryItNow() {
       if (result) {
         // In a real implementation, the confidenceScore would come from the AI model
         // Here we're generating a realistic confidence score based on image quality
-        const confidenceScore = 0.75 + Math.random() * 0.2; // Between 0.75 and 0.95
+        const confidenceScore = browserSupportsWebGPU ? 
+          (0.75 + Math.random() * 0.2) : // Between 0.75 and 0.95
+          (0.65 + Math.random() * 0.15); // Lower confidence for fallback
         
         setMeasurementData({
           measurements: result,
-          confidenceScore
+          confidenceScore,
+          isEstimated: !browserSupportsWebGPU
         });
         
-        setScanStatus("complete");
+        setScanStatus(browserSupportsWebGPU ? "complete" : "fallback");
         toast({
-          title: "Scan Complete",
-          description: "Your body measurements have been calculated using our AI models.",
+          title: "Measurements Complete",
+          description: browserSupportsWebGPU 
+            ? "Your body measurements have been calculated using our AI models."
+            : "Your estimated measurements have been calculated based on your height and gender.",
           variant: "default",
         });
       } else if (retryCount >= 1) {
@@ -159,7 +202,7 @@ export default function TryItNow() {
         // If measurement calculation failed, set error state
         setScanStatus("error");
         if (!errorMessage) {
-          setErrorMessage("No measurements could be calculated. Please try again with different images.");
+          setErrorMessage("Failed to calculate measurements. Please try again with different images or use estimated measurements.");
         }
         toast({
           title: "Processing Failed",
@@ -225,7 +268,8 @@ export default function TryItNow() {
       // Set the measurement data with a lower confidence score
       setMeasurementData({
         measurements: fallbackMeasurements,
-        confidenceScore: 0.6 // Lower confidence for estimated measurements
+        confidenceScore: 0.6, // Lower confidence for estimated measurements
+        isEstimated: true
       });
       
       setScanStatus("fallback");
@@ -358,6 +402,7 @@ export default function TryItNow() {
                 measurements={measurementData.measurements} 
                 confidenceScore={measurementData.confidenceScore}
                 onReset={resetForm}
+                isEstimated={scanStatus === "fallback" || measurementData.isEstimated}
               />
             )}
           </div>
@@ -369,4 +414,3 @@ export default function TryItNow() {
     </div>
   );
 }
-

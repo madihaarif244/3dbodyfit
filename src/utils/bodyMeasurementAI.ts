@@ -1,3 +1,4 @@
+
 // Body measurement AI processing utility
 import { toast } from "@/components/ui/use-toast";
 import { Pose, Results } from "@mediapipe/pose";
@@ -5,7 +6,33 @@ import { pipeline, env } from '@huggingface/transformers';
 
 // Configure transformers.js
 env.allowLocalModels = false;
-env.useBrowserCache = false;
+env.useBrowserCache = true; // Enable browser cache for better performance
+
+// Check if WebGPU is available
+const checkWebGPUSupport = async (): Promise<boolean> => {
+  try {
+    if (!(navigator as any).gpu) {
+      console.log("WebGPU is not supported in this browser");
+      return false;
+    }
+    
+    // Try to request an adapter (would fail if WebGPU is not properly supported)
+    try {
+      const adapter = await (navigator as any).gpu.requestAdapter();
+      if (!adapter) {
+        console.log("Failed to get GPU adapter");
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.log("Error requesting WebGPU adapter:", error);
+      return false;
+    }
+  } catch (error) {
+    console.log("Error checking WebGPU support:", error);
+    return false;
+  }
+};
 
 // Advanced body measurement model coefficients
 // These coefficients are based on anthropometric research and ML training
@@ -126,31 +153,47 @@ const processImageWithSegmentation = async (imageElement: HTMLImageElement) => {
   try {
     console.log('Processing image with segmentation model...');
     
+    // Check if WebGPU is supported before attempting to use it
+    const hasWebGPU = await checkWebGPUSupport();
+    const deviceType = hasWebGPU ? 'webgpu' : 'cpu';
+    console.log(`Using device type: ${deviceType} for segmentation`);
+    
     // Initialize segmentation model from Hugging Face
-    const segmenter = await pipeline('image-segmentation', 'Xenova/segformer-b0-finetuned-ade-512-512', {
-      device: 'webgpu',
-    });
-    
-    // Create a canvas to process the image
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    if (!ctx) throw new Error('Could not get canvas context');
-    
-    // Resize image if needed
-    resizeImageIfNeeded(canvas, ctx, imageElement);
-    
-    // Convert canvas to data URL
-    const imageData = canvas.toDataURL('image/jpeg', 0.8);
-    
-    // Process the image with segmentation model
-    const result = await segmenter(imageData);
-    console.log('Segmentation result:', result);
-    
-    // Return the segmentation result
-    return { result, canvas };
+    try {
+      const segmenter = await pipeline('image-segmentation', 'Xenova/segformer-b0-finetuned-ade-512-512', {
+        device: deviceType,
+        progress_callback: (progress) => {
+          if (progress.status === 'progress') {
+            console.log(`Loading model: ${Math.round(progress.progress * 100)}%`);
+          }
+        }
+      });
+      
+      // Create a canvas to process the image
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) throw new Error('Could not get canvas context');
+      
+      // Resize image if needed
+      resizeImageIfNeeded(canvas, ctx, imageElement);
+      
+      // Convert canvas to data URL
+      const imageData = canvas.toDataURL('image/jpeg', 0.8);
+      
+      // Process the image with segmentation model
+      const result = await segmenter(imageData);
+      console.log('Segmentation result:', result);
+      
+      // Return the segmentation result
+      return { result, canvas };
+    } catch (error) {
+      console.error('Error in segmentation model:', error);
+      throw new Error(`Segmentation model error: ${error.message}`);
+    }
   } catch (error) {
-    console.error('Error in segmentation:', error);
+    console.error('Error in segmentation process:', error);
+    // Return null to signal we need to use fallback
     return { result: null, canvas: null };
   }
 };
@@ -161,7 +204,8 @@ const extractBodyLandmarks = async (frontImage: File, sideImage: File): Promise<
   frontQuality: number, 
   sideQuality: number,
   landmarks?: Results,
-  landmarksQuality: number
+  landmarksQuality: number,
+  error?: string
 }> => {
   try {
     console.log("Extracting landmarks from images with MediaPipe and Hugging Face...");
@@ -175,7 +219,15 @@ const extractBodyLandmarks = async (frontImage: File, sideImage: File): Promise<
     const sideImageElement = await loadImage(sideImage);
     
     // Process images with segmentation model
-    const frontSegmentation = await processImageWithSegmentation(frontImageElement);
+    let frontSegmentation;
+    let segmentationError = "";
+    
+    try {
+      frontSegmentation = await processImageWithSegmentation(frontImageElement);
+    } catch (error) {
+      console.error("Error in segmentation:", error);
+      segmentationError = error instanceof Error ? error.message : "Unknown segmentation error";
+    }
     
     // Initialize MediaPipe Pose model
     const pose = new Pose({
@@ -222,12 +274,16 @@ const extractBodyLandmarks = async (frontImage: File, sideImage: File): Promise<
       // Continue without landmarks
     }
     
+    // If we have segmentation error but good landmarks, still consider valid
+    const isValid = (frontSegmentation?.result || landmarksQuality > 0.7);
+    
     return { 
-      valid: frontSegmentation.result ? true : false,
+      valid: isValid,
       frontQuality: frontQuality,
       sideQuality: sideQuality,
       landmarks,
-      landmarksQuality: landmarksQuality
+      landmarksQuality: landmarksQuality,
+      error: isValid ? undefined : segmentationError
     };
   } catch (error) {
     console.error("Error extracting landmarks:", error);
@@ -240,7 +296,8 @@ const extractBodyLandmarks = async (frontImage: File, sideImage: File): Promise<
       valid: false, 
       frontQuality: 0.5, 
       sideQuality: 0.5,
-      landmarksQuality: 0
+      landmarksQuality: 0,
+      error: error instanceof Error ? error.message : "Unknown error"
     };
   }
 };
@@ -503,23 +560,30 @@ export const calculateBodyMeasurements = async (
     
     console.log("Processing body measurements for height:", heightCm, "cm");
     
-    // Show loading toast for AI models
-    toast({
-      title: "Loading AI Models",
-      description: "Initializing body measurement AI models. This may take a moment...",
-    });
+    // Check WebGPU support
+    const hasWebGPU = await checkWebGPUSupport();
+    if (!hasWebGPU) {
+      console.warn("WebGPU not supported in this browser");
+      toast({
+        title: "Limited Browser Support",
+        description: "Your browser doesn't support WebGPU. AI processing capabilities will be limited.",
+        variant: "warning",
+      });
+      // Continue with limited capabilities (will fall back to CPU or other methods)
+    } else {
+      // Show loading toast for AI models
+      toast({
+        title: "Loading AI Models",
+        description: "Initializing body measurement AI models. This may take a moment...",
+      });
+    }
     
     // Extract landmarks and get image quality scores using actual AI models
     const landmarksResult = await extractBodyLandmarks(frontImage, sideImage);
     
     if (!landmarksResult.valid) {
-      console.warn("Image processing failed");
-      toast({
-        title: "Image processing failed",
-        description: "We couldn't process your images. Please ensure they show your full body clearly.",
-        variant: "destructive",
-      });
-      return null;
+      console.warn("Image processing failed:", landmarksResult.error);
+      throw new Error(landmarksResult.error || "Failed to process images");
     }
     
     // Calculate confidence score based on image quality and landmark detection
@@ -585,11 +649,7 @@ export const calculateBodyMeasurements = async (
     return refinedMeasurements;
   } catch (error) {
     console.error("Error calculating measurements:", error);
-    toast({
-      title: "Processing error",
-      description: "An error occurred while calculating your measurements. Please try again.",
-      variant: "destructive",
-    });
-    return null;
+    throw error; // Rethrow the error to be handled by the caller
   }
 };
+
