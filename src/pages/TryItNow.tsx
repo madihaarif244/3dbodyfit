@@ -358,7 +358,6 @@ export default function TryItNow() {
                 measurements={measurementData.measurements} 
                 confidenceScore={measurementData.confidenceScore}
                 onReset={resetForm}
-                isEstimated={scanStatus === "fallback"}
               />
             )}
           </div>
@@ -370,3 +369,4 @@ export default function TryItNow() {
     </div>
   );
 }
+
