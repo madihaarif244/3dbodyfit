@@ -1,9 +1,8 @@
-
 import { 
   Check, 
   ShieldCheck, 
   Smartphone, 
-  Cube, 
+  Box, 
   Eye, 
   HandMetal, 
   Globe, 
@@ -12,7 +11,7 @@ import {
 
 const features = [
   {
-    icon: Cube,
+    icon: Box,
     title: "3D Modeling",
     description: "Convert 2D images to accurate 3D body models"
   },
