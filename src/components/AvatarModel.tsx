@@ -1,8 +1,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Mesh, Group } from "three";
 import * as THREE from "three";
+import { Line } from "@react-three/drei";
 
 interface AvatarModelProps {
   measurements: Record<string, number>;
@@ -21,12 +21,11 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
   useEffect(() => {
     if (!measurements || Object.keys(measurements).length === 0) return;
     
-    // Create normalized dimensions (since the 3D model uses relative sizes)
-    // Average adult height is around 170cm, so we use that as a baseline
+    // Create normalized dimensions
     const baseHeight = 170;
     const heightScale = measurements.height ? measurements.height / baseHeight : 1;
     
-    // Calculate normalized body proportions based on measurements
+    // Calculate normalized body proportions
     const normalizedDimensions = {
       height: heightScale,
       chest: measurements.chest ? measurements.chest / 100 : 0.9,
@@ -38,136 +37,141 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     setAvatarDimensions(normalizedDimensions);
   }, [measurements]);
   
-  // References for animation
-  const torsoRef = useRef<Mesh>(null);
-  const headRef = useRef<Mesh>(null);
-  const leftArmRef = useRef<Group>(null);  // Changed from Mesh to Group
-  const rightArmRef = useRef<Group>(null); // Changed from Mesh to Group
-  const leftLegRef = useRef<Mesh>(null);
-  const rightLegRef = useRef<Mesh>(null);
+  // Reference for the entire model group to animate it
+  const modelRef = useRef<THREE.Group>(null);
   
   // Animation
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     
-    // Subtle breathing animation
-    if (torsoRef.current) {
-      torsoRef.current.scale.x = avatarDimensions.chest * (1 + Math.sin(t * 1.5) * 0.01);
-      torsoRef.current.scale.z = avatarDimensions.waist * (1 + Math.sin(t * 1.5) * 0.01);
-    }
-    
-    // Subtle head movement
-    if (headRef.current) {
-      headRef.current.rotation.y = Math.sin(t * 0.5) * 0.2;
-      headRef.current.rotation.z = Math.sin(t * 0.3) * 0.05;
-    }
-    
-    // Subtle arm swaying
-    if (leftArmRef.current && rightArmRef.current) {
-      leftArmRef.current.rotation.x = Math.sin(t * 0.7) * 0.1;
-      rightArmRef.current.rotation.x = Math.sin(t * 0.7 + Math.PI) * 0.1;
+    // Apply subtle breathing and swaying animations
+    if (modelRef.current) {
+      // Subtle breathing effect
+      modelRef.current.scale.x = 1 + Math.sin(t * 0.5) * 0.01;
+      modelRef.current.scale.z = 1 + Math.sin(t * 0.5) * 0.01;
+      
+      // Subtle swaying
+      modelRef.current.rotation.y = Math.sin(t * 0.2) * 0.05;
+      modelRef.current.position.y = Math.sin(t * 0.4) * 0.05;
     }
   });
   
-  // Define colors with proper React Three Fiber syntax
-  const skinColor = "#E0C8A0";
-  const clothColor = "#4A5568";
-  const pantsColor = "#2D3748";
+  // Generate random line segments to create the wireframe effect
+  const generateWireframe = (
+    center: [number, number, number], 
+    dimensions: [number, number, number], 
+    density: number
+  ) => {
+    const [cx, cy, cz] = center;
+    const [width, height, depth] = dimensions;
+    
+    // Generate random points within the specified bounds
+    const points: [number, number, number][] = [];
+    
+    // Random points for the body shape
+    for (let i = 0; i < density; i++) {
+      // Create humanoid shape by using sine functions
+      const angle = Math.random() * Math.PI * 2;
+      const heightPos = Math.random() * height - height/2;
+      
+      // Create more points around key body areas (shoulders, chest, waist, hips)
+      let radiusMultiplier = 1;
+      
+      // Head
+      if (heightPos > height/2 - height/8) {
+        radiusMultiplier = 0.5;
+      } 
+      // Shoulders
+      else if (heightPos > height/4) {
+        radiusMultiplier = 1.2;
+      }
+      // Chest
+      else if (heightPos > height/8) {
+        radiusMultiplier = 1;
+      }
+      // Waist
+      else if (heightPos > -height/8) {
+        radiusMultiplier = 0.8;
+      }
+      // Hips
+      else if (heightPos > -height/4) {
+        radiusMultiplier = 1;
+      }
+      // Legs
+      else {
+        // Shape the legs by adjusting the radius based on height
+        const legFactor = (heightPos + height/2) / (height/2);
+        radiusMultiplier = 0.7 * legFactor;
+      }
+      
+      // Body width varies by height
+      const bodyWidth = width * radiusMultiplier;
+      const bodyDepth = depth * radiusMultiplier;
+      
+      // Apply body shape
+      const x = cx + Math.cos(angle) * bodyWidth * Math.random();
+      const z = cz + Math.sin(angle) * bodyDepth * Math.random();
+      
+      points.push([x, cy + heightPos, z]);
+    }
+    
+    return points;
+  };
+  
+  // Create connections between points that are close to each other
+  const generateConnections = (points: [number, number, number][], maxDistance: number) => {
+    const lines: Array<[number, number, number][]> = [];
+    
+    // Connect nearby points
+    for (let i = 0; i < points.length; i++) {
+      for (let j = i + 1; j < points.length; j++) {
+        const [x1, y1, z1] = points[i];
+        const [x2, y2, z2] = points[j];
+        
+        // Calculate distance between points
+        const distance = Math.sqrt(
+          Math.pow(x2 - x1, 2) + 
+          Math.pow(y2 - y1, 2) + 
+          Math.pow(z2 - z1, 2)
+        );
+        
+        // Only connect if within max distance
+        if (distance < maxDistance) {
+          lines.push([points[i], points[j]]);
+        }
+      }
+    }
+    
+    return lines;
+  };
+  
+  // Calculate body dimensions based on measurements
+  const bodyHeight = 2 * avatarDimensions.height;
+  const bodyWidth = 0.4 * avatarDimensions.shoulders;
+  const bodyDepth = 0.3 * avatarDimensions.chest;
+  
+  // Generate points and connections
+  const bodyPoints = generateWireframe(
+    [0, 0, 0],
+    [bodyWidth, bodyHeight, bodyDepth],
+    600 // number of points
+  );
+  
+  const bodyConnections = generateConnections(bodyPoints, 0.3);
   
   return (
-    <group position={[0, -1, 0]} scale={[1, 1, 1]}>
-      {/* Head */}
-      <mesh ref={headRef} position={[0, 2.5, 0]}>
-        <sphereGeometry args={[0.25, 32, 32]} />
-        <meshStandardMaterial color={skinColor} />
-      </mesh>
-      
-      {/* Torso */}
-      <mesh 
-        ref={torsoRef} 
-        position={[0, 1.9, 0]} 
-        scale={[
-          avatarDimensions.chest, 
-          0.7, 
-          avatarDimensions.waist
-        ]}
-      >
-        <boxGeometry args={[0.5, 1, 0.3]} />
-        <meshStandardMaterial color={clothColor} />
-      </mesh>
-      
-      {/* Left Arm */}
-      <group 
-        ref={leftArmRef} 
-        position={[
-          -avatarDimensions.shoulders / 2, 
-          2, 
-          0
-        ]}
-      >
-        <mesh rotation={[0, 0, -Math.PI / 8]}>
-          <cylinderGeometry args={[0.08, 0.08, 0.6, 16]} />
-          <meshStandardMaterial color={clothColor} />
-        </mesh>
-        
-        <mesh position={[-0.1, -0.35, 0]}>
-          <cylinderGeometry args={[0.075, 0.075, 0.6, 16]} />
-          <meshStandardMaterial color={skinColor} />
-        </mesh>
-      </group>
-      
-      {/* Right Arm */}
-      <group 
-        ref={rightArmRef} 
-        position={[
-          avatarDimensions.shoulders / 2, 
-          2, 
-          0
-        ]}
-      >
-        <mesh rotation={[0, 0, Math.PI / 8]}>
-          <cylinderGeometry args={[0.08, 0.08, 0.6, 16]} />
-          <meshStandardMaterial color={clothColor} />
-        </mesh>
-        
-        <mesh position={[0.1, -0.35, 0]}>
-          <cylinderGeometry args={[0.075, 0.075, 0.6, 16]} />
-          <meshStandardMaterial color={skinColor} />
-        </mesh>
-      </group>
-      
-      {/* Hips */}
-      <mesh 
-        position={[0, 1.4, 0]} 
-        scale={[
-          avatarDimensions.hips * 0.9, 
-          0.2, 
-          avatarDimensions.hips * 0.6
-        ]}
-      >
-        <boxGeometry args={[0.6, 1, 0.4]} />
-        <meshStandardMaterial color={pantsColor} />
-      </mesh>
-      
-      {/* Left Leg */}
-      <mesh 
-        ref={leftLegRef} 
-        position={[-0.2, 0.7, 0]} 
-        scale={[1, measurements.inseam ? measurements.inseam / 70 : 1, 1]}
-      >
-        <cylinderGeometry args={[0.12, 0.1, 1.2, 16]} />
-        <meshStandardMaterial color={pantsColor} />
-      </mesh>
-      
-      {/* Right Leg */}
-      <mesh 
-        ref={rightLegRef} 
-        position={[0.2, 0.7, 0]} 
-        scale={[1, measurements.inseam ? measurements.inseam / 70 : 1, 1]}
-      >
-        <cylinderGeometry args={[0.12, 0.1, 1.2, 16]} />
-        <meshStandardMaterial color={pantsColor} />
-      </mesh>
+    <group ref={modelRef} position={[0, -0.5, 0]} scale={1}>
+      {/* Wireframe body */}
+      {bodyConnections.map((line, index) => (
+        <Line
+          key={index}
+          points={line}
+          color="white"
+          lineWidth={0.5}
+          transparent
+          opacity={0.7}
+        />
+      ))}
     </group>
   );
 }
