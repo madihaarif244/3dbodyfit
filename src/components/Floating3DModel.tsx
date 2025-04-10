@@ -56,11 +56,45 @@ export default function Floating3DModel() {
             {/* Enhanced gradient overlay with better colors */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-primary/20 to-transparent rounded-xl"></div>
             
-            {/* Body measurement visualization */}
+            {/* Body measurement visualization with actual body silhouette */}
             <div className="relative w-full h-full flex items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-black/40 to-primary/5">
-              {/* Abstract body silhouette with measurement lines */}
+              {/* Human body silhouette */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="relative h-4/5 w-1/2 rounded-3xl bg-black/10 border border-primary/30 backdrop-blur-sm">
+                <div className="relative h-4/5 w-1/2">
+                  {/* Body silhouette */}
+                  <svg 
+                    viewBox="0 0 100 240" 
+                    className="h-full w-auto mx-auto opacity-80"
+                  >
+                    <path 
+                      d="M50,10 
+                         C60,10 65,15 65,22 
+                         C65,29 60,32 60,35 
+                         C60,40 63,45 63,55 
+                         C63,65 57,75 53,85 
+                         L53,100
+                         C65,105 70,110 70,125
+                         C70,140 65,150 60,165
+                         L58,190
+                         C58,195 60,200 60,210
+                         C60,220 55,230 50,230
+                         C45,230 40,220 40,210
+                         C40,200 42,195 42,190
+                         L40,165
+                         C35,150 30,140 30,125
+                         C30,110 35,105 47,100
+                         L47,85
+                         C43,75 37,65 37,55
+                         C37,45 40,40 40,35
+                         C40,32 35,29 35,22
+                         C35,15 40,10 50,10Z" 
+                      fill="none"
+                      stroke="rgba(255,255,255,0.7)" 
+                      strokeWidth="1"
+                      className="fill-primary/10"
+                    />
+                  </svg>
+                  
                   {/* Body silhouette overlay */}
                   <div className="absolute inset-0 opacity-70 bg-gradient-to-b from-primary/10 via-primary/5 to-black/20 rounded-3xl"></div>
                 </div>
