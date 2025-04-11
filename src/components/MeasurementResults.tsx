@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -5,7 +6,6 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { ArrowRight, Redo, Download, Share2 } from "lucide-react";
 import AvatarModel from "./AvatarModel";
-import DatasetEvaluator from "./DatasetEvaluator";
 
 interface MeasurementResultsProps {
   measurements: Record<string, number>;
@@ -23,7 +23,6 @@ export default function MeasurementResults({
   landmarks
 }: MeasurementResultsProps) {
   const [measurementSystem, setMeasurementSystem] = useState<"metric" | "imperial">("metric");
-  const [showDatasetEvaluation, setShowDatasetEvaluation] = useState<boolean>(false);
   
   const toggleMeasurementSystem = () => {
     setMeasurementSystem(measurementSystem === "metric" ? "imperial" : "metric");
@@ -172,22 +171,6 @@ export default function MeasurementResults({
               </Button>
             </CardFooter>
           </Card>
-          
-          <div className="mt-4">
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={() => setShowDatasetEvaluation(!showDatasetEvaluation)}
-            >
-              {showDatasetEvaluation ? "Hide" : "Show"} Dataset Evaluation Tools
-            </Button>
-          </div>
-          
-          {showDatasetEvaluation && (
-            <div className="mt-4">
-              <DatasetEvaluator measurements={measurements} />
-            </div>
-          )}
         </div>
         
         <div className="bg-card rounded-lg overflow-hidden shadow-lg border-2 border-electric/10 h-[500px]">
