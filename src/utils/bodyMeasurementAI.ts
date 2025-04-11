@@ -1,6 +1,5 @@
 
-// This would be a real AI model integration in production
-// For now, we'll use mock data based on height and gender
+// This serves as a fallback when 3D body modeling is not available
 export const calculateBodyMeasurements = async (
   gender: string,
   height: string,
