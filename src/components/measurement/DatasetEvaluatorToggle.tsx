@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import DatasetEvaluator from "../DatasetEvaluator";
+import DatasetEvaluator from "./dataset-evaluator/DatasetEvaluator";
 
 interface DatasetEvaluatorToggleProps {
   measurements: Record<string, number>;
@@ -24,7 +24,7 @@ export default function DatasetEvaluatorToggle({ measurements }: DatasetEvaluato
       
       {showDatasetEvaluation && (
         <div className="mt-4 flex justify-center items-center w-full">
-          <div className="w-full max-w-4xl mx-auto">
+          <div className="w-full mx-auto">
             <DatasetEvaluator measurements={measurements} />
           </div>
         </div>
