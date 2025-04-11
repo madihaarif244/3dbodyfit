@@ -1,0 +1,12 @@
+
+#!/bin/bash
+
+# Check if node_modules exists, if not install dependencies
+if [ ! -d "node_modules" ]; then
+  echo "Installing dependencies..."
+  npm install
+fi
+
+# Run the application
+echo "Starting the application..."
+npm run dev
