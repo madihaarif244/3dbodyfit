@@ -6,6 +6,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { ArrowRight, Redo, Download, Share2 } from "lucide-react";
 import AvatarModel from "./AvatarModel";
+import DatasetEvaluator from "./DatasetEvaluator";
 
 interface MeasurementResultsProps {
   measurements: Record<string, number>;
@@ -171,6 +172,10 @@ export default function MeasurementResults({
               </Button>
             </CardFooter>
           </Card>
+          
+          <div className="mt-6">
+            <DatasetEvaluator measurements={measurements} />
+          </div>
         </div>
         
         <div className="bg-card rounded-lg overflow-hidden shadow-lg border-2 border-electric/10 h-[500px]">
