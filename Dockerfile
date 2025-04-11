@@ -12,8 +12,11 @@ RUN npm install
 # Copy the rest of the application
 COPY . .
 
+# Make the run script executable
+RUN chmod +x run.sh
+
 # Expose the port the app runs on
 EXPOSE 5173
 
 # Command to run the application
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["./run.sh"]
