@@ -23,8 +23,10 @@ export default function DatasetEvaluatorToggle({ measurements }: DatasetEvaluato
       </div>
       
       {showDatasetEvaluation && (
-        <div className="mt-4">
-          <DatasetEvaluator measurements={measurements} />
+        <div className="mt-4 flex justify-center">
+          <div className="w-full max-w-3xl">
+            <DatasetEvaluator measurements={measurements} />
+          </div>
         </div>
       )}
     </div>

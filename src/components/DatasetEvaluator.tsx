@@ -117,7 +117,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
     return (
       <div className="space-y-4 py-2">
         <div className="flex justify-between items-center">
-          <h3 className="font-medium">Overall Accuracy</h3>
+          <h3 className="font-medium text-white">Overall Accuracy</h3>
           <span className={`font-semibold ${accuracyColor}`}>{overallAccuracy}</span>
         </div>
         
@@ -139,8 +139,8 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
           {results.keyMeasurements.slice(0, 3).map((item) => (
             <div key={item.name} className="flex justify-between items-center">
               <div>
-                <span className="font-medium capitalize">{item.name}</span>
-                <p className="text-xs text-gray-400">
+                <span className="font-medium capitalize text-white">{item.name}</span>
+                <p className="text-xs text-gray-300">
                   {item.deviation > 10 ? "Consider recalibrating this measurement" : "Within acceptable range"}
                 </p>
               </div>
@@ -148,7 +148,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
                 <span className={item.deviation > 10 ? "text-red-400" : "text-green-400"}>
                   {item.deviation.toFixed(1)}% deviation
                 </span>
-                <p className="text-xs text-gray-400">{item.mae.toFixed(1)} cm difference</p>
+                <p className="text-xs text-gray-300">{item.mae.toFixed(1)} cm difference</p>
               </div>
             </div>
           ))}
@@ -165,7 +165,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <div className="flex justify-between">
-            <Label htmlFor="dataset-type">Dataset Type</Label>
+            <Label htmlFor="dataset-type" className="text-white">Dataset Type</Label>
             <div className="relative group">
               <Info className="h-4 w-4 text-gray-400 cursor-help" />
               <div className="absolute bottom-full mb-2 right-0 w-64 p-2 bg-gray-800 rounded text-xs invisible group-hover:visible z-10">
@@ -174,7 +174,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
             </div>
           </div>
           <Select value={datasetType} onValueChange={setDatasetType}>
-            <SelectTrigger id="dataset-type">
+            <SelectTrigger id="dataset-type" className="text-white">
               <SelectValue placeholder="Select dataset" />
             </SelectTrigger>
             <SelectContent>
@@ -187,7 +187,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
         
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="dataset-size">Sample Size</Label>
+            <Label htmlFor="dataset-size" className="text-white">Sample Size</Label>
             <Input 
               id="dataset-size"
               type="number" 
@@ -195,13 +195,14 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
               max={100}
               value={datasetSize} 
               onChange={(e) => setDatasetSize(parseInt(e.target.value) || 10)}
+              className="text-white"
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="accuracy-level">Accuracy Level</Label>
+            <Label htmlFor="accuracy-level" className="text-white">Accuracy Level</Label>
             <Select value={accuracyLevel} onValueChange={setAccuracyLevel}>
-              <SelectTrigger id="accuracy-level">
+              <SelectTrigger id="accuracy-level" className="text-white">
                 <SelectValue placeholder="Select accuracy" />
               </SelectTrigger>
               <SelectContent>
@@ -215,7 +216,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
         
         {isLoading && (
           <div className="space-y-2 py-2">
-            <Label>Loading dataset...</Label>
+            <Label className="text-white">Loading dataset...</Label>
             <Progress value={45} className="h-2" />
           </div>
         )}
@@ -228,14 +229,14 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
             </TabsList>
             <TabsContent value="summary">
               <div className="space-y-3 py-2">
-                <h3 className="font-medium">Results ({results.sampleCount} samples)</h3>
+                <h3 className="font-medium text-white">Results ({results.sampleCount} samples)</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-800 rounded-lg p-3">
-                    <div className="text-sm text-gray-400">Mean Absolute Error</div>
+                    <div className="text-sm text-gray-300">Mean Absolute Error</div>
                     <div className="text-lg font-semibold text-white">{results.mae.toFixed(2)} cm</div>
                   </div>
                   <div className="bg-gray-800 rounded-lg p-3">
-                    <div className="text-sm text-gray-400">Percentage Deviation</div>
+                    <div className="text-sm text-gray-300">Percentage Deviation</div>
                     <div className="text-lg font-semibold text-white">{results.percentageDeviation.toFixed(2)}%</div>
                   </div>
                 </div>
@@ -259,7 +260,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
         {results && (
           <Button 
             variant="outline" 
-            className="w-full gap-2 text-sm"
+            className="w-full gap-2 text-sm text-white"
             onClick={() => {
               toast({
                 title: "Report Downloaded",

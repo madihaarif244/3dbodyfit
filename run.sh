@@ -9,4 +9,4 @@ fi
 
 # Run the application using npx to ensure vite is found
 echo "Starting the application..."
-npx vite
+npm run dev
