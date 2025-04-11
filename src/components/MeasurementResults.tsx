@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -6,6 +7,7 @@ import { OrbitControls } from "@react-three/drei";
 import { ArrowRight, Redo, Download, Share2 } from "lucide-react";
 import AvatarModel from "./AvatarModel";
 import DatasetEvaluator from "./DatasetEvaluator";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface MeasurementResultsProps {
   measurements: Record<string, number>;
@@ -13,6 +15,7 @@ interface MeasurementResultsProps {
   onReset: () => void;
   isEstimated?: boolean;
   landmarks?: Record<string, {x: number, y: number, z: number, visibility?: number}>;
+  userImage?: string; // Added user image prop
 }
 
 export default function MeasurementResults({ 
@@ -20,7 +23,8 @@ export default function MeasurementResults({
   confidenceScore, 
   onReset,
   isEstimated = false,
-  landmarks
+  landmarks,
+  userImage // New prop for user image
 }: MeasurementResultsProps) {
   const [measurementSystem, setMeasurementSystem] = useState<"metric" | "imperial">("metric");
   const [showDatasetEvaluation, setShowDatasetEvaluation] = useState<boolean>(false);
@@ -98,7 +102,17 @@ export default function MeasurementResults({
           <Card className="bg-card border-none shadow-lg text-card-foreground">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-center mb-2">
-                <CardTitle className="text-xl font-semibold text-white">Your Body Measurements</CardTitle>
+                <div className="flex items-center gap-4">
+                  {userImage && (
+                    <Avatar className="h-14 w-14 border-2 border-electric">
+                      <AvatarImage src={userImage} alt="User photo" />
+                      <AvatarFallback className="bg-gray-700 text-white">
+                        {measurements.gender === 'male' ? 'M' : measurements.gender === 'female' ? 'F' : 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                  <CardTitle className="text-xl font-semibold text-white">Your Body Measurements</CardTitle>
+                </div>
                 <Button 
                   variant="outline" 
                   size="sm" 
