@@ -1,4 +1,3 @@
-
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
@@ -28,16 +27,20 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     }
   });
 
-  // Create a more detailed human body
+  // Create a more detailed human body with accurate proportions based on measurements
   const createHumanBody = () => {
-    // Scale factors based on measurements
-    const heightScale = measurements.height ? measurements.height / 170 : 1;
-    const shoulderScale = measurements.shoulder ? measurements.shoulder / 45 : 1.1;
-    const chestScale = measurements.chest ? measurements.chest / 95 : 1;
-    const waistScale = measurements.waist ? measurements.waist / 80 : 0.9;
-    const hipsScale = measurements.hips ? measurements.hips / 98 : 1;
+    // Scale factors based on measurements - using the height as reference
+    // Normalize to a standard height for 3D model proportions
+    const standardHeight = 170; // Average human height in cm
+    const heightScale = measurements.height ? measurements.height / standardHeight : 1;
     
-    // Base height
+    // Extract body proportions from measurements or use defaults with proper scaling
+    const shoulderScale = measurements.shoulder ? measurements.shoulder / (standardHeight * 0.26) : 1.1;
+    const chestScale = measurements.chest ? measurements.chest / (standardHeight * 0.52) : 1;
+    const waistScale = measurements.waist ? measurements.waist / (standardHeight * 0.46) : 0.9;
+    const hipsScale = measurements.hips ? measurements.hips / (standardHeight * 0.58) : 1;
+    
+    // Base height for the 3D model
     const baseHeight = 1.8 * heightScale;
     
     // Head (more detailed sphere)
@@ -45,18 +48,20 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     const headCenter: [number, number, number] = [0, baseHeight * 0.9, 0];
     const headPoints = generateDetailedSphere(headCenter, headRadius, 12, 12);
     
-    // Neck
+    // Neck - scaled by neck measurement if available
+    const neckScale = measurements.neck ? (measurements.neck / (standardHeight * 0.19)) : 1;
     const neckTop = baseHeight * 0.87;
     const neckBottom = baseHeight * 0.83;
-    const neckWidth = baseHeight * 0.025;
+    const neckWidth = baseHeight * 0.025 * neckScale;
     const neckPoints = generateCylinder(
       [0, neckTop, 0],
       [0, neckBottom, 0],
       neckWidth, 8
     );
     
-    // Torso (more detailed)
+    // Torso (more detailed and accurately scaled)
     const shoulderWidth = baseHeight * 0.25 * shoulderScale;
+    const chestWidth = baseHeight * 0.18 * chestScale;
     const waistWidth = baseHeight * 0.15 * waistScale;
     const torsoHeight = baseHeight * 0.35;
     
@@ -69,10 +74,29 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     for (let i = 0; i <= torsoSegments; i++) {
       const t = i / torsoSegments;
       const y = torsoTop - t * torsoHeight;
-      const curveT = Math.sin(t * Math.PI);
-      const width = shoulderWidth * (1 - t) + waistWidth * t;
-      const chestFactor = Math.sin(t * Math.PI * 0.5) * chestScale;
-      const depth = width * 0.6 * (1 + chestFactor * 0.3);
+      
+      // Create a more accurate body shape interpolating between shoulder, chest and waist
+      let width;
+      let depthFactor;
+      
+      if (t < 0.15) {
+        // Shoulder to upper chest
+        const localT = t / 0.15;
+        width = shoulderWidth * (1 - localT) + chestWidth * localT;
+        depthFactor = 0.7 + localT * 0.3;
+      } else if (t < 0.45) {
+        // Chest area
+        const localT = (t - 0.15) / 0.3;
+        width = chestWidth * (1 - localT * 0.25);
+        depthFactor = 1.0;
+      } else {
+        // Chest to waist
+        const localT = (t - 0.45) / 0.55;
+        width = chestWidth * (0.75 - localT * 0.35) + waistWidth * localT;
+        depthFactor = 1.0 - localT * 0.3;
+      }
+      
+      const depth = width * depthFactor;
       
       for (let j = 0; j < 16; j++) {
         const angle = (j / 16) * Math.PI * 2;
@@ -82,7 +106,7 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
       }
     }
     
-    // Hips
+    // Hips - accurately scaled based on hip measurement
     const hipsWidth = baseHeight * 0.18 * hipsScale;
     const hipsHeight = baseHeight * 0.1;
     const hipsTop = torsoBottom;
@@ -106,11 +130,12 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
       }
     }
     
-    // Arms with hands
+    // Arms with hands - scaled based on measurements
+    const sleeveLength = measurements.sleeve ? measurements.sleeve / standardHeight * 1.8 : baseHeight * 0.55;
     const shoulderY = torsoTop - baseHeight * 0.02;
-    const armLength = baseHeight * 0.3;
+    const armLength = sleeveLength * 0.55; // Upper arm is ~55% of sleeve length
     const armWidth = baseHeight * 0.04;
-    const forearmLength = baseHeight * 0.25;
+    const forearmLength = sleeveLength * 0.45; // Forearm is ~45% of sleeve length
     
     const leftShoulderX = -shoulderWidth;
     const leftElbowX = leftShoulderX - armLength * 0.2;
@@ -162,9 +187,14 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
       1
     );
     
-    const legLength = baseHeight * 0.45;
-    const lowerLegLength = baseHeight * 0.4;
-    const legWidth = baseHeight * 0.06;
+    // Legs - using inseam for proper scaling
+    const inseamLength = measurements.inseam ? measurements.inseam / standardHeight * 1.8 : baseHeight * 0.85;
+    const legLength = inseamLength * 0.53; // Upper leg is ~53% of inseam
+    const lowerLegLength = inseamLength * 0.47; // Lower leg is ~47% of inseam
+    
+    const legWidth = measurements.thigh ? 
+      baseHeight * (measurements.thigh / standardHeight) * 0.32 : 
+      baseHeight * 0.06;
     
     const leftHipX = -hipsWidth * 0.6;
     const leftKneeX = leftHipX;
@@ -181,7 +211,7 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     const leftLowerLegPoints = generateCylinder(
       [leftKneeX, leftKneeY, 0],
       [leftAnkleX, leftAnkleY, 0],
-      legWidth * 0.8, 8
+      legWidth * 0.6, 8
     );
     
     const leftFootPoints = generateFoot(
@@ -206,7 +236,7 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     const rightLowerLegPoints = generateCylinder(
       [rightKneeX, rightKneeY, 0],
       [rightAnkleX, rightAnkleY, 0],
-      legWidth * 0.8, 8
+      legWidth * 0.6, 8
     );
     
     const rightFootPoints = generateFoot(

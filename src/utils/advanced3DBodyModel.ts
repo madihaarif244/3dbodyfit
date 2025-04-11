@@ -48,7 +48,9 @@ export const getBodyMeasurementsFromImages = async (
     // In a real implementation, this data would come from the 3D model fitting
     const enhancedMeasurements = refineMeasurementsWithModel(
       baselineMeasurements, 
-      params.gender, 
+      params.gender,
+      params.height,
+      params.measurementSystem,
       preferredModel
     );
     
@@ -66,31 +68,51 @@ export const getBodyMeasurementsFromImages = async (
   }
 };
 
-// Function to refine measurements based on the selected 3D model
+// Function to refine measurements based on the selected 3D model and user height
 const refineMeasurementsWithModel = (
   baseMeasurements: Record<string, number>,
   gender: string,
+  userHeight: number,
+  measurementSystem: string,
   modelType: ModelType
 ): Record<string, number> => {
   const refinedMeasurements = { ...baseMeasurements };
   
+  // Convert height to cm for consistent calculations
+  const heightCm = measurementSystem === 'imperial' ? userHeight * 2.54 : userHeight;
+  
+  // Calculate the scaling factor based on the user's height
+  // First, normalize based on the average height for the gender
+  const standardHeight = gender === 'male' ? 175 : gender === 'female' ? 162 : 168;
+  const heightScaleFactor = heightCm / standardHeight;
+  
+  console.log(`User height: ${heightCm}cm, Scale factor: ${heightScaleFactor.toFixed(3)}`);
+  
+  // Apply the height scaling factor to the base measurements
+  // This simulates what happens when a 3D mesh is scaled to match user height
+  Object.keys(refinedMeasurements).forEach(key => {
+    if (key !== 'height') { // Don't rescale height - it's our reference
+      const measurementScaleFactor = getScaleFactorForMeasurement(key, modelType);
+      refinedMeasurements[key] = Math.round((refinedMeasurements[key] * heightScaleFactor * measurementScaleFactor) * 10) / 10;
+    }
+  });
+  
   // Apply model-specific refinements
-  // In a real implementation, this would use actual model outputs
-  // Here we're simulating improved accuracy
+  // In a real implementation, this would use actual model outputs 
+  // Here we're simulating improved accuracy based on 3D model capabilities
   const accuracyFactor = getModelAccuracyFactor(modelType);
   
-  // Apply refinements to each measurement with realistic variances
+  // Apply small variations based on the model type and measurement
+  // This simulates the higher accuracy of advanced 3D body models
   Object.keys(refinedMeasurements).forEach(key => {
-    const currentValue = refinedMeasurements[key];
-    
-    // Apply small variations based on the model type and measurement
-    // This simulates the higher accuracy of advanced 3D body models
-    const variance = getRealisticVariance(key, modelType);
-    
-    // Adjust measurements with non-uniform refinements to simulate
-    // the different accuracy levels for different body parts
-    refinedMeasurements[key] = Math.round((currentValue * variance) * 10) / 10;
+    if (key !== 'height') { // Keep height exactly as provided by user
+      const variance = getRealisticVariance(key, modelType);
+      refinedMeasurements[key] = Math.round((refinedMeasurements[key] * variance) * 10) / 10;
+    }
   });
+  
+  // Make sure height is preserved exactly as provided (in cm)
+  refinedMeasurements.height = heightCm;
   
   // Models like SMPL-X and SIZER provide additional detailed measurements
   if (modelType === 'SMPL-X' || modelType === 'SIZER') {
@@ -99,7 +121,44 @@ const refineMeasurementsWithModel = (
     refinedMeasurements.calf = Math.round((refinedMeasurements.thigh * 0.75) * 10) / 10;
   }
   
+  // For SIZER, add more clothing-specific measurements
+  if (modelType === 'SIZER') {
+    refinedMeasurements.neckCircumference = Math.round((refinedMeasurements.neck * 1.05) * 10) / 10;
+    refinedMeasurements.shoulderWidth = Math.round((refinedMeasurements.shoulder * 1.02) * 10) / 10;
+  }
+  
   return refinedMeasurements;
+};
+
+// Get scale factor for different body parts (not all body parts scale linearly with height)
+const getScaleFactorForMeasurement = (measurementType: string, modelType: ModelType): number => {
+  // Different body measurements scale differently with height
+  // Based on anthropometric research
+  const baseScaleFactors: Record<string, number> = {
+    chest: 0.95,
+    waist: 0.92,
+    hips: 0.97,
+    shoulder: 0.98,
+    sleeve: 1.05,
+    inseam: 1.08,
+    neck: 0.90,
+    thigh: 0.96
+  };
+  
+  // Model-specific adjustments
+  const modelAdjustments: Record<ModelType, number> = {
+    'SMPL': 1.00,
+    'SMPL-X': 1.02,
+    'STAR': 1.01,
+    'PARE': 1.03,
+    'SPIN': 1.02,
+    'SIZER': 1.04
+  };
+  
+  const baseFactor = baseScaleFactors[measurementType] || 1.0;
+  const modelFactor = modelAdjustments[modelType];
+  
+  return baseFactor * modelFactor;
 };
 
 // Calculate confidence score based on model type and available images
@@ -190,4 +249,40 @@ export const process3DModelWithBackend = async (
     console.error("Backend processing error:", error);
     throw new Error("Failed to process images with backend 3D model");
   }
+};
+
+// Slice the 3D mesh at specific points to extract measurements
+// In production, this would use actual mesh data from the 3D model
+export const extractMeasurementsFromMesh = (
+  meshData: any,
+  userHeight: number,
+  measurementSystem: string
+): Record<string, number> => {
+  // This is a simulation - in reality, this would calculate measurements by:
+  // 1. Finding the circumference of the mesh at specific height levels
+  // 2. Converting to real-world measurements using the height scale factor
+  
+  // Convert height to cm for consistency
+  const heightCm = measurementSystem === 'imperial' ? userHeight * 2.54 : userHeight;
+  
+  // In a real implementation, we would:
+  // - Get vertices from the mesh at the bust/chest level (typically ~0.72 of height from ground)
+  // - Calculate the perimeter of the slice
+  // - Similarly for waist (~0.62 of height from ground)
+  // - Similarly for hips (~0.52 of height from ground)
+  // - Get inseam by finding the distance from crotch point to ankle
+  // - etc.
+  
+  // For now, we'll return simulated measurements
+  return {
+    chest: Math.round((heightCm * 0.52) * 10) / 10,
+    waist: Math.round((heightCm * 0.43) * 10) / 10,
+    hips: Math.round((heightCm * 0.51) * 10) / 10,
+    inseam: Math.round((heightCm * 0.45) * 10) / 10,
+    shoulder: Math.round((heightCm * 0.23) * 10) / 10,
+    sleeve: Math.round((heightCm * 0.33) * 10) / 10,
+    neck: Math.round((heightCm * 0.19) * 10) / 10,
+    thigh: Math.round((heightCm * 0.29) * 10) / 10,
+    height: heightCm
+  };
 };

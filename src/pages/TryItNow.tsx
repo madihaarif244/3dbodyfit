@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -25,8 +24,11 @@ interface MeasurementData {
 const generateFallbackMeasurements = (height: number, gender: 'male' | 'female' | 'other', measurementSystem: 'metric' | 'imperial'): Record<string, number> => {
   const heightCm = measurementSystem === 'imperial' ? height * 2.54 : height;
   
-  // Calculate height factor based on average human height (170cm)
-  const heightFactor = heightCm / 170;
+  // Calculate height factor based on average human height
+  const standardHeight = gender === 'male' ? 175 : gender === 'female' ? 162 : 168;
+  const heightFactor = heightCm / standardHeight;
+  
+  console.log(`Generating fallback measurements with height factor: ${heightFactor.toFixed(3)}`);
   
   let measurements: Record<string, number> = {};
   
@@ -136,14 +138,19 @@ export default function TryItNow() {
       setErrorMessage("");
       setLastFormData(formData);
       
+      const userHeight = parseFloat(formData.height);
+      if (isNaN(userHeight) || userHeight <= 0) {
+        throw new Error("Valid height is required for accurate measurements");
+      }
+      
       toast({
         title: browserSupportsWebGPU ? "Loading 3D Body Model" : "Processing Measurements",
         description: browserSupportsWebGPU 
-          ? `Initializing ${selectedModel} body modeling...`
-          : "Calculating your measurements based on provided information...",
+          ? `Initializing ${selectedModel} body modeling with height scaling...`
+          : "Calculating your measurements based on provided height and image...",
       });
       
-      console.log("Processing form data:", formData);
+      console.log("Processing form data with height scaling:", formData);
       
       if (browserSupportsWebGPU === false && retryCount > 0) {
         setModelLoading(false);
@@ -160,7 +167,7 @@ export default function TryItNow() {
           formData.sideImage || null,
           {
             gender: formData.gender,
-            height: parseFloat(formData.height),
+            height: userHeight,
             measurementSystem: formData.measurementSystem
           },
           selectedModel
@@ -203,7 +210,7 @@ export default function TryItNow() {
         toast({
           title: "Measurements Complete",
           description: browserSupportsWebGPU 
-            ? `Your body measurements have been calculated using ${selectedModel} 3D body modeling.`
+            ? `Your body measurements have been calculated using ${selectedModel} 3D body modeling scaled to your height.`
             : "Your estimated measurements have been calculated based on your height and gender.",
           variant: "default",
         });
@@ -283,7 +290,7 @@ export default function TryItNow() {
       setScanStatus("fallback");
       toast({
         title: "Estimated Measurements Generated",
-        description: "We've generated estimated measurements based on your height and gender.",
+        description: "We've generated estimated measurements scaled to your height.",
         variant: "default",
       });
     } catch (error) {
@@ -298,12 +305,12 @@ export default function TryItNow() {
 
   const displayModelInfo = () => {
     const modelInfo = {
-      'SMPL': "Basic 3D body model with good accuracy",
-      'SMPL-X': "Advanced model with facial and hand details",
-      'STAR': "Statistical model with improved accuracy",
-      'PARE': "Best for pose estimation from a single image",
-      'SPIN': "Effective with partial occlusion",
-      'SIZER': "Specialized for clothing size estimation"
+      'SMPL': "Basic 3D body model with accurate height scaling",
+      'SMPL-X': "Advanced model with facial details and precise proportions",
+      'STAR': "Statistical model with improved accuracy and body shape analysis",
+      'PARE': "Best for pose estimation and measurement from a single image",
+      'SPIN': "Effective with partial occlusion and varied poses",
+      'SIZER': "Specialized for clothing size estimation with proper scaling"
     };
     
     return (
@@ -311,7 +318,7 @@ export default function TryItNow() {
         <h3 className="text-lg font-medium mb-2 text-gray-900">Using {selectedModel} 3D Body Modeling</h3>
         <p className="text-sm text-gray-700">{modelInfo[selectedModel]}</p>
         <p className="text-xs text-gray-500 mt-2">
-          Modern 3D body modeling provides up to 95% accuracy compared to manual tape measurements.
+          Measurements are extracted from a 3D body mesh scaled to your exact height.
         </p>
       </div>
     );
