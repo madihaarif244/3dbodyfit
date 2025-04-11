@@ -95,6 +95,17 @@ export default function MeasurementResults({
   
   const hasLandmarks = landmarks && Object.keys(landmarks).length > 0;
   
+  // Helper function to get avatar fallback text
+  const getAvatarFallback = () => {
+    // Since measurements is a Record<string, number>, we need to handle gender differently
+    // Check if gender exists in measurements as a custom property that might have been added
+    const gender = measurements.hasOwnProperty('gender') ? String(measurements.gender) : 'U';
+    
+    if (gender === 'male' || gender === 'Male') return 'M';
+    if (gender === 'female' || gender === 'Female') return 'F';
+    return 'U';
+  };
+  
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -107,7 +118,7 @@ export default function MeasurementResults({
                     <Avatar className="h-14 w-14 border-2 border-electric">
                       <AvatarImage src={userImage} alt="User photo" />
                       <AvatarFallback className="bg-gray-700 text-white">
-                        {measurements.gender === 'male' ? 'M' : measurements.gender === 'female' ? 'F' : 'U'}
+                        {getAvatarFallback()}
                       </AvatarFallback>
                     </Avatar>
                   )}
