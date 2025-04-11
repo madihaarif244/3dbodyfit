@@ -7,6 +7,7 @@ if [ ! -d "node_modules" ]; then
   npm install
 fi
 
-# Run the application
+# Run the application using npx to ensure vite is found
 echo "Starting the application..."
-npm run dev
+npx vite
+

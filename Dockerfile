@@ -12,11 +12,9 @@ RUN npm install
 # Copy the rest of the application
 COPY . .
 
-# Make sure vite is available globally or via npx
-RUN npm install -g vite
-
 # Expose the port the app runs on
 EXPOSE 5173
 
-# Command to run the application
+# Command to run the application using npx
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+
