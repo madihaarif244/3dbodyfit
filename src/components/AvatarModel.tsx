@@ -1,3 +1,4 @@
+
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
@@ -28,7 +29,7 @@ export default function AvatarModel({ measurements, landmarks }: AvatarModelProp
     }
   });
 
-  // Create a more detailed human body with accurate proportions based on measurements
+  // Create a more elegant human body with accurate proportions based on measurements
   const createHumanBody = () => {
     // Scale factors based on measurements - using the height as reference
     // Normalize to a standard height for 3D model proportions
@@ -44,415 +45,128 @@ export default function AvatarModel({ measurements, landmarks }: AvatarModelProp
     // Base height for the 3D model
     const baseHeight = 1.8 * heightScale;
     
-    // Head (more detailed sphere)
-    const headRadius = baseHeight * 0.08;
-    const headCenter: [number, number, number] = [0, baseHeight * 0.9, 0];
-    const headPoints = generateDetailedSphere(headCenter, headRadius, 12, 12);
+    // Simple, clean model points
+    const bodySegments = {
+      // Torso - central structure
+      torso: createTorso(baseHeight, shoulderScale, chestScale, waistScale),
+      
+      // Limbs - cleaner, less wireframe-like
+      arms: createArms(baseHeight, shoulderScale),
+      legs: createLegs(baseHeight, hipsScale),
+      
+      // Head
+      head: createHead(baseHeight)
+    };
     
-    // Neck - scaled by neck measurement if available
-    const neckScale = measurements.neck ? (measurements.neck / (standardHeight * 0.19)) : 1;
-    const neckTop = baseHeight * 0.87;
-    const neckBottom = baseHeight * 0.83;
-    const neckWidth = baseHeight * 0.025 * neckScale;
-    const neckPoints = generateCylinder(
-      [0, neckTop, 0],
-      [0, neckBottom, 0],
-      neckWidth, 8
-    );
-    
-    // Torso (more detailed and accurately scaled)
+    return bodySegments;
+  };
+  
+  const createTorso = (baseHeight: number, shoulderScale: number, chestScale: number, waistScale: number) => {
     const shoulderWidth = baseHeight * 0.25 * shoulderScale;
     const chestWidth = baseHeight * 0.18 * chestScale;
     const waistWidth = baseHeight * 0.15 * waistScale;
-    const torsoHeight = baseHeight * 0.35;
     
     const torsoTop = baseHeight * 0.8;
-    const torsoBottom = torsoTop - torsoHeight;
+    const torsoBottom = baseHeight * 0.45;
     
-    const torsoPoints: [number, number, number][] = [];
-    const torsoSegments = 12;
+    const points: [number, number, number][] = [];
+    // Add shoulder line
+    points.push([-shoulderWidth, torsoTop, 0]);
+    points.push([shoulderWidth, torsoTop, 0]);
     
-    for (let i = 0; i <= torsoSegments; i++) {
-      const t = i / torsoSegments;
-      const y = torsoTop - t * torsoHeight;
-      
-      // Create a more accurate body shape interpolating between shoulder, chest and waist
-      let width;
-      let depthFactor;
-      
-      if (t < 0.15) {
-        // Shoulder to upper chest
-        const localT = t / 0.15;
-        width = shoulderWidth * (1 - localT) + chestWidth * localT;
-        depthFactor = 0.7 + localT * 0.3;
-      } else if (t < 0.45) {
-        // Chest area
-        const localT = (t - 0.15) / 0.3;
-        width = chestWidth * (1 - localT * 0.25);
-        depthFactor = 1.0;
-      } else {
-        // Chest to waist
-        const localT = (t - 0.45) / 0.55;
-        width = chestWidth * (0.75 - localT * 0.35) + waistWidth * localT;
-        depthFactor = 1.0 - localT * 0.3;
-      }
-      
-      const depth = width * depthFactor;
-      
-      for (let j = 0; j < 16; j++) {
-        const angle = (j / 16) * Math.PI * 2;
-        const x = Math.cos(angle) * width;
-        const z = Math.sin(angle) * depth;
-        torsoPoints.push([x, y, z]);
-      }
-    }
+    // Add right side profile line
+    points.push([shoulderWidth, torsoTop, 0]);
+    points.push([chestWidth, torsoTop * 0.9, 0]);
+    points.push([waistWidth, torsoBottom, 0]);
     
-    // Hips - accurately scaled based on hip measurement
-    const hipsWidth = baseHeight * 0.18 * hipsScale;
-    const hipsHeight = baseHeight * 0.1;
-    const hipsTop = torsoBottom;
-    const hipsBottom = hipsTop - hipsHeight;
+    // Add left side profile line
+    points.push([-shoulderWidth, torsoTop, 0]);
+    points.push([-chestWidth, torsoTop * 0.9, 0]);
+    points.push([-waistWidth, torsoBottom, 0]);
     
-    const hipsPoints: [number, number, number][] = [];
-    const hipsSegments = 6;
+    // Add waist line connecting sides
+    points.push([-waistWidth, torsoBottom, 0]);
+    points.push([waistWidth, torsoBottom, 0]);
     
-    for (let i = 0; i <= hipsSegments; i++) {
-      const t = i / hipsSegments;
-      const y = hipsTop - t * hipsHeight;
-      const hipCurve = Math.sin(t * Math.PI * 0.5);
-      const width = waistWidth * (1 - t) + hipsWidth * t * (1 + hipCurve * 0.2);
-      const depth = width * 0.7;
-      
-      for (let j = 0; j < 16; j++) {
-        const angle = (j / 16) * Math.PI * 2;
-        const x = Math.cos(angle) * width;
-        const z = Math.sin(angle) * depth;
-        hipsPoints.push([x, y, z]);
-      }
-    }
+    // Add central line
+    points.push([0, torsoTop, 0]);
+    points.push([0, torsoBottom, 0]);
     
-    // Arms with hands - scaled based on measurements
-    const sleeveLength = measurements.sleeve ? measurements.sleeve / standardHeight * 1.8 : baseHeight * 0.55;
-    const shoulderY = torsoTop - baseHeight * 0.02;
-    const armLength = sleeveLength * 0.55; // Upper arm is ~55% of sleeve length
-    const armWidth = baseHeight * 0.04;
-    const forearmLength = sleeveLength * 0.45; // Forearm is ~45% of sleeve length
-    
-    const leftShoulderX = -shoulderWidth;
-    const leftElbowX = leftShoulderX - armLength * 0.2;
-    const leftElbowY = shoulderY - armLength;
-    const leftWristX = leftElbowX - forearmLength * 0.2;
-    const leftWristY = leftElbowY - forearmLength;
-    
-    const leftUpperArmPoints = generateCylinder(
-      [leftShoulderX, shoulderY, 0],
-      [leftElbowX, leftElbowY, 0],
-      armWidth, 8
-    );
-    
-    const leftForearmPoints = generateCylinder(
-      [leftElbowX, leftElbowY, 0],
-      [leftWristX, leftWristY, 0],
-      armWidth * 0.8, 8
-    );
-    
-    const leftHandPoints = generateDetailedHand(
-      [leftWristX, leftWristY, 0],
-      baseHeight * 0.1,
-      baseHeight * 0.02,
-      -1
-    );
-    
-    const rightShoulderX = shoulderWidth;
-    const rightElbowX = rightShoulderX + armLength * 0.2;
-    const rightElbowY = shoulderY - armLength;
-    const rightWristX = rightElbowX + forearmLength * 0.2;
-    const rightWristY = rightElbowY - forearmLength;
-    
-    const rightUpperArmPoints = generateCylinder(
-      [rightShoulderX, shoulderY, 0],
-      [rightElbowX, rightElbowY, 0],
-      armWidth, 8
-    );
-    
-    const rightForearmPoints = generateCylinder(
-      [rightElbowX, rightElbowY, 0],
-      [rightWristX, rightWristY, 0],
-      armWidth * 0.8, 8
-    );
-    
-    const rightHandPoints = generateDetailedHand(
-      [rightWristX, rightWristY, 0],
-      baseHeight * 0.1,
-      baseHeight * 0.02,
-      1
-    );
-    
-    // Legs - using inseam for proper scaling
-    const inseamLength = measurements.inseam ? measurements.inseam / standardHeight * 1.8 : baseHeight * 0.85;
-    const legLength = inseamLength * 0.53; // Upper leg is ~53% of inseam
-    const lowerLegLength = inseamLength * 0.47; // Lower leg is ~47% of inseam
-    
-    const legWidth = measurements.thigh ? 
-      baseHeight * (measurements.thigh / standardHeight) * 0.32 : 
-      baseHeight * 0.06;
-    
-    const leftHipX = -hipsWidth * 0.6;
-    const leftKneeX = leftHipX;
-    const leftKneeY = hipsBottom - legLength;
-    const leftAnkleX = leftKneeX;
-    const leftAnkleY = leftKneeY - lowerLegLength;
-    
-    const leftUpperLegPoints = generateCylinder(
-      [leftHipX, hipsBottom, 0],
-      [leftKneeX, leftKneeY, 0],
-      legWidth, 8
-    );
-    
-    const leftLowerLegPoints = generateCylinder(
-      [leftKneeX, leftKneeY, 0],
-      [leftAnkleX, leftAnkleY, 0],
-      legWidth * 0.6, 8
-    );
-    
-    const leftFootPoints = generateFoot(
-      [leftAnkleX, leftAnkleY, 0],
-      baseHeight * 0.15,
-      baseHeight * 0.04,
-      -1
-    );
-    
-    const rightHipX = hipsWidth * 0.6;
-    const rightKneeX = rightHipX;
-    const rightKneeY = hipsBottom - legLength;
-    const rightAnkleX = rightKneeX;
-    const rightAnkleY = rightKneeY - lowerLegLength;
-    
-    const rightUpperLegPoints = generateCylinder(
-      [rightHipX, hipsBottom, 0],
-      [rightKneeX, rightKneeY, 0],
-      legWidth, 8
-    );
-    
-    const rightLowerLegPoints = generateCylinder(
-      [rightKneeX, rightKneeY, 0],
-      [rightAnkleX, rightAnkleY, 0],
-      legWidth * 0.6, 8
-    );
-    
-    const rightFootPoints = generateFoot(
-      [rightAnkleX, rightAnkleY, 0],
-      baseHeight * 0.15,
-      baseHeight * 0.04,
-      1
-    );
-    
-    return {
-      headPoints,
-      neckPoints,
-      torsoPoints,
-      hipsPoints,
-      leftUpperArmPoints,
-      leftForearmPoints,
-      leftHandPoints,
-      rightUpperArmPoints,
-      rightForearmPoints,
-      rightHandPoints,
-      leftUpperLegPoints,
-      leftLowerLegPoints,
-      leftFootPoints,
-      rightUpperLegPoints,
-      rightLowerLegPoints,
-      rightFootPoints
-    };
+    return points;
   };
-
-  const generateDetailedHand = (
-    wristPos: [number, number, number],
-    handLength: number,
-    fingerWidth: number,
-    side: number
-  ) => {
+  
+  const createArms = (baseHeight: number, shoulderScale: number) => {
+    const shoulderWidth = baseHeight * 0.25 * shoulderScale;
+    const shoulderY = baseHeight * 0.8;
+    const handY = baseHeight * 0.4;
+    const elbowOffset = baseHeight * 0.05;
+    
     const points: [number, number, number][] = [];
     
-    const palmWidth = handLength * 0.4;
-    const palmLength = handLength * 0.5;
-    const palmPoints = generateBox(
-      [wristPos[0], wristPos[1] - palmLength * 0.5, wristPos[2]],
-      side * palmWidth,
-      palmLength,
-      fingerWidth * 2
-    );
-    points.push(...palmPoints);
+    // Right arm
+    points.push([shoulderWidth, shoulderY, 0]);
+    points.push([shoulderWidth + elbowOffset, shoulderY - baseHeight * 0.2, 0]);
+    points.push([shoulderWidth, handY, 0]);
     
-    const fingerCount = 5;
-    const fingerSpacing = palmWidth * 2 / (fingerCount - 1);
-    const fingerLength = handLength * 0.5;
+    // Left arm
+    points.push([-shoulderWidth, shoulderY, 0]);
+    points.push([-shoulderWidth - elbowOffset, shoulderY - baseHeight * 0.2, 0]);
+    points.push([-shoulderWidth, handY, 0]);
     
-    for (let i = 0; i < fingerCount; i++) {
-      const fingerBaseX = wristPos[0] + side * (palmWidth - i * fingerSpacing);
-      const fingerBaseY = wristPos[1] - palmLength;
-      const fingerBaseZ = 0;
-      
-      let thisFingerLength = fingerLength;
-      if (i === 0) thisFingerLength *= 0.8;
-      if (i === 2) thisFingerLength *= 1.1;
-      if (i === 3) thisFingerLength *= 0.9;
-      if (i === 4) thisFingerLength *= 0.7;
-      
-      points.push(...generateCylinder(
-        [fingerBaseX, fingerBaseY, fingerBaseZ],
-        [fingerBaseX, fingerBaseY - thisFingerLength, fingerBaseZ],
-        fingerWidth,
-        4
-      ));
+    return points;
+  };
+  
+  const createLegs = (baseHeight: number, hipsScale: number) => {
+    const hipWidth = baseHeight * 0.18 * hipsScale;
+    const hipY = baseHeight * 0.45;
+    const kneeY = baseHeight * 0.25;
+    const footY = 0;
+    const kneeOffset = baseHeight * 0.03;
+    
+    const points: [number, number, number][] = [];
+    
+    // Connect the hip line
+    points.push([-hipWidth, hipY, 0]);
+    points.push([hipWidth, hipY, 0]);
+    
+    // Right leg
+    points.push([hipWidth * 0.7, hipY, 0]);
+    points.push([hipWidth * 0.7 + kneeOffset, kneeY, 0]);
+    points.push([hipWidth * 0.7, footY, 0]);
+    
+    // Left leg
+    points.push([-hipWidth * 0.7, hipY, 0]);
+    points.push([-hipWidth * 0.7 - kneeOffset, kneeY, 0]);
+    points.push([-hipWidth * 0.7, footY, 0]);
+    
+    return points;
+  };
+  
+  const createHead = (baseHeight: number) => {
+    const neckTop = baseHeight * 0.9;
+    const headCenter = baseHeight * 0.95;
+    const headRadius = baseHeight * 0.08;
+    
+    // Simple head outline
+    const points: [number, number, number][] = [];
+    
+    // Neck line
+    points.push([0, baseHeight * 0.8, 0]);
+    points.push([0, neckTop, 0]);
+    
+    // Create a circle for head using points
+    const segments = 12;
+    for (let i = 0; i <= segments; i++) {
+      const angle = (i / segments) * Math.PI * 2;
+      const x = Math.cos(angle) * headRadius;
+      const y = Math.sin(angle) * headRadius + headCenter;
+      points.push([x, y, 0]);
     }
     
     return points;
   };
-
-  const generateFoot = (
-    anklePos: [number, number, number],
-    footLength: number,
-    footWidth: number,
-    side: number
-  ) => {
-    const points: [number, number, number][] = [];
-    
-    const footCenter: [number, number, number] = [
-      anklePos[0] + side * footLength * 0.3,
-      anklePos[1] - footWidth,
-      anklePos[2]
-    ];
-    
-    points.push(...generateBox(
-      footCenter,
-      footLength,
-      footWidth * 2,
-      footWidth * 3
-    ));
-    
-    return points;
-  };
-
-  const generateBox = (
-    center: [number, number, number],
-    width: number,
-    height: number,
-    depth: number
-  ) => {
-    const points: [number, number, number][] = [];
-    const halfWidth = width * 0.5;
-    const halfHeight = height * 0.5;
-    const halfDepth = depth * 0.5;
-    
-    const vertices: [number, number, number][] = [
-      [center[0] - halfWidth, center[1] - halfHeight, center[2] - halfDepth],
-      [center[0] + halfWidth, center[1] - halfHeight, center[2] - halfDepth],
-      [center[0] + halfWidth, center[1] + halfHeight, center[2] - halfDepth],
-      [center[0] - halfWidth, center[1] + halfHeight, center[2] - halfDepth],
-      [center[0] - halfWidth, center[1] - halfHeight, center[2] + halfDepth],
-      [center[0] + halfWidth, center[1] - halfHeight, center[2] + halfDepth],
-      [center[0] + halfWidth, center[1] + halfHeight, center[2] + halfDepth],
-      [center[0] - halfWidth, center[1] + halfHeight, center[2] + halfDepth],
-    ];
-    
-    points.push(...vertices);
-    return points;
-  };
-
-  const generateDetailedSphere = (center: [number, number, number], radius: number, segments: number, rings: number) => {
-    const points: [number, number, number][] = [];
-    
-    for (let i = 0; i <= rings; i++) {
-      const phi = (Math.PI * i) / rings;
-      for (let j = 0; j <= segments; j++) {
-        const theta = (2 * Math.PI * j) / segments;
-        const x = center[0] + radius * Math.sin(phi) * Math.cos(theta);
-        const y = center[1] + radius * Math.cos(phi);
-        const z = center[2] + radius * Math.sin(phi) * Math.sin(theta);
-        points.push([x, y, z]);
-      }
-    }
-    
-    return points;
-  };
-
-  const generateCylinder = (
-    start: [number, number, number], 
-    end: [number, number, number], 
-    radius: number, 
-    segments: number
-  ) => {
-    const points: [number, number, number][] = [];
-    const direction = new THREE.Vector3(
-      end[0] - start[0],
-      end[1] - start[1],
-      end[2] - start[2]
-    );
-    const length = direction.length();
-    direction.normalize();
-    
-    const perpVec = new THREE.Vector3(1, 0, 0);
-    if (Math.abs(direction.dot(perpVec)) > 0.99) {
-      perpVec.set(0, 1, 0);
-    }
-    
-    const sideVec = new THREE.Vector3().crossVectors(direction, perpVec).normalize();
-    const upVec = new THREE.Vector3().crossVectors(sideVec, direction).normalize();
-    
-    const cylinderSegments = 5;
-    
-    for (let i = 0; i <= cylinderSegments; i++) {
-      const t = i / cylinderSegments;
-      const segCenter = [
-        start[0] + direction.x * length * t,
-        start[1] + direction.y * length * t,
-        start[2] + direction.z * length * t
-      ] as [number, number, number];
-      
-      for (let j = 0; j < segments; j++) {
-        const angle = (j / segments) * Math.PI * 2;
-        const x = segCenter[0] + (sideVec.x * Math.cos(angle) + upVec.x * Math.sin(angle)) * radius;
-        const y = segCenter[1] + (sideVec.y * Math.cos(angle) + upVec.y * Math.sin(angle)) * radius;
-        const z = segCenter[2] + (sideVec.z * Math.cos(angle) + upVec.z * Math.sin(angle)) * radius;
-        points.push([x, y, z]);
-      }
-    }
-    
-    return points;
-  };
-
-  const generateConnections = (points: [number, number, number][], looped = true, density = 0.3) => {
-    const connections: Array<[number, number, number][]> = [];
-    
-    for (let i = 0; i < points.length - 1; i++) {
-      connections.push([points[i], points[i + 1]]);
-    }
-    
-    if (looped && points.length > 2) {
-      connections.push([points[points.length - 1], points[0]]);
-    }
-    
-    const crossCount = Math.floor(points.length * density);
-    for (let i = 0; i < crossCount; i++) {
-      const randomPoint1 = Math.floor(Math.random() * points.length);
-      const randomPoint2 = Math.floor(Math.random() * points.length);
-      if (randomPoint1 !== randomPoint2) {
-        const dist = Math.sqrt(
-          Math.pow(points[randomPoint1][0] - points[randomPoint2][0], 2) +
-          Math.pow(points[randomPoint1][1] - points[randomPoint2][1], 2) +
-          Math.pow(points[randomPoint1][2] - points[randomPoint2][2], 2)
-        );
-        if (dist < 0.3) {
-          connections.push([points[randomPoint1], points[randomPoint2]]);
-        }
-      }
-    }
-    
-    return connections;
-  };
-
+  
+  // Create connections for landmark visualization
   const createLandmarkVisualization = () => {
     if (!landmarks) return { points: [], connections: [] };
     
@@ -476,7 +190,6 @@ export default function AvatarModel({ measurements, landmarks }: AvatarModelProp
       const landmark = landmarks[name];
       if (landmark && landmark.visibility && landmark.visibility > 0.5) {
         // Convert from normalized coords to 3D space
-        // x: -0.5 to 0.5, y: -0.9 to 0.9, z: based on confidence
         const point: [number, number, number] = [
           (landmark.x - 0.5) * heightScale * 0.5,
           heightScale * 0.9 - landmark.y * heightScale * 1.8,
@@ -525,44 +238,62 @@ export default function AvatarModel({ measurements, landmarks }: AvatarModelProp
     
     return { points, connections };
   };
-
+  
+  // Generate body segments
   const bodyParts = createHumanBody();
   
-  // Generate all body part connections
-  const headConnections = generateConnections(bodyParts.headPoints, true, 0.2);
-  const neckConnections = generateConnections(bodyParts.neckPoints, true, 0.1);
-  const torsoConnections = generateConnections(bodyParts.torsoPoints, true, 0.1);
-  const hipsConnections = generateConnections(bodyParts.hipsPoints, true, 0.1);
-  const leftUpperArmConnections = generateConnections(bodyParts.leftUpperArmPoints, true, 0.1);
-  const leftForearmConnections = generateConnections(bodyParts.leftForearmPoints, true, 0.1);
-  const leftHandConnections = generateConnections(bodyParts.leftHandPoints, true, 0.1);
-  const rightUpperArmConnections = generateConnections(bodyParts.rightUpperArmPoints, true, 0.1);
-  const rightForearmConnections = generateConnections(bodyParts.rightForearmPoints, true, 0.1);
-  const rightHandConnections = generateConnections(bodyParts.rightHandPoints, true, 0.1);
-  const leftUpperLegConnections = generateConnections(bodyParts.leftUpperLegPoints, true, 0.1);
-  const leftLowerLegConnections = generateConnections(bodyParts.leftLowerLegPoints, true, 0.1);
-  const leftFootConnections = generateConnections(bodyParts.leftFootPoints, true, 0.1);
-  const rightUpperLegConnections = generateConnections(bodyParts.rightUpperLegPoints, true, 0.1);
-  const rightLowerLegConnections = generateConnections(bodyParts.rightLowerLegPoints, true, 0.1);
-  const rightFootConnections = generateConnections(bodyParts.rightFootPoints, true, 0.1);
+  // Create line segments for each body part
+  const torsoLines = bodyParts.torso.reduce<Array<[number, number, number][]>>((acc, point, index) => {
+    if (index > 0 && index % 2 === 1) {
+      acc.push([bodyParts.torso[index-1], bodyParts.torso[index]]);
+    }
+    return acc;
+  }, []);
   
-  const bodyConnections = [
-    ...headConnections,
-    ...neckConnections,
-    ...torsoConnections,
-    ...hipsConnections,
-    ...leftUpperArmConnections,
-    ...leftForearmConnections,
-    ...leftHandConnections,
-    ...rightUpperArmConnections,
-    ...rightForearmConnections,
-    ...rightHandConnections,
-    ...leftUpperLegConnections,
-    ...leftLowerLegConnections,
-    ...leftFootConnections,
-    ...rightUpperLegConnections,
-    ...rightLowerLegConnections,
-    ...rightFootConnections,
+  const armLines = bodyParts.arms.reduce<Array<[number, number, number][]>>((acc, point, index) => {
+    if (index > 0 && index % 3 !== 0) {
+      acc.push([bodyParts.arms[index-1], bodyParts.arms[index]]);
+    }
+    if (index > 0 && index % 3 === 0) {
+      // New arm started
+      acc.push([bodyParts.arms[index-3], bodyParts.arms[index]]);
+    }
+    return acc;
+  }, []);
+  
+  const legLines = bodyParts.legs.reduce<Array<[number, number, number][]>>((acc, point, index) => {
+    if (index > 0 && index % 3 !== 0 && index > 2) {
+      acc.push([bodyParts.legs[index-1], bodyParts.legs[index]]);
+    }
+    if (index > 0 && index % 3 === 0 && index > 3) {
+      // New leg started
+      acc.push([bodyParts.legs[index-3], bodyParts.legs[index]]);
+    }
+    if (index === 1) {
+      // Hip line
+      acc.push([bodyParts.legs[0], bodyParts.legs[1]]);
+    }
+    return acc;
+  }, []);
+  
+  const headLines = bodyParts.head.reduce<Array<[number, number, number][]>>((acc, point, index) => {
+    if (index === 1) {
+      // Neck line
+      acc.push([bodyParts.head[0], bodyParts.head[1]]);
+    }
+    if (index > 2) {
+      // Head circle
+      acc.push([bodyParts.head[index-1], bodyParts.head[index]]);
+    }
+    return acc;
+  }, []);
+  
+  // Join all line segments
+  const bodyLines = [
+    ...torsoLines,
+    ...armLines,
+    ...legLines,
+    ...headLines
   ];
   
   // Get landmark visualization if available
@@ -571,49 +302,40 @@ export default function AvatarModel({ measurements, landmarks }: AvatarModelProp
   // Adjusted position to better fit in the box and show the whole model
   return (
     <group ref={modelRef} position={[0, -1.3, 0]} scale={0.7}>
-      {/* Render body model */}
-      {bodyConnections.map((line, index) => (
+      {/* Render clean body model lines */}
+      {bodyLines.map((line, index) => (
         <Line
           key={index}
           points={line}
-          color="white"
-          lineWidth={0.5}
+          color="#4287f5"
+          lineWidth={1.5}
           transparent
           opacity={0.8}
         />
       ))}
       
-      {/* Render additional connections for wireframe effect */}
-      {Array.from({ length: 50 }).map((_, index) => {
-        const allBodyPartsArrays = Object.values(bodyParts);
-        const randomBodyPart1 = allBodyPartsArrays[Math.floor(Math.random() * allBodyPartsArrays.length)];
-        const randomBodyPart2 = allBodyPartsArrays[Math.floor(Math.random() * allBodyPartsArrays.length)];
-        
-        if (randomBodyPart1 && randomBodyPart2) {
-          const point1 = randomBodyPart1[Math.floor(Math.random() * randomBodyPart1.length)];
-          const point2 = randomBodyPart2[Math.floor(Math.random() * randomBodyPart2.length)];
+      {/* Render measurement reference points */}
+      {measurements && (
+        <>
+          {/* Chest measurement point */}
+          <mesh position={[0, 0.25, 0.05]} scale={0.025}>
+            <sphereGeometry />
+            <meshBasicMaterial color="#00ffff" />
+          </mesh>
           
-          const distance = Math.sqrt(
-            Math.pow(point1[0] - point2[0], 2) +
-            Math.pow(point1[1] - point2[1], 2) +
-            Math.pow(point1[2] - point2[2], 2)
-          );
+          {/* Waist measurement point */}
+          <mesh position={[0, 0, 0.05]} scale={0.025}>
+            <sphereGeometry />
+            <meshBasicMaterial color="#00ffff" />
+          </mesh>
           
-          if (distance < 0.4) {
-            return (
-              <Line
-                key={`additional-${index}`}
-                points={[point1, point2]}
-                color="white"
-                lineWidth={0.3}
-                transparent
-                opacity={0.4}
-              />
-            );
-          }
-        }
-        return null;
-      })}
+          {/* Hip measurement point */}
+          <mesh position={[0, -0.25, 0.05]} scale={0.025}>
+            <sphereGeometry />
+            <meshBasicMaterial color="#00ffff" />
+          </mesh>
+        </>
+      )}
       
       {/* Render detected landmarks if available */}
       {landmarks && landmarkViz.points.map((point, index) => (
