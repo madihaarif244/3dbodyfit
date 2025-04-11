@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -24,6 +23,7 @@ export default function MeasurementResults({
   landmarks
 }: MeasurementResultsProps) {
   const [measurementSystem, setMeasurementSystem] = useState<"metric" | "imperial">("metric");
+  const [showDatasetEvaluation, setShowDatasetEvaluation] = useState<boolean>(false);
   
   const toggleMeasurementSystem = () => {
     setMeasurementSystem(measurementSystem === "metric" ? "imperial" : "metric");
@@ -173,9 +173,21 @@ export default function MeasurementResults({
             </CardFooter>
           </Card>
           
-          <div className="mt-6">
-            <DatasetEvaluator measurements={measurements} />
+          <div className="mt-4">
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => setShowDatasetEvaluation(!showDatasetEvaluation)}
+            >
+              {showDatasetEvaluation ? "Hide" : "Show"} Dataset Evaluation Tools
+            </Button>
           </div>
+          
+          {showDatasetEvaluation && (
+            <div className="mt-4">
+              <DatasetEvaluator measurements={measurements} />
+            </div>
+          )}
         </div>
         
         <div className="bg-card rounded-lg overflow-hidden shadow-lg border-2 border-electric/10 h-[500px]">

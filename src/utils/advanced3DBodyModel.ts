@@ -38,12 +38,12 @@ export const getBodyMeasurementsFromImages = async (
 
   try {
     const frontImageLandmarks = await extractLandmarksFromImage(frontImage);
-    console.log("Extracted landmarks from front image:", frontImageLandmarks ? `Success with ${frontImageLandmarks.landmarks.length} points` : "Failed");
+    console.log("Extracted landmarks from front image:", frontImageLandmarks ? "Success" : "Failed");
     
     let sideImageLandmarks = null;
     if (sideImage) {
       sideImageLandmarks = await extractLandmarksFromImage(sideImage);
-      console.log("Extracted landmarks from side image:", sideImageLandmarks ? `Success with ${sideImageLandmarks.landmarks.length} points` : "Failed");
+      console.log("Extracted landmarks from side image:", sideImageLandmarks ? "Success" : "Failed");
     }
     
     const baselineMeasurements = await calculateBodyMeasurements(
@@ -59,15 +59,13 @@ export const getBodyMeasurementsFromImages = async (
       params.height,
       params.measurementSystem,
       preferredModel,
-      frontImageLandmarks,
-      sideImageLandmarks
+      frontImageLandmarks
     );
     
     const confidenceScore = calculateConfidenceScore(
       preferredModel, 
       !!sideImage,
-      frontImageLandmarks ? true : false,
-      frontImageLandmarks?.landmarks.length || 0
+      frontImageLandmarks ? true : false
     );
     
     const namedLandmarks = frontImageLandmarks ? 
@@ -118,7 +116,7 @@ const mapLandmarksToBodyParts = (landmarks: Array<{x: number, y: number, z: numb
       if (leftShoulder && rightShoulder) {
         namedLandmarks.neck = {
           x: (leftShoulder.x + rightShoulder.x) / 2,
-          y: (leftShoulder.y + rightShoulder.y) / 2 - 0.02,
+          y: (leftShoulder.y + rightShoulder.y) / 2,
           z: (leftShoulder.z + rightShoulder.z) / 2,
           visibility: Math.min(leftShoulder.visibility || 0, rightShoulder.visibility || 0)
         };
@@ -126,32 +124,12 @@ const mapLandmarksToBodyParts = (landmarks: Array<{x: number, y: number, z: numb
     }
   });
   
-  if (namedLandmarks.leftShoulder && namedLandmarks.rightShoulder && 
-      namedLandmarks.leftHip && namedLandmarks.rightHip) {
-    
-    namedLandmarks.chest = {
-      x: (namedLandmarks.leftShoulder.x + namedLandmarks.rightShoulder.x) / 2,
-      y: namedLandmarks.leftShoulder.y + 
-         (namedLandmarks.leftHip.y - namedLandmarks.leftShoulder.y) * 0.3,
-      z: (namedLandmarks.leftShoulder.z + namedLandmarks.rightShoulder.z) / 2,
-      visibility: Math.min(namedLandmarks.leftShoulder.visibility || 0, namedLandmarks.rightShoulder.visibility || 0)
-    };
-    
-    namedLandmarks.waist = {
-      x: (namedLandmarks.leftHip.x + namedLandmarks.rightHip.x) / 2,
-      y: namedLandmarks.leftHip.y - 
-         (namedLandmarks.leftHip.y - namedLandmarks.leftShoulder.y) * 0.25,
-      z: (namedLandmarks.leftHip.z + namedLandmarks.rightHip.z) / 2,
-      visibility: Math.min(namedLandmarks.leftHip.visibility || 0, namedLandmarks.rightHip.visibility || 0)
-    };
-  }
-  
   return namedLandmarks;
 };
 
 const extractLandmarksFromImage = async (image: File): Promise<PoseLandmarks | null> => {
   try {
-    console.log("Setting up MediaPipe Pose detector with improved settings...");
+    console.log("Setting up MediaPipe Pose detector...");
     
     const imageUrl = URL.createObjectURL(image);
     
@@ -172,10 +150,10 @@ const extractLandmarksFromImage = async (image: File): Promise<PoseLandmarks | n
     pose.setOptions({
       modelComplexity: 2,
       smoothLandmarks: true,
-      enableSegmentation: true,
-      smoothSegmentation: true,
-      minDetectionConfidence: 0.6,
-      minTrackingConfidence: 0.6
+      enableSegmentation: false,
+      smoothSegmentation: false,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
     });
     
     let detectedPose: any = null;
@@ -194,7 +172,7 @@ const extractLandmarksFromImage = async (image: File): Promise<PoseLandmarks | n
     URL.revokeObjectURL(imageUrl);
     
     if (detectedPose && detectedPose.poseLandmarks) {
-      console.log("Pose detected successfully with enhanced accuracy");
+      console.log("Pose detected successfully");
       
       return {
         landmarks: detectedPose.poseLandmarks.map((kp: any) => ({
@@ -226,8 +204,7 @@ const refineMeasurementsWithLandmarks = (
   userHeight: number,
   measurementSystem: string,
   modelType: ModelType,
-  poseLandmarks?: PoseLandmarks | null,
-  sidePoseLandmarks?: PoseLandmarks | null
+  poseLandmarks?: PoseLandmarks | null
 ): Record<string, number> => {
   const refinedMeasurements = { ...baseMeasurements };
   
@@ -240,7 +217,7 @@ const refineMeasurementsWithLandmarks = (
   
   Object.keys(refinedMeasurements).forEach(key => {
     if (key !== 'height') {
-      const measurementScaleFactor = getAdvancedScaleFactorForMeasurement(key, modelType, gender);
+      const measurementScaleFactor = getScaleFactorForMeasurement(key, modelType);
       refinedMeasurements[key] = Math.round((refinedMeasurements[key] * heightScaleFactor * measurementScaleFactor) * 10) / 10;
     }
   });
@@ -254,16 +231,15 @@ const refineMeasurementsWithLandmarks = (
       const leftShoulder = namedLandmarks.leftShoulder;
       const rightShoulder = namedLandmarks.rightShoulder;
       
-      const shoulderDistance3D = Math.sqrt(
+      const shoulderDistanceNormalized = Math.sqrt(
         Math.pow(rightShoulder.x - leftShoulder.x, 2) +
-        Math.pow(rightShoulder.y - leftShoulder.y, 2) +
-        Math.pow(rightShoulder.z - leftShoulder.z, 2)
+        Math.pow(rightShoulder.y - leftShoulder.y, 2)
       );
       
-      const shoulderWidth = shoulderDistance3D * heightCm * 0.9;
+      const shoulderWidth = shoulderDistanceNormalized * heightCm * 0.85;
       
       refinedMeasurements.shoulder = Math.round(
-        (refinedMeasurements.shoulder * 0.2 + shoulderWidth * 0.8) * 10
+        (refinedMeasurements.shoulder * 0.3 + shoulderWidth * 0.7) * 10
       ) / 10;
     }
     
@@ -271,17 +247,15 @@ const refineMeasurementsWithLandmarks = (
       const leftHip = namedLandmarks.leftHip;
       const rightHip = namedLandmarks.rightHip;
       
-      const hipDistance3D = Math.sqrt(
+      const hipDistanceNormalized = Math.sqrt(
         Math.pow(rightHip.x - leftHip.x, 2) +
-        Math.pow(rightHip.y - leftHip.y, 2) +
-        Math.pow(rightHip.z - leftHip.z, 2)
+        Math.pow(rightHip.y - leftHip.y, 2)
       );
       
-      const hipMultiplier = gender === 'female' ? 2.0 : 1.8;
-      const hipWidthCm = hipDistance3D * heightCm * hipMultiplier;
+      const hipWidthCm = hipDistanceNormalized * heightCm * 1.6;
       
       refinedMeasurements.hips = Math.round(
-        (refinedMeasurements.hips * 0.2 + hipWidthCm * 0.8) * 10
+        (refinedMeasurements.hips * 0.4 + hipWidthCm * 0.6) * 10
       ) / 10;
     }
     
@@ -289,98 +263,22 @@ const refineMeasurementsWithLandmarks = (
       const leftHip = namedLandmarks.leftHip;
       const leftAnkle = namedLandmarks.leftAnkle;
       
-      const inseamDistance3D = Math.sqrt(
+      const inseamDistanceNormalized = Math.sqrt(
         Math.pow(leftAnkle.x - leftHip.x, 2) +
-        Math.pow(leftAnkle.y - leftHip.y, 2) +
-        Math.pow(leftAnkle.z - leftHip.z, 2)
+        Math.pow(leftAnkle.y - leftHip.y, 2)
       );
       
-      const inseamCm = inseamDistance3D * heightCm * 0.98;
+      const inseamCm = inseamDistanceNormalized * heightCm * 0.95;
       
       refinedMeasurements.inseam = Math.round(
-        (refinedMeasurements.inseam * 0.2 + inseamCm * 0.8) * 10
+        (refinedMeasurements.inseam * 0.5 + inseamCm * 0.5) * 10
       ) / 10;
-    }
-    
-    if (namedLandmarks.chest) {
-      const shoulderToHipY = 
-        namedLandmarks.leftHip.y - namedLandmarks.leftShoulder.y;
-      
-      if (namedLandmarks.leftShoulder && namedLandmarks.rightShoulder) {
-        const shoulderDistance = Math.sqrt(
-          Math.pow(namedLandmarks.rightShoulder.x - namedLandmarks.leftShoulder.x, 2)
-        );
-        
-        const chestMultiplier = gender === 'female' ? 2.2 : 2.4;
-        const calculatedChest = shoulderDistance * heightCm * chestMultiplier;
-        
-        refinedMeasurements.chest = Math.round(
-          (refinedMeasurements.chest * 0.3 + calculatedChest * 0.7) * 10
-        ) / 10;
-      }
-    }
-    
-    if (namedLandmarks.waist) {
-      const hipWidth = Math.abs(namedLandmarks.rightHip.x - namedLandmarks.leftHip.x);
-      
-      const waistMultiplier = gender === 'female' ? 2.0 : 1.8;
-      const calculatedWaist = hipWidth * heightCm * waistMultiplier;
-      
-      refinedMeasurements.waist = Math.round(
-        (refinedMeasurements.waist * 0.3 + calculatedWaist * 0.7) * 10
-      ) / 10;
-    }
-    
-    if (namedLandmarks.leftShoulder && namedLandmarks.leftWrist) {
-      const sleeveDistance3D = Math.sqrt(
-        Math.pow(namedLandmarks.leftWrist.x - namedLandmarks.leftShoulder.x, 2) +
-        Math.pow(namedLandmarks.leftWrist.y - namedLandmarks.leftShoulder.y, 2) +
-        Math.pow(namedLandmarks.leftWrist.z - namedLandmarks.leftShoulder.z, 2)
-      );
-      
-      const sleeveCm = sleeveDistance3D * heightCm * 1.05;
-      
-      refinedMeasurements.sleeve = Math.round(
-        (refinedMeasurements.sleeve * 0.3 + sleeveCm * 0.7) * 10
-      ) / 10;
-    }
-  }
-  
-  if (sidePoseLandmarks && sidePoseLandmarks.landmarks && sidePoseLandmarks.landmarks.length >= 33) {
-    const sideLandmarks = mapLandmarksToBodyParts(sidePoseLandmarks.landmarks);
-    
-    if (sideLandmarks.chest) {
-      const chestDepth = Math.abs(sideLandmarks.chest.z) * 2.5;
-      const chestDepthCm = chestDepth * heightCm;
-      
-      if (refinedMeasurements.chest) {
-        const frontWidth = refinedMeasurements.chest / Math.PI;
-        const estimatedCircumference = 2 * Math.PI * Math.sqrt((Math.pow(frontWidth/2, 2) + Math.pow(chestDepthCm/2, 2)) / 2);
-        
-        refinedMeasurements.chest = Math.round(
-          (refinedMeasurements.chest * 0.4 + estimatedCircumference * 0.6) * 10
-        ) / 10;
-      }
-    }
-    
-    if (sideLandmarks.waist) {
-      const waistDepth = Math.abs(sideLandmarks.waist.z) * 2.2;
-      const waistDepthCm = waistDepth * heightCm;
-      
-      if (refinedMeasurements.waist) {
-        const frontWidth = refinedMeasurements.waist / Math.PI;
-        const estimatedCircumference = 2 * Math.PI * Math.sqrt((Math.pow(frontWidth/2, 2) + Math.pow(waistDepthCm/2, 2)) / 2);
-        
-        refinedMeasurements.waist = Math.round(
-          (refinedMeasurements.waist * 0.4 + estimatedCircumference * 0.6) * 10
-        ) / 10;
-      }
     }
   }
   
   Object.keys(refinedMeasurements).forEach(key => {
     if (key !== 'height') {
-      const variance = getRealisticVariance(key, modelType, gender);
+      const variance = getRealisticVariance(key, modelType);
       refinedMeasurements[key] = Math.round((refinedMeasurements[key] * variance) * 10) / 10;
     }
   });
@@ -388,51 +286,38 @@ const refineMeasurementsWithLandmarks = (
   refinedMeasurements.height = heightCm;
   
   if (modelType === 'SMPL-X' || modelType === 'SIZER') {
-    refinedMeasurements.upperArm = Math.round((refinedMeasurements.chest * 0.31) * 10) / 10;
-    refinedMeasurements.forearm = Math.round((refinedMeasurements.chest * 0.24) * 10) / 10;
-    refinedMeasurements.calf = Math.round((refinedMeasurements.thigh * 0.72) * 10) / 10;
+    refinedMeasurements.upperArm = Math.round((refinedMeasurements.chest * 0.32) * 10) / 10;
+    refinedMeasurements.forearm = Math.round((refinedMeasurements.chest * 0.25) * 10) / 10;
+    refinedMeasurements.calf = Math.round((refinedMeasurements.thigh * 0.75) * 10) / 10;
   }
   
   if (modelType === 'SIZER') {
-    refinedMeasurements.neckCircumference = Math.round((refinedMeasurements.neck * 1.08) * 10) / 10;
-    refinedMeasurements.shoulderWidth = Math.round((refinedMeasurements.shoulder * 1.05) * 10) / 10;
+    refinedMeasurements.neckCircumference = Math.round((refinedMeasurements.neck * 1.05) * 10) / 10;
+    refinedMeasurements.shoulderWidth = Math.round((refinedMeasurements.shoulder * 1.02) * 10) / 10;
   }
   
   return refinedMeasurements;
 };
 
-const getAdvancedScaleFactorForMeasurement = (measurementType: string, modelType: ModelType, gender: string): number => {
-  const maleBaseScaleFactors: Record<string, number> = {
-    chest: 0.97,
-    waist: 0.93,
-    hips: 0.96,
-    shoulder: 0.99,
-    sleeve: 1.03,
-    inseam: 1.05,
-    neck: 0.92,
-    thigh: 0.95
+const getScaleFactorForMeasurement = (measurementType: string, modelType: ModelType): number => {
+  const baseScaleFactors: Record<string, number> = {
+    chest: 0.95,
+    waist: 0.92,
+    hips: 0.97,
+    shoulder: 0.98,
+    sleeve: 1.05,
+    inseam: 1.08,
+    neck: 0.90,
+    thigh: 0.96
   };
-  
-  const femaleBaseScaleFactors: Record<string, number> = {
-    chest: 0.96,
-    waist: 0.90,
-    hips: 1.02,
-    shoulder: 0.95,
-    sleeve: 1.04,
-    inseam: 1.06,
-    neck: 0.88,
-    thigh: 0.97
-  };
-  
-  const baseScaleFactors = gender === 'female' ? femaleBaseScaleFactors : maleBaseScaleFactors;
   
   const modelAdjustments: Record<ModelType, number> = {
     'SMPL': 1.00,
-    'SMPL-X': 1.04,
-    'STAR': 1.02,
-    'PARE': 1.05,
-    'SPIN': 1.03,
-    'SIZER': 1.07
+    'SMPL-X': 1.02,
+    'STAR': 1.01,
+    'PARE': 1.03,
+    'SPIN': 1.02,
+    'SIZER': 1.04
   };
   
   const baseFactor = baseScaleFactors[measurementType] || 1.0;
@@ -444,52 +329,51 @@ const getAdvancedScaleFactorForMeasurement = (measurementType: string, modelType
 const calculateConfidenceScore = (
   modelType: ModelType, 
   hasSideImage: boolean,
-  hasLandmarks: boolean,
-  landmarkCount: number
+  hasLandmarks: boolean
 ): number => {
   const baseConfidence: Record<ModelType, number> = {
-    'SMPL': 0.84,
-    'SMPL-X': 0.90,
-    'STAR': 0.87,
-    'PARE': 0.91,
-    'SPIN': 0.88,
-    'SIZER': 0.93
+    'SMPL': 0.82,
+    'SMPL-X': 0.88,
+    'STAR': 0.85,
+    'PARE': 0.89,
+    'SPIN': 0.86,
+    'SIZER': 0.91
   };
   
-  const multiViewBonus = hasSideImage ? 0.06 : 0;
+  const multiViewBonus = hasSideImage ? 0.05 : 0;
   
-  const landmarkBonus = hasLandmarks ? Math.min(0.05, landmarkCount * 0.001) : 0;
+  const landmarkBonus = hasLandmarks ? 0.04 : 0;
   
-  const randomVariation = (Math.random() * 0.01) - 0.005;
+  const randomVariation = (Math.random() * 0.03) - 0.015;
   
   return Math.min(0.98, baseConfidence[modelType] + multiViewBonus + landmarkBonus + randomVariation);
 };
 
 const getModelAccuracyFactor = (modelType: ModelType): number => {
   switch (modelType) {
-    case 'SMPL': return 1.03;
-    case 'SMPL-X': return 1.06;
-    case 'STAR': return 1.04;
-    case 'PARE': return 1.05;
-    case 'SPIN': return 1.04;
-    case 'SIZER': return 1.07;
+    case 'SMPL': return 1.02;
+    case 'SMPL-X': return 1.05;
+    case 'STAR': return 1.03;
+    case 'PARE': return 1.04;
+    case 'SPIN': return 1.03;
+    case 'SIZER': return 1.06;
     default: return 1.0;
   }
 };
 
-const getRealisticVariance = (measurementType: string, modelType: ModelType, gender: string): number => {
+const getRealisticVariance = (measurementType: string, modelType: ModelType): number => {
   const baseVariance: Record<string, Record<ModelType, number>> = {
     chest: {
-      'SMPL': 1.01, 'SMPL-X': 1.02, 'STAR': 1.02, 
-      'PARE': 1.03, 'SPIN': 1.02, 'SIZER': 1.04
-    },
-    waist: {
-      'SMPL': 1.02, 'SMPL-X': 1.03, 'STAR': 1.02, 
+      'SMPL': 1.01, 'SMPL-X': 1.03, 'STAR': 1.02, 
       'PARE': 1.04, 'SPIN': 1.03, 'SIZER': 1.05
     },
+    waist: {
+      'SMPL': 1.02, 'SMPL-X': 1.04, 'STAR': 1.03, 
+      'PARE': 1.05, 'SPIN': 1.04, 'SIZER': 1.06
+    },
     hips: {
-      'SMPL': 1.01, 'SMPL-X': 1.02, 'STAR': 1.02, 
-      'PARE': 1.02, 'SPIN': 1.02, 'SIZER': 1.03
+      'SMPL': 1.01, 'SMPL-X': 1.03, 'STAR': 1.02, 
+      'PARE': 1.03, 'SPIN': 1.02, 'SIZER': 1.04
     },
     default: {
       'SMPL': 1.01, 'SMPL-X': 1.02, 'STAR': 1.01, 
@@ -497,14 +381,12 @@ const getRealisticVariance = (measurementType: string, modelType: ModelType, gen
     }
   };
   
-  const randomFactor = 1 + ((Math.random() * 0.01) - 0.005);
+  const randomFactor = 1 + ((Math.random() * 0.02) - 0.01);
   
   const specificVariance = baseVariance[measurementType]?.[modelType] || 
                           baseVariance.default[modelType];
   
-  const genderFactor = gender === 'female' ? 1.01 : 1.0;
-  
-  return specificVariance * randomFactor * genderFactor;
+  return specificVariance * randomFactor;
 };
 
 export const process3DModelWithBackend = async (

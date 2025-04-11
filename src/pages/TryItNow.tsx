@@ -8,6 +8,7 @@ import PrivacyNotice from "@/components/PrivacyNotice";
 import { calculateBodyMeasurements } from "@/utils/bodyMeasurementAI";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import MeasurementAccuracyAnalysis from "@/components/MeasurementAccuracyAnalysis";
 import { getBodyMeasurementsFromImages } from "@/utils/advanced3DBodyModel";
 
 type ScanStatus = "input" | "processing" | "complete" | "error" | "fallback";
@@ -434,13 +435,24 @@ export default function TryItNow() {
             )}
             
             {(scanStatus === "complete" || scanStatus === "fallback") && measurementData && (
-              <MeasurementResults 
-                measurements={measurementData.measurements} 
-                confidenceScore={measurementData.confidenceScore}
-                onReset={resetForm}
-                isEstimated={scanStatus === "fallback" || measurementData.isEstimated}
-                landmarks={measurementData.landmarks}
-              />
+              <>
+                <MeasurementResults 
+                  measurements={measurementData.measurements} 
+                  confidenceScore={measurementData.confidenceScore}
+                  onReset={resetForm}
+                  isEstimated={scanStatus === "fallback" || measurementData.isEstimated}
+                />
+                
+                {lastFormData && (
+                  <div className="mt-12 border-t border-gray-700 pt-8">
+                    <MeasurementAccuracyAnalysis 
+                      aiMeasurements={measurementData.measurements}
+                      measurementSystem={lastFormData.measurementSystem || 'metric'}
+                      isEstimated={scanStatus === "fallback" || !!measurementData.isEstimated}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
