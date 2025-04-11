@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,7 +41,7 @@ export default function EvaluationForm({
           <div className="relative group">
             <Info className="h-4 w-4 text-muted-foreground cursor-help" />
             <div className="absolute bottom-full mb-2 right-0 w-64 p-2 bg-background border border-border rounded text-xs invisible group-hover:visible z-10 text-foreground">
-              {datasetInfo[datasetType as keyof typeof datasetInfo]}
+              {datasetType && datasetInfo[datasetType as keyof typeof datasetInfo]}
             </div>
           </div>
         </div>
