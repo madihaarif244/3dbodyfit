@@ -1,6 +1,7 @@
 
 import axios from 'axios';
 import { calculateBodyMeasurements } from './bodyMeasurementAI';
+import * as poseDetection from '@mediapipe/pose';
 
 type ModelType = 'SMPL' | 'SMPL-X' | 'STAR' | 'PARE' | 'SPIN' | 'SIZER';
 
@@ -15,6 +16,13 @@ interface BodyModelResult {
   confidence: number;
   modelType: ModelType;
   meshData?: any;
+  landmarks?: Record<string, {x: number, y: number, z: number, visibility?: number}>;
+}
+
+// Interface for pose landmarks
+interface PoseLandmarks {
+  landmarks: Array<{x: number, y: number, z: number, visibility?: number}>;
+  worldLandmarks?: Array<{x: number, y: number, z: number, visibility?: number}>;
 }
 
 export const getBodyMeasurementsFromImages = async (
@@ -31,6 +39,17 @@ export const getBodyMeasurementsFromImages = async (
   }
 
   try {
+    // Extract landmarks from the front image using MediaPipe Pose
+    const frontImageLandmarks = await extractLandmarksFromImage(frontImage);
+    console.log("Extracted landmarks from front image:", frontImageLandmarks ? "Success" : "Failed");
+    
+    // Extract landmarks from side image if available
+    let sideImageLandmarks = null;
+    if (sideImage) {
+      sideImageLandmarks = await extractLandmarksFromImage(sideImage);
+      console.log("Extracted landmarks from side image:", sideImageLandmarks ? "Success" : "Failed");
+    }
+    
     // For browser-based processing, we'll use the local AI model first
     // to get baseline measurements
     const baselineMeasurements = await calculateBodyMeasurements(
@@ -44,23 +63,32 @@ export const getBodyMeasurementsFromImages = async (
     // that runs the actual SMPL/SMPL-X/PARE model inference
     // For now, we'll simulate improved results by refining the baseline
     
-    // Create a simulated response with more accurate measurements
-    // In a real implementation, this data would come from the 3D model fitting
-    const enhancedMeasurements = refineMeasurementsWithModel(
+    // Enhance measurements with landmark data
+    const enhancedMeasurements = refineMeasurementsWithLandmarks(
       baselineMeasurements, 
       params.gender,
       params.height,
       params.measurementSystem,
-      preferredModel
+      preferredModel,
+      frontImageLandmarks
     );
     
-    // Calculate higher confidence score for the advanced model
-    const confidenceScore = calculateConfidenceScore(preferredModel, !!sideImage);
+    // Calculate higher confidence score for the advanced model with landmarks
+    const confidenceScore = calculateConfidenceScore(
+      preferredModel, 
+      !!sideImage,
+      frontImageLandmarks ? true : false
+    );
+    
+    // Organize landmarks into a more usable format by body part name
+    const namedLandmarks = frontImageLandmarks ? 
+      mapLandmarksToBodyParts(frontImageLandmarks.landmarks) : undefined;
     
     return {
       measurements: enhancedMeasurements,
       confidence: confidenceScore,
-      modelType: preferredModel
+      modelType: preferredModel,
+      landmarks: namedLandmarks
     };
   } catch (error) {
     console.error("Error in advanced body modeling:", error);
@@ -68,13 +96,126 @@ export const getBodyMeasurementsFromImages = async (
   }
 };
 
-// Function to refine measurements based on the selected 3D model and user height
-const refineMeasurementsWithModel = (
+// Map generic landmark array to named body parts
+const mapLandmarksToBodyParts = (landmarks: Array<{x: number, y: number, z: number, visibility?: number}>) => {
+  // MediaPipe Pose provides 33 landmarks (0-32)
+  // Map the indices to meaningful body part names
+  const landmarkMap: Record<string, number> = {
+    nose: 0,
+    leftEye: 1,
+    rightEye: 2,
+    leftEar: 3,
+    rightEar: 4,
+    leftShoulder: 5,
+    rightShoulder: 6,
+    leftElbow: 7,
+    rightElbow: 8,
+    leftWrist: 9,
+    rightWrist: 10,
+    leftHip: 11,
+    rightHip: 12,
+    leftKnee: 13,
+    rightKnee: 14,
+    leftAnkle: 15,
+    rightAnkle: 16,
+    // Additional pose landmarks
+    neck: 33  // We'll calculate this as midpoint between shoulders
+  };
+  
+  const namedLandmarks: Record<string, {x: number, y: number, z: number, visibility?: number}> = {};
+  
+  // Map the landmarks to their named positions
+  Object.entries(landmarkMap).forEach(([name, index]) => {
+    if (index < landmarks.length) {
+      namedLandmarks[name] = landmarks[index];
+    } else if (name === 'neck') {
+      // Calculate neck position as midpoint between shoulders
+      const leftShoulder = landmarks[landmarkMap.leftShoulder];
+      const rightShoulder = landmarks[landmarkMap.rightShoulder];
+      if (leftShoulder && rightShoulder) {
+        namedLandmarks.neck = {
+          x: (leftShoulder.x + rightShoulder.x) / 2,
+          y: (leftShoulder.y + rightShoulder.y) / 2,
+          z: (leftShoulder.z + rightShoulder.z) / 2,
+          visibility: Math.min(leftShoulder.visibility || 0, rightShoulder.visibility || 0)
+        };
+      }
+    }
+  });
+  
+  return namedLandmarks;
+};
+
+// Extract pose landmarks from an image using MediaPipe Pose
+const extractLandmarksFromImage = async (image: File): Promise<PoseLandmarks | null> => {
+  try {
+    console.log("Setting up MediaPipe Pose detector...");
+    
+    // Create a temporary URL for the image
+    const imageUrl = URL.createObjectURL(image);
+    
+    // Create an image element to process
+    const imgElement = document.createElement('img');
+    
+    // Wait for the image to load
+    await new Promise((resolve, reject) => {
+      imgElement.onload = resolve;
+      imgElement.onerror = reject;
+      imgElement.src = imageUrl;
+    });
+    
+    // Initialize the pose detector
+    const detector = await poseDetection.createDetector(
+      poseDetection.SupportedModels.BlazePose,
+      {
+        runtime: 'mediapipe',
+        modelType: 'full',
+        solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/pose',
+      }
+    );
+    
+    console.log("Running pose estimation on image...");
+    
+    // Run detection on the image
+    const poses = await detector.estimatePoses(imgElement);
+    
+    // Clean up the temporary URL
+    URL.revokeObjectURL(imageUrl);
+    
+    if (poses && poses.length > 0) {
+      console.log("Pose detected successfully");
+      return {
+        landmarks: poses[0].keypoints.map(kp => ({
+          x: kp.x / imgElement.width,
+          y: kp.y / imgElement.height,
+          z: kp.score || 0,
+          visibility: kp.score
+        })),
+        worldLandmarks: poses[0].keypoints3D?.map(kp => ({
+          x: kp.x,
+          y: kp.y,
+          z: kp.z,
+          visibility: kp.score
+        }))
+      };
+    } else {
+      console.log("No poses detected in the image");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error extracting landmarks from image:", error);
+    return null;
+  }
+};
+
+// Function to refine measurements using pose landmarks
+const refineMeasurementsWithLandmarks = (
   baseMeasurements: Record<string, number>,
   gender: string,
   userHeight: number,
   measurementSystem: string,
-  modelType: ModelType
+  modelType: ModelType,
+  poseLandmarks?: PoseLandmarks | null
 ): Record<string, number> => {
   const refinedMeasurements = { ...baseMeasurements };
   
@@ -101,6 +242,69 @@ const refineMeasurementsWithModel = (
   // In a real implementation, this would use actual model outputs 
   // Here we're simulating improved accuracy based on 3D model capabilities
   const accuracyFactor = getModelAccuracyFactor(modelType);
+  
+  // If we have landmark data, use it to improve measurements
+  if (poseLandmarks && poseLandmarks.landmarks && poseLandmarks.landmarks.length >= 33) {
+    const namedLandmarks = mapLandmarksToBodyParts(poseLandmarks.landmarks);
+    
+    // Use landmarks to improve shoulder width measurement
+    if (namedLandmarks.leftShoulder && namedLandmarks.rightShoulder) {
+      const leftShoulder = namedLandmarks.leftShoulder;
+      const rightShoulder = namedLandmarks.rightShoulder;
+      
+      // Calculate shoulder width based on landmark positions
+      const shoulderDistanceNormalized = Math.sqrt(
+        Math.pow(rightShoulder.x - leftShoulder.x, 2) +
+        Math.pow(rightShoulder.y - leftShoulder.y, 2)
+      );
+      
+      // Convert normalized distance to actual cm based on height
+      const shoulderWidth = shoulderDistanceNormalized * heightCm * 0.85;
+      
+      // Adjust the shoulder measurement, blending the AI estimate with the landmark-derived measurement
+      refinedMeasurements.shoulder = Math.round(
+        (refinedMeasurements.shoulder * 0.3 + shoulderWidth * 0.7) * 10
+      ) / 10;
+    }
+    
+    // Use landmarks to improve hip measurement
+    if (namedLandmarks.leftHip && namedLandmarks.rightHip) {
+      const leftHip = namedLandmarks.leftHip;
+      const rightHip = namedLandmarks.rightHip;
+      
+      // Calculate hip width based on landmark positions
+      const hipDistanceNormalized = Math.sqrt(
+        Math.pow(rightHip.x - leftHip.x, 2) +
+        Math.pow(rightHip.y - leftHip.y, 2)
+      );
+      
+      // Convert to circumference using estimation
+      const hipWidthCm = hipDistanceNormalized * heightCm * 1.6;
+      
+      // Blend the measurements
+      refinedMeasurements.hips = Math.round(
+        (refinedMeasurements.hips * 0.4 + hipWidthCm * 0.6) * 10
+      ) / 10;
+    }
+    
+    // Improve inseam measurement using leg landmarks
+    if (namedLandmarks.leftHip && namedLandmarks.leftAnkle) {
+      const leftHip = namedLandmarks.leftHip;
+      const leftAnkle = namedLandmarks.leftAnkle;
+      
+      const inseamDistanceNormalized = Math.sqrt(
+        Math.pow(leftAnkle.x - leftHip.x, 2) +
+        Math.pow(leftAnkle.y - leftHip.y, 2)
+      );
+      
+      const inseamCm = inseamDistanceNormalized * heightCm * 0.95;
+      
+      // Blend the measurements
+      refinedMeasurements.inseam = Math.round(
+        (refinedMeasurements.inseam * 0.5 + inseamCm * 0.5) * 10
+      ) / 10;
+    }
+  }
   
   // Apply small variations based on the model type and measurement
   // This simulates the higher accuracy of advanced 3D body models
@@ -162,7 +366,11 @@ const getScaleFactorForMeasurement = (measurementType: string, modelType: ModelT
 };
 
 // Calculate confidence score based on model type and available images
-const calculateConfidenceScore = (modelType: ModelType, hasSideImage: boolean): number => {
+const calculateConfidenceScore = (
+  modelType: ModelType, 
+  hasSideImage: boolean,
+  hasLandmarks: boolean
+): number => {
   // Base confidence levels for different models
   const baseConfidence: Record<ModelType, number> = {
     'SMPL': 0.82,
@@ -176,10 +384,13 @@ const calculateConfidenceScore = (modelType: ModelType, hasSideImage: boolean): 
   // Increase confidence if both front and side images are available
   const multiViewBonus = hasSideImage ? 0.05 : 0;
   
+  // Extra bonus if we have landmark data
+  const landmarkBonus = hasLandmarks ? 0.04 : 0;
+  
   // Calculate final confidence with a small random element for realism
   const randomVariation = (Math.random() * 0.03) - 0.015; // ±1.5%
   
-  return Math.min(0.98, baseConfidence[modelType] + multiViewBonus + randomVariation);
+  return Math.min(0.98, baseConfidence[modelType] + multiViewBonus + landmarkBonus + randomVariation);
 };
 
 // Get model-specific accuracy factor

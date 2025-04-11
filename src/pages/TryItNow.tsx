@@ -19,6 +19,7 @@ interface MeasurementData {
   confidenceScore: number;
   isEstimated?: boolean;
   modelType?: ModelType;
+  landmarks?: Record<string, {x: number, y: number, z: number, visibility?: number}>;
 }
 
 const generateFallbackMeasurements = (height: number, gender: 'male' | 'female' | 'other', measurementSystem: 'metric' | 'imperial'): Record<string, number> => {
@@ -146,7 +147,7 @@ export default function TryItNow() {
       toast({
         title: browserSupportsWebGPU ? "Loading 3D Body Model" : "Processing Measurements",
         description: browserSupportsWebGPU 
-          ? `Initializing ${selectedModel} body modeling with height scaling...`
+          ? `Initializing ${selectedModel} body modeling with landmark detection...`
           : "Calculating your measurements based on provided height and image...",
       });
       
@@ -199,19 +200,31 @@ export default function TryItNow() {
           result.confidence : 
           (0.65 + Math.random() * 0.15);
         
+        // Determine if landmarks were detected
+        const hasLandmarks = browserSupportsWebGPU && result.landmarks ? true : false;
+        
         setMeasurementData({
           measurements,
           confidenceScore,
           isEstimated: !browserSupportsWebGPU,
-          modelType: browserSupportsWebGPU ? selectedModel : undefined
+          modelType: browserSupportsWebGPU ? selectedModel : undefined,
+          landmarks: browserSupportsWebGPU ? result.landmarks : undefined
         });
         
         setScanStatus("complete");
+        
+        // Show appropriate toast message
+        let toastDescription = browserSupportsWebGPU 
+          ? `Your body measurements have been calculated using ${selectedModel} 3D body modeling scaled to your height.`
+          : "Your estimated measurements have been calculated based on your height and gender.";
+          
+        if (hasLandmarks) {
+          toastDescription += " Body landmarks were successfully detected for improved accuracy.";
+        }
+        
         toast({
           title: "Measurements Complete",
-          description: browserSupportsWebGPU 
-            ? `Your body measurements have been calculated using ${selectedModel} 3D body modeling scaled to your height.`
-            : "Your estimated measurements have been calculated based on your height and gender.",
+          description: toastDescription,
           variant: "default",
         });
       } else if (retryCount >= 1) {
@@ -306,7 +319,7 @@ export default function TryItNow() {
   const displayModelInfo = () => {
     const modelInfo = {
       'SMPL': "Basic 3D body model with accurate height scaling",
-      'SMPL-X': "Advanced model with facial details and precise proportions",
+      'SMPL-X': "Advanced model with facial details and landmark detection",
       'STAR': "Statistical model with improved accuracy and body shape analysis",
       'PARE': "Best for pose estimation and measurement from a single image",
       'SPIN': "Effective with partial occlusion and varied poses",
@@ -318,7 +331,7 @@ export default function TryItNow() {
         <h3 className="text-lg font-medium mb-2 text-gray-900">Using {selectedModel} 3D Body Modeling</h3>
         <p className="text-sm text-gray-700">{modelInfo[selectedModel]}</p>
         <p className="text-xs text-gray-500 mt-2">
-          Measurements are extracted from a 3D body mesh scaled to your exact height.
+          Measurements are extracted from a 3D body mesh scaled to your exact height with MediaPipe landmark detection.
         </p>
       </div>
     );

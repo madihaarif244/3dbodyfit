@@ -5,9 +5,10 @@ import { Line } from "@react-three/drei";
 
 interface AvatarModelProps {
   measurements: Record<string, number>;
+  landmarks?: Record<string, {x: number, y: number, z: number, visibility?: number}>;
 }
 
-export default function AvatarModel({ measurements }: AvatarModelProps) {
+export default function AvatarModel({ measurements, landmarks }: AvatarModelProps) {
   // Reference for the entire model group to animate it
   const modelRef = useRef<THREE.Group>(null);
   
@@ -452,8 +453,82 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     return connections;
   };
 
+  const createLandmarkVisualization = () => {
+    if (!landmarks) return { points: [], connections: [] };
+    
+    const points: [number, number, number][] = [];
+    const connections: Array<[number, number, number][]> = [];
+    
+    // Convert the normalized 2D coordinates to 3D space
+    // The standard height of our 3D model is about 1.8 units
+    const heightScale = 1.8;
+    
+    // Important landmarks for visualization
+    const keypointNames = [
+      'nose', 'leftEye', 'rightEye', 'leftEar', 'rightEar',
+      'leftShoulder', 'rightShoulder', 'leftElbow', 'rightElbow',
+      'leftWrist', 'rightWrist', 'leftHip', 'rightHip',
+      'leftKnee', 'rightKnee', 'leftAnkle', 'rightAnkle', 'neck'
+    ];
+    
+    // Add points for each landmark
+    keypointNames.forEach(name => {
+      const landmark = landmarks[name];
+      if (landmark && landmark.visibility && landmark.visibility > 0.5) {
+        // Convert from normalized coords to 3D space
+        // x: -0.5 to 0.5, y: -0.9 to 0.9, z: based on confidence
+        const point: [number, number, number] = [
+          (landmark.x - 0.5) * heightScale * 0.5,
+          heightScale * 0.9 - landmark.y * heightScale * 1.8,
+          (landmark.visibility > 0.7 ? 0.05 : 0)
+        ];
+        points.push(point);
+      }
+    });
+    
+    // Create connections between landmarks (skeleton)
+    const connectionPairs = [
+      ['nose', 'leftEye'], ['nose', 'rightEye'], ['leftEye', 'leftEar'], ['rightEye', 'rightEar'],
+      ['nose', 'neck'], ['neck', 'leftShoulder'], ['neck', 'rightShoulder'],
+      ['leftShoulder', 'leftElbow'], ['leftElbow', 'leftWrist'],
+      ['rightShoulder', 'rightElbow'], ['rightElbow', 'rightWrist'],
+      ['neck', 'leftHip'], ['neck', 'rightHip'],
+      ['leftHip', 'leftKnee'], ['leftKnee', 'leftAnkle'],
+      ['rightHip', 'rightKnee'], ['rightKnee', 'rightAnkle'],
+      ['leftShoulder', 'rightShoulder'], ['leftHip', 'rightHip']
+    ];
+    
+    // Add connections where both endpoints exist
+    connectionPairs.forEach(([start, end]) => {
+      const startLandmark = landmarks[start];
+      const endLandmark = landmarks[end];
+      
+      if (startLandmark && endLandmark && 
+          startLandmark.visibility && endLandmark.visibility && 
+          startLandmark.visibility > 0.5 && endLandmark.visibility > 0.5) {
+            
+        const startPoint: [number, number, number] = [
+          (startLandmark.x - 0.5) * heightScale * 0.5,
+          heightScale * 0.9 - startLandmark.y * heightScale * 1.8,
+          (startLandmark.visibility > 0.7 ? 0.05 : 0)
+        ];
+        
+        const endPoint: [number, number, number] = [
+          (endLandmark.x - 0.5) * heightScale * 0.5,
+          heightScale * 0.9 - endLandmark.y * heightScale * 1.8,
+          (endLandmark.visibility > 0.7 ? 0.05 : 0)
+        ];
+        
+        connections.push([startPoint, endPoint]);
+      }
+    });
+    
+    return { points, connections };
+  };
+
   const bodyParts = createHumanBody();
   
+  // Generate all body part connections
   const headConnections = generateConnections(bodyParts.headPoints, true, 0.2);
   const neckConnections = generateConnections(bodyParts.neckPoints, true, 0.1);
   const torsoConnections = generateConnections(bodyParts.torsoPoints, true, 0.1);
@@ -490,9 +565,13 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
     ...rightFootConnections,
   ];
   
+  // Get landmark visualization if available
+  const landmarkViz = createLandmarkVisualization();
+  
   // Adjusted position to better fit in the box and show the whole model
   return (
     <group ref={modelRef} position={[0, -1.3, 0]} scale={0.7}>
+      {/* Render body model */}
       {bodyConnections.map((line, index) => (
         <Line
           key={index}
@@ -504,6 +583,7 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
         />
       ))}
       
+      {/* Render additional connections for wireframe effect */}
       {Array.from({ length: 50 }).map((_, index) => {
         const allBodyPartsArrays = Object.values(bodyParts);
         const randomBodyPart1 = allBodyPartsArrays[Math.floor(Math.random() * allBodyPartsArrays.length)];
@@ -534,6 +614,26 @@ export default function AvatarModel({ measurements }: AvatarModelProps) {
         }
         return null;
       })}
+      
+      {/* Render detected landmarks if available */}
+      {landmarks && landmarkViz.points.map((point, index) => (
+        <mesh key={`landmark-${index}`} position={[point[0], point[1], point[2]]}>
+          <sphereGeometry args={[0.02, 8, 8]} />
+          <meshBasicMaterial color="#00ffff" transparent opacity={0.8} />
+        </mesh>
+      ))}
+      
+      {/* Render landmark connections (skeleton) */}
+      {landmarks && landmarkViz.connections.map((line, index) => (
+        <Line
+          key={`landmark-connection-${index}`}
+          points={line}
+          color="#00ffff"
+          lineWidth={1.5}
+          transparent
+          opacity={0.6}
+        />
+      ))}
     </group>
   );
 }
