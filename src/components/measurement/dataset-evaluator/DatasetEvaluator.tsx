@@ -7,6 +7,7 @@ import { toast } from "@/components/ui/use-toast";
 import { Download } from "lucide-react";
 import { calculateMAE, calculatePercentageDeviation } from "@/utils/measurementStats";
 import { loadDataset } from "@/utils/datasetUtils";
+import { exportToCSV, formatEvaluationResultsForExport } from "@/utils/exportUtils";
 
 import EvaluationForm from "./EvaluationForm";
 import ResultsSummary from "./ResultsSummary";
@@ -86,6 +87,30 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
     }
   };
 
+  const handleDownloadReport = () => {
+    if (!results) return;
+    
+    try {
+      // Format and export the data
+      const exportData = formatEvaluationResultsForExport(results, datasetType);
+      const filename = `accuracy-report-${datasetType}-${new Date().toISOString().split('T')[0]}.csv`;
+      
+      exportToCSV(exportData, filename);
+      
+      toast({
+        title: "Report Downloaded",
+        description: `Accuracy report has been downloaded as ${filename}`,
+      });
+    } catch (error) {
+      console.error("Download error:", error);
+      toast({
+        title: "Download Failed",
+        description: "Failed to download the report. See console for details.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <Card className="bg-card border-none shadow-lg text-card-foreground max-w-4xl mx-auto">
       <CardHeader className="pb-2">
@@ -119,12 +144,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
           <Button 
             variant="outline" 
             className="w-full gap-2 text-sm text-white"
-            onClick={() => {
-              toast({
-                title: "Report Downloaded",
-                description: "Accuracy report has been downloaded.",
-              });
-            }}
+            onClick={handleDownloadReport}
           >
             <Download className="h-4 w-4" /> Download Accuracy Report
           </Button>
