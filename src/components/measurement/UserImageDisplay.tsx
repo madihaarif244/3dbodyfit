@@ -24,9 +24,9 @@ const UserImageDisplay: FC<UserImageDisplayProps> = ({ userImage, hasLandmarks =
   ];
 
   return (
-    <div className="bg-card rounded-lg overflow-hidden shadow-lg border-2 border-electric/10 h-[500px] relative">
+    <div className="bg-white rounded-lg overflow-hidden shadow-lg border border-gray-200 h-[500px] relative">
       {userImage ? (
-        <div className="w-full h-full flex items-center justify-center bg-[#0A1029]">
+        <div className="w-full h-full flex items-center justify-center bg-white">
           <div className="relative w-full h-full flex items-center justify-center">
             {/* Display user image with proper sizing */}
             <img 
@@ -55,19 +55,19 @@ const UserImageDisplay: FC<UserImageDisplayProps> = ({ userImage, hasLandmarks =
             )}
             
             {/* Footer info */}
-            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent">
-              <div className="text-center text-white">
-                <div className="text-sm font-bold text-blue-400">BODY SCAN</div>
-                <div className="text-xs">AI-Enhanced Measurement</div>
+            <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/20 to-transparent">
+              <div className="text-center text-gray-800">
+                <div className="text-sm font-bold text-blue-600">BODY SCAN</div>
+                <div className="text-xs text-gray-600">AI-Enhanced Measurement</div>
               </div>
             </div>
           </div>
         </div>
       ) : (
-        <div className="w-full h-full flex items-center justify-center bg-[#0A1029] text-white">
+        <div className="w-full h-full flex items-center justify-center bg-white text-gray-800">
           <div className="text-center p-4">
             <div className="mb-2 text-lg">No image available</div>
-            <p className="text-sm text-gray-400">Please upload an image during the scanning process</p>
+            <p className="text-sm text-gray-500">Please upload an image during the scanning process</p>
           </div>
         </div>
       )}
@@ -76,3 +76,4 @@ const UserImageDisplay: FC<UserImageDisplayProps> = ({ userImage, hasLandmarks =
 };
 
 export default UserImageDisplay;
+
