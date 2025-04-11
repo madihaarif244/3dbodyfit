@@ -11,4 +11,4 @@ fi
 
 # Run the development server using npx to ensure we use the local vite installation
 echo "Starting development server..."
-npx vite
+npm run dev
