@@ -11,7 +11,7 @@ export default function DatasetEvaluatorToggle({ measurements }: DatasetEvaluato
   const [showDatasetEvaluation, setShowDatasetEvaluation] = useState<boolean>(false);
   
   return (
-    <div>
+    <div className="w-full">
       <div className="mt-4">
         <Button 
           variant="outline" 
@@ -23,8 +23,8 @@ export default function DatasetEvaluatorToggle({ measurements }: DatasetEvaluato
       </div>
       
       {showDatasetEvaluation && (
-        <div className="mt-4 flex justify-center">
-          <div className="w-full max-w-3xl">
+        <div className="mt-4 flex justify-center items-center w-full">
+          <div className="w-full max-w-4xl mx-auto">
             <DatasetEvaluator measurements={measurements} />
           </div>
         </div>

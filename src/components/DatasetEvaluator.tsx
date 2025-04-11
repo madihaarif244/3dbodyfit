@@ -159,8 +159,8 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
 
   return (
     <Card className="bg-card border-none shadow-lg text-card-foreground">
-      <CardHeader>
-        <CardTitle className="text-xl font-semibold text-white">Dataset Evaluation</CardTitle>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-xl font-semibold text-white text-center">Dataset Evaluation</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
