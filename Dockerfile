@@ -15,6 +15,5 @@ COPY . .
 # Expose the port the app runs on
 EXPOSE 5173
 
-# Command to run the application using npx
+# Command to run the application using npm run dev
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
-
