@@ -18,7 +18,7 @@ export default function HeroSection() {
             <Button size="lg" className="bg-primary hover:bg-primary/90 transition-transform hover:scale-105" asChild>
               <Link to="/try-it-now">Try It Now</Link>
             </Button>
-            <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10 transition-transform hover:scale-105" asChild>
+            <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10 transition-transform hover:scale-105">
               <a href="#how-it-works">
                 See How It Works
               </a>
