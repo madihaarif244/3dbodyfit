@@ -348,10 +348,10 @@ export default function TryItNow() {
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2 text-center text-white">
+            <h1 className="text-3xl md:text-4xl font-bold mb-2 text-center text-foreground">
               AI Body Measurement Tool
             </h1>
-            <p className="text-gray-300 text-center mb-8">
+            <p className="text-base md:text-lg text-muted-foreground text-center mb-8">
               Get accurate body measurements using advanced 3D body modeling
             </p>
             
