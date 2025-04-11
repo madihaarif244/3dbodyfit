@@ -28,7 +28,6 @@ export default function EvaluationForm({
   isLoading,
   onEvaluate
 }: EvaluationFormProps) {
-  // Add tooltips for datasets
   const datasetInfo = {
     caesar: "CAESAR (Civilian American and European Surface Anthropometry Resource) dataset with 3D body scans of thousands of individuals.",
     renderpeople: "RenderPeople dataset with high-quality 3D scanned human models used for realistic character creation.",
@@ -39,16 +38,16 @@ export default function EvaluationForm({
     <div className="space-y-4">
       <div className="space-y-2">
         <div className="flex justify-between">
-          <Label htmlFor="dataset-type" className="text-white">Dataset Type</Label>
+          <Label htmlFor="dataset-type" className="text-foreground">Dataset Type</Label>
           <div className="relative group">
-            <Info className="h-4 w-4 text-gray-400 cursor-help" />
-            <div className="absolute bottom-full mb-2 right-0 w-64 p-2 bg-gray-800 rounded text-xs invisible group-hover:visible z-10">
+            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+            <div className="absolute bottom-full mb-2 right-0 w-64 p-2 bg-background border border-border rounded text-xs invisible group-hover:visible z-10 text-foreground">
               {datasetInfo[datasetType as keyof typeof datasetInfo]}
             </div>
           </div>
         </div>
         <Select value={datasetType} onValueChange={setDatasetType}>
-          <SelectTrigger id="dataset-type" className="text-white">
+          <SelectTrigger id="dataset-type" className="text-foreground">
             <SelectValue placeholder="Select dataset" />
           </SelectTrigger>
           <SelectContent>
@@ -61,7 +60,7 @@ export default function EvaluationForm({
       
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="dataset-size" className="text-white">Sample Size</Label>
+          <Label htmlFor="dataset-size" className="text-foreground">Sample Size</Label>
           <Input 
             id="dataset-size"
             type="number" 
@@ -69,14 +68,14 @@ export default function EvaluationForm({
             max={100}
             value={datasetSize} 
             onChange={(e) => setDatasetSize(parseInt(e.target.value) || 10)}
-            className="text-white"
+            className="text-foreground"
           />
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="accuracy-level" className="text-white">Accuracy Level</Label>
+          <Label htmlFor="accuracy-level" className="text-foreground">Accuracy Level</Label>
           <Select value={accuracyLevel} onValueChange={setAccuracyLevel}>
-            <SelectTrigger id="accuracy-level" className="text-white">
+            <SelectTrigger id="accuracy-level" className="text-foreground">
               <SelectValue placeholder="Select accuracy" />
             </SelectTrigger>
             <SelectContent>
@@ -90,7 +89,7 @@ export default function EvaluationForm({
       
       {isLoading && (
         <div className="space-y-2 py-2">
-          <Label className="text-white">Loading dataset...</Label>
+          <Label className="text-foreground">Loading dataset...</Label>
           <Progress value={45} className="h-2" />
         </div>
       )}
@@ -98,7 +97,7 @@ export default function EvaluationForm({
       <Button 
         onClick={onEvaluate} 
         disabled={isLoading}
-        className="w-full bg-electric hover:bg-electric/80"
+        className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
       >
         {isLoading ? "Evaluating..." : "Evaluate Against Dataset"}
       </Button>
