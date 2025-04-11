@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Canvas } from "@react-three/fiber";
@@ -7,7 +6,6 @@ import { OrbitControls } from "@react-three/drei";
 import { ArrowRight, Redo, Download, Share2 } from "lucide-react";
 import AvatarModel from "./AvatarModel";
 import DatasetEvaluator from "./DatasetEvaluator";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface MeasurementResultsProps {
   measurements: Record<string, number>;
@@ -15,7 +13,6 @@ interface MeasurementResultsProps {
   onReset: () => void;
   isEstimated?: boolean;
   landmarks?: Record<string, {x: number, y: number, z: number, visibility?: number}>;
-  userImage?: File | string;
 }
 
 export default function MeasurementResults({ 
@@ -23,30 +20,10 @@ export default function MeasurementResults({
   confidenceScore, 
   onReset,
   isEstimated = false,
-  landmarks,
-  userImage
+  landmarks
 }: MeasurementResultsProps) {
   const [measurementSystem, setMeasurementSystem] = useState<"metric" | "imperial">("metric");
   const [showDatasetEvaluation, setShowDatasetEvaluation] = useState<boolean>(false);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  
-  // Create URL for user image if provided
-  useEffect(() => {
-    if (userImage) {
-      if (typeof userImage === 'string') {
-        setImageUrl(userImage);
-      } else {
-        setImageUrl(URL.createObjectURL(userImage));
-      }
-    }
-    
-    // Clean up the object URL to avoid memory leaks
-    return () => {
-      if (imageUrl && imageUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(imageUrl);
-      }
-    };
-  }, [userImage]);
   
   const toggleMeasurementSystem = () => {
     setMeasurementSystem(measurementSystem === "metric" ? "imperial" : "metric");
@@ -133,32 +110,20 @@ export default function MeasurementResults({
                 </Button>
               </div>
               
-              <div className="flex items-center gap-4">
-                {imageUrl && (
-                  <div className="flex-shrink-0">
-                    <Avatar className="h-16 w-16 border-2 border-electric">
-                      <AvatarImage src={imageUrl} alt="User image" className="object-cover" />
-                      <AvatarFallback className="bg-gray-700 text-white">User</AvatarFallback>
-                    </Avatar>
-                  </div>
-                )}
-                <div className="flex-grow">
-                  <div className="text-sm text-gray-400 flex items-center gap-2">
-                    Height: <span className="font-medium text-electric">{formatHeight()}</span>
-                    {isEstimated && <span className="text-xs text-amber-400">(Estimated)</span>}
-                    {hasLandmarks && <span className="text-xs text-green-400">(Landmarks Detected)</span>}
-                  </div>
-                  
-                  <div className="flex items-center mt-1 gap-1">
-                    <div className="h-2 bg-blue-900/50 rounded-full flex-grow">
-                      <div 
-                        className="h-2 bg-gradient-to-r from-blue-500 to-electric rounded-full" 
-                        style={{ width: `${confidenceScore * 100}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-gray-400">{Math.round(confidenceScore * 100)}% accuracy</span>
-                  </div>
+              <div className="text-sm text-gray-400 flex items-center gap-2">
+                Height: <span className="font-medium text-electric">{formatHeight()}</span>
+                {isEstimated && <span className="text-xs text-amber-400">(Estimated)</span>}
+                {hasLandmarks && <span className="text-xs text-green-400">(Landmarks Detected)</span>}
+              </div>
+              
+              <div className="flex items-center mt-1 gap-1">
+                <div className="h-2 bg-blue-900/50 rounded-full flex-grow">
+                  <div 
+                    className="h-2 bg-gradient-to-r from-blue-500 to-electric rounded-full" 
+                    style={{ width: `${confidenceScore * 100}%` }}
+                  />
                 </div>
+                <span className="text-xs text-gray-400">{Math.round(confidenceScore * 100)}% accuracy</span>
               </div>
             </CardHeader>
             

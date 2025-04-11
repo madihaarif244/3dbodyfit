@@ -20,7 +20,6 @@ interface MeasurementData {
   isEstimated?: boolean;
   modelType?: ModelType;
   landmarks?: Record<string, {x: number, y: number, z: number, visibility?: number}>;
-  userImage?: File | string;
 }
 
 const generateFallbackMeasurements = (height: number, gender: 'male' | 'female' | 'other', measurementSystem: 'metric' | 'imperial'): Record<string, number> => {
@@ -209,8 +208,7 @@ export default function TryItNow() {
           confidenceScore,
           isEstimated: !browserSupportsWebGPU,
           modelType: browserSupportsWebGPU ? selectedModel : undefined,
-          landmarks: browserSupportsWebGPU ? result.landmarks : undefined,
-          userImage: formData.frontImage
+          landmarks: browserSupportsWebGPU ? result.landmarks : undefined
         });
         
         setScanStatus("complete");
@@ -443,8 +441,6 @@ export default function TryItNow() {
                   confidenceScore={measurementData.confidenceScore}
                   onReset={resetForm}
                   isEstimated={scanStatus === "fallback" || measurementData.isEstimated}
-                  landmarks={measurementData.landmarks}
-                  userImage={measurementData.userImage}
                 />
                 
                 {lastFormData && (

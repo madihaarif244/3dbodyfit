@@ -39,8 +39,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
   const handleEvaluate = async () => {
     setIsLoading(true);
     try {
-      // Remove the third argument (accuracyLevel) as it's not expected by the loadDataset function
-      const dataset = await loadDataset(datasetType, datasetSize);
+      const dataset = await loadDataset(datasetType, datasetSize, accuracyLevel);
       
       // Calculate average error across all samples
       let totalMAE = 0;
@@ -54,13 +53,13 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
         totalMAE += maeResult.overall;
         totalPercentage += percentageResult.overall;
         
-        // Track individual measurement deviations - fix property names from 'individual' to 'byMeasurement'
-        Object.keys(maeResult.byMeasurement).forEach(key => {
+        // Track individual measurement deviations
+        Object.keys(maeResult.individual).forEach(key => {
           if (!measurementDeviations[key]) {
             measurementDeviations[key] = {total: 0, count: 0, maeTotal: 0};
           }
-          measurementDeviations[key].total += percentageResult.byMeasurement[key] || 0;
-          measurementDeviations[key].maeTotal += maeResult.byMeasurement[key] || 0;
+          measurementDeviations[key].total += percentageResult.individual[key] || 0;
+          measurementDeviations[key].maeTotal += maeResult.individual[key] || 0;
           measurementDeviations[key].count += 1;
         });
       });
@@ -81,7 +80,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
       
       toast({
         title: "Evaluation Complete",
-        description: `Evaluated ${dataset.samples.length} samples from ${datasetType.toUpperCase()} dataset`,
+        description: `Evaluated ${dataset.samples.length} samples from ${datasetType.toUpperCase()} dataset with ${accuracyLevel} accuracy`,
       });
     } catch (error) {
       console.error("Dataset evaluation error:", error);
