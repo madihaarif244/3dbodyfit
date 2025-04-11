@@ -16,14 +16,14 @@ const steps = [
     icon: User,
     title: "Enter Gender & Height",
     description: "Helps calibrate the scan for precision",
-    color: "bg-primary/20"
+    color: "bg-primary/10"
   },
   {
     id: 2,
     icon: Upload,
     title: "Upload or Capture Image",
     description: "Use your phone or webcam securely",
-    color: "bg-primary/15"
+    color: "bg-primary/10"
   },
   {
     id: 3,
@@ -37,7 +37,7 @@ const steps = [
     icon: Ruler,
     title: "Get Measurements",
     description: "Receive detailed, accurate body data",
-    color: "bg-primary/20"
+    color: "bg-primary/10"
   }
 ];
 
@@ -62,11 +62,11 @@ export default function HowItWorksSection() {
   }, []);
 
   return (
-    <section id="how-it-works" className="section-padding bg-secondary">
+    <section id="how-it-works" className="section-padding bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-10 fade-in">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">How It Works</h2>
-          <p className="text-lg text-muted-foreground">
+          <h2 className="text-2xl md:text-3xl font-semibold mb-4 text-foreground">How It Works</h2>
+          <p className="text-base text-muted-foreground">
             Our technology transforms smartphone images into precise body measurements in seconds.
           </p>
         </div>
@@ -83,20 +83,20 @@ export default function HowItWorksSection() {
             >
               <div 
                 className={cn(
-                  "card-hover flex flex-col items-center p-4 bg-card rounded-xl shadow-md h-full",
+                  "card-hover flex flex-col items-center p-6 bg-card shadow-sm border border-border rounded-lg h-full",
                   visibleItems.includes(step.id) ? "fade-in-up" : "opacity-0"
                 )}
               >
-                <div className={cn("flex items-center justify-center w-14 h-14 rounded-full mb-3", step.color)}>
-                  <step.icon className="w-7 h-7 text-primary" />
+                <div className={cn("flex items-center justify-center w-12 h-12 rounded-full mb-3", step.color)}>
+                  <step.icon className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="text-lg font-medium mb-2 text-foreground">{step.title}</h3>
                 <p className="text-muted-foreground text-center text-sm">{step.description}</p>
               </div>
               
               {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-1/2 -right-3 transform -translate-y-1/2 animate-pulse-blue">
-                  <ArrowRight className="w-5 h-5 text-primary" />
+                <div className="hidden lg:block absolute top-1/2 -right-3 transform -translate-y-1/2 text-primary opacity-60">
+                  <ArrowRight className="w-5 h-5" />
                 </div>
               )}
             </div>

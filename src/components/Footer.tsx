@@ -7,11 +7,11 @@ export default function Footer() {
       <div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
           <div>
-            <div className="font-bold text-xl text-white mb-4 flex items-center gap-2">
+            <div className="font-semibold text-xl text-white mb-4 flex items-center gap-2">
               <div className="bg-primary rounded-md p-1">
                 <Box className="h-5 w-5 text-white" />
               </div>
-              <span className="flex-shrink-0 font-bold">
+              <span className="flex-shrink-0 font-semibold">
                 <span className="text-primary">3D</span>Body<span className="text-primary">Fit</span>
               </span>
             </div>
@@ -35,7 +35,7 @@ export default function Footer() {
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Company</h3>
+            <h3 className="text-lg font-medium text-white mb-4">Company</h3>
             <ul className="space-y-2">
               <li><a href="#" className="text-gray-300 hover:text-primary transition-colors">About Us</a></li>
               <li><a href="#" className="text-gray-300 hover:text-primary transition-colors">Careers</a></li>
@@ -45,7 +45,7 @@ export default function Footer() {
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Legal</h3>
+            <h3 className="text-lg font-medium text-white mb-4">Legal</h3>
             <ul className="space-y-2">
               <li><a href="#" className="text-gray-300 hover:text-primary transition-colors">Privacy Policy</a></li>
               <li><a href="#" className="text-gray-300 hover:text-primary transition-colors">Terms of Service</a></li>

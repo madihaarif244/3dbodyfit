@@ -1,19 +1,19 @@
 
 @layer utilities {
   .glass {
-    @apply backdrop-blur-md bg-white/5 border border-white/10;
+    @apply backdrop-blur-md bg-white/80 border border-white/20 shadow-sm;
   }
   
   .text-gradient {
-    @apply bg-gradient-to-br from-white via-white/90 to-white/70 bg-clip-text text-transparent;
+    @apply bg-gradient-to-br from-primary via-primary/90 to-primary/70 bg-clip-text text-transparent;
   }
   
   .shadow-glow {
-    box-shadow: 0 0 15px rgba(46, 58, 89, 0.5);
+    box-shadow: 0 0 15px rgba(66, 82, 110, 0.2);
   }
   
   .steel-gradient {
-    background: linear-gradient(135deg, #2E3A59 0%, #3E4D70 50%, #2E3A59 100%);
+    background: linear-gradient(135deg, #42526E 0%, #556B8C 50%, #42526E 100%);
   }
   
   .transition-smooth {
@@ -25,13 +25,14 @@
   }
   
   .hover-lift:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
   }
   
   .bg-mesh {
-    background-color: #2E3A59;
+    background-color: #42526E;
     background-image: 
-      radial-gradient(at 0% 0%, rgba(78, 91, 120, 0.3) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(30, 40, 60, 0.3) 0px, transparent 50%);
+      radial-gradient(at 0% 0%, rgba(85, 107, 140, 0.2) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(50, 65, 90, 0.2) 0px, transparent 50%);
   }
 }
+

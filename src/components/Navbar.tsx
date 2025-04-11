@@ -27,7 +27,7 @@ export default function Navbar() {
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? 'bg-background/90 backdrop-blur-md shadow-sm' : 'bg-transparent'
+        scrolled ? 'bg-background/95 backdrop-blur-md shadow-sm' : 'bg-transparent'
       }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -38,7 +38,7 @@ export default function Navbar() {
               <div className="bg-primary rounded-md p-1">
                 <Box className="h-5 w-5 text-white" />
               </div>
-              <span className="font-bold text-xl">
+              <span className="font-semibold text-xl text-foreground">
                 <span className="text-primary">3D</span>Body<span className="text-primary">Fit</span>
               </span>
             </Link>
@@ -48,25 +48,25 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-8">
             <a
               href="#how-it-works"
-              className="text-foreground hover:text-primary font-medium"
+              className="text-foreground hover:text-primary transition-colors"
             >
               How It Works
             </a>
             <a
               href="#features"
-              className="text-foreground hover:text-primary font-medium"
+              className="text-foreground hover:text-primary transition-colors"
             >
               Features
             </a>
             <a
               href="#use-cases"
-              className="text-foreground hover:text-primary font-medium"
+              className="text-foreground hover:text-primary transition-colors"
             >
               Use Cases
             </a>
             <a
               href="#results"
-              className="text-foreground hover:text-primary font-medium"
+              className="text-foreground hover:text-primary transition-colors"
             >
               Results
             </a>
@@ -96,28 +96,28 @@ export default function Navbar() {
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             <a
               href="#how-it-works"
-              className="block px-3 py-2 text-base font-medium text-foreground hover:text-primary"
+              className="block px-3 py-2 text-base text-foreground hover:text-primary"
               onClick={() => setMobileMenuOpen(false)}
             >
               How It Works
             </a>
             <a
               href="#features"
-              className="block px-3 py-2 text-base font-medium text-foreground hover:text-primary"
+              className="block px-3 py-2 text-base text-foreground hover:text-primary"
               onClick={() => setMobileMenuOpen(false)}
             >
               Features
             </a>
             <a
               href="#use-cases"
-              className="block px-3 py-2 text-base font-medium text-foreground hover:text-primary"
+              className="block px-3 py-2 text-base text-foreground hover:text-primary"
               onClick={() => setMobileMenuOpen(false)}
             >
               Use Cases
             </a>
             <a
               href="#results"
-              className="block px-3 py-2 text-base font-medium text-foreground hover:text-primary"
+              className="block px-3 py-2 text-base text-foreground hover:text-primary"
               onClick={() => setMobileMenuOpen(false)}
             >
               Results

@@ -30,17 +30,17 @@ export default function CTASection() {
   }, []);
 
   return (
-    <section id="cta-section" className="section-padding bg-primary">
+    <section id="cta-section" className="section-padding bg-primary/90">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div 
-          className={`max-w-4xl mx-auto text-center text-white ${
+          className={`max-w-4xl mx-auto text-center ${
             isVisible ? 'fade-in-up' : 'opacity-0'
           }`}
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+          <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-white">
             Ready to Transform the Way You Size Up?
           </h2>
-          <p className="text-lg md:text-xl mb-8 text-white/90">
+          <p className="text-lg mb-8 text-white/90">
             Join thousands of businesses revolutionizing their customer experience with our AI body scanning technology.
           </p>
           
@@ -58,7 +58,7 @@ export default function CTASection() {
               className="bg-transparent border border-white hover:bg-white/10 transition-transform hover:scale-105"
             >
               <span>Sign Up Free</span>
-              <ChevronRight className="ml-2 h-5 w-5 animate-bounce" />
+              <ChevronRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
         </div>

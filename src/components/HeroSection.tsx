@@ -8,10 +8,10 @@ export default function HeroSection() {
     <section className="relative min-h-screen flex items-center justify-center hero-gradient pt-16">
       <div className="container mx-auto px-4 lg:px-6 py-8 lg:py-12 flex flex-col items-center text-center z-10">
         <div className="max-w-xl">
-          <h1 className="font-bold text-4xl sm:text-5xl md:text-6xl leading-tight mb-6 fade-in-left" style={{ animationDelay: '200ms' }}>
+          <h1 className="font-semibold text-3xl sm:text-4xl md:text-5xl leading-tight mb-6 fade-in-left text-foreground" style={{ animationDelay: '200ms' }}>
             Accurate Body Measurements in <span className="text-primary">Seconds</span> with AI
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 fade-in-left" style={{ animationDelay: '400ms' }}>
+          <p className="text-base md:text-lg text-muted-foreground mb-8 fade-in-left" style={{ animationDelay: '400ms' }}>
             No tape. No guesswork. Just a quick scan for perfectly tailored experiences.
           </p>
           <div className="flex flex-row gap-4 justify-center fade-in-left" style={{ animationDelay: '600ms' }}>

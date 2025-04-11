@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -77,15 +78,19 @@ export default {
           ring: 'hsl(var(--sidebar-ring))'
         },
         steelblue: {
-          DEFAULT: '#2E3A59',
-          light: '#3E4D70',
-          dark: '#1E2636'
+          DEFAULT: '#42526E',
+          light: '#556B8C',
+          dark: '#324158'
         }
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        serif: ['Georgia', 'serif'],
       },
       borderRadius: {
         lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)'
+        md: 'calc(var(--radius) - 1px)',
+        sm: 'calc(var(--radius) - 2px)'
       },
       keyframes: {
         'accordion-down': {
@@ -140,3 +145,4 @@ export default {
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+

@@ -8,11 +8,12 @@ body::before {
   height: 100%;
   z-index: -1;
   background-image: 
-    radial-gradient(1px 1px at 25% 30%, rgba(255,255,255,0.2), rgba(255,255,255,0)),
-    radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.2), rgba(255,255,255,0)),
-    radial-gradient(1px 1px at 75% 10%, rgba(255,255,255,0.2), rgba(255,255,255,0)),
-    radial-gradient(1px 1px at 10% 60%, rgba(255,255,255,0.2), rgba(255,255,255,0)),
-    radial-gradient(1px 1px at 35% 75%, rgba(255,255,255,0.2), rgba(255,255,255,0));
+    radial-gradient(1px 1px at 25% 30%, rgba(66, 82, 110, 0.05), rgba(255,255,255,0)),
+    radial-gradient(1px 1px at 50% 50%, rgba(66, 82, 110, 0.05), rgba(255,255,255,0)),
+    radial-gradient(1px 1px at 75% 10%, rgba(66, 82, 110, 0.05), rgba(255,255,255,0)),
+    radial-gradient(1px 1px at 10% 60%, rgba(66, 82, 110, 0.05), rgba(255,255,255,0)),
+    radial-gradient(1px 1px at 35% 75%, rgba(66, 82, 110, 0.05), rgba(255,255,255,0));
   background-size: 200% 200%;
-  opacity: 0.3;
+  opacity: 0.6;
 }
+
