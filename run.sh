@@ -9,3 +9,4 @@ fi
 
 # Run the development server using npx to ensure we use the local vite installation
 npx vite
+
