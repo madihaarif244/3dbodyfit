@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { Arrow, Redo, Download, Share2 } from "lucide-react";
+import { ArrowRight, Redo, Download, Share2 } from "lucide-react";
 import AvatarModel from "./AvatarModel";
 
 interface MeasurementResultsProps {
@@ -30,7 +29,6 @@ export default function MeasurementResults({
   
   const formatMeasurement = (valueInCm: number) => {
     if (measurementSystem === "imperial") {
-      // Convert to inches and round to nearest 0.25
       const inches = valueInCm / 2.54;
       const roundedInches = Math.round(inches * 4) / 4;
       return `${roundedInches.toFixed(1)}"`;
@@ -48,7 +46,6 @@ export default function MeasurementResults({
     { name: "Sleeve", value: measurements.sleeve }
   ];
   
-  // Add additional detailed measurements if available
   const additionalMeasurements = [];
   
   if (measurements.neck) {
@@ -79,7 +76,6 @@ export default function MeasurementResults({
     additionalMeasurements.push({ name: "Shoulder Width", value: measurements.shoulderWidth });
   }
   
-  // Format height display
   const formatHeight = () => {
     if (measurementSystem === "imperial") {
       const totalInches = measurements.height / 2.54;
@@ -91,7 +87,6 @@ export default function MeasurementResults({
     }
   };
   
-  // Check if we have landmarks for improved visualization
   const hasLandmarks = landmarks && Object.keys(landmarks).length > 0;
   
   return (
@@ -107,7 +102,7 @@ export default function MeasurementResults({
                 onClick={toggleMeasurementSystem}
                 className="gap-1 text-xs bg-gray-700 hover:bg-gray-600 text-white border-gray-600"
               >
-                <Arrow className="h-3 w-3" />
+                <ArrowRight className="h-3 w-3" />
                 {measurementSystem === "metric" ? "Imperial" : "Metric"}
               </Button>
             </div>
