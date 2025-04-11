@@ -22,7 +22,8 @@ export interface Dataset {
 // In a real application, this would fetch from an API or load local files
 export const loadDataset = async (
   datasetType: string, 
-  sampleSize: number
+  sampleSize: number,
+  accuracyLevel: string = "standard" // Add default parameter for accuracy level
 ): Promise<Dataset> => {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1500));
@@ -83,6 +84,22 @@ export const loadDataset = async (
       measurements.upperArm = gender === 'male' 
         ? height * 0.18 + Math.random() * 3 - 1.5
         : height * 0.16 + Math.random() * 3 - 1.5;
+    }
+    
+    // Adjust measurement precision based on accuracy level
+    if (accuracyLevel === "high" || accuracyLevel === "research-grade") {
+      // Add more precise measurements with less random variation for higher accuracy levels
+      if (Math.random() > 0.2) {
+        measurements.forearm = gender === 'male' 
+          ? height * 0.15 + Math.random() * (accuracyLevel === "research-grade" ? 1 : 2) - (accuracyLevel === "research-grade" ? 0.5 : 1)
+          : height * 0.13 + Math.random() * (accuracyLevel === "research-grade" ? 1 : 2) - (accuracyLevel === "research-grade" ? 0.5 : 1);
+      }
+      
+      if (Math.random() > 0.2) {
+        measurements.calf = gender === 'male' 
+          ? height * 0.20 + Math.random() * (accuracyLevel === "research-grade" ? 1 : 2) - (accuracyLevel === "research-grade" ? 0.5 : 1)
+          : height * 0.19 + Math.random() * (accuracyLevel === "research-grade" ? 1 : 2) - (accuracyLevel === "research-grade" ? 0.5 : 1);
+      }
     }
     
     // Generate simple landmarks
