@@ -15,10 +15,10 @@ export default function DatasetEvaluatorToggle({ measurements }: DatasetEvaluato
       <div className="mt-4">
         <Button 
           variant="outline" 
-          className="w-full"
+          className="w-full bg-blue-800/30 hover:bg-blue-700/50 text-white"
           onClick={() => setShowDatasetEvaluation(!showDatasetEvaluation)}
         >
-          {showDatasetEvaluation ? "Hide" : "Show"} Dataset Evaluation Tools
+          {showDatasetEvaluation ? "Hide" : "Show"} Advanced Accuracy Assessment
         </Button>
       </div>
       

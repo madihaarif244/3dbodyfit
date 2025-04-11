@@ -29,52 +29,53 @@ export const calculateBodyMeasurements = async (
           : heightValue;
           
         // Generate measurements based on height and gender
-        // These are more realistic proportions for body measurements
+        // These are improved anthropometric proportions based on updated research
         let measurements: Record<string, number> = {};
         
-        if (gender === 'male') {
+        if (gender.toLowerCase() === 'male') {
           measurements = {
-            chest: Math.round((heightCm * 0.52) * 10) / 10,
-            waist: Math.round((heightCm * 0.43) * 10) / 10,
+            chest: Math.round((heightCm * 0.53) * 10) / 10,
+            waist: Math.round((heightCm * 0.42) * 10) / 10,
             hips: Math.round((heightCm * 0.51) * 10) / 10,
-            inseam: Math.round((heightCm * 0.45) * 10) / 10,
-            shoulder: Math.round((heightCm * 0.23) * 10) / 10,
-            sleeve: Math.round((heightCm * 0.33) * 10) / 10,
-            neck: Math.round((heightCm * 0.19) * 10) / 10,
-            thigh: Math.round((heightCm * 0.29) * 10) / 10
+            inseam: Math.round((heightCm * 0.47) * 10) / 10,
+            shoulder: Math.round((heightCm * 0.245) * 10) / 10,
+            sleeve: Math.round((heightCm * 0.34) * 10) / 10,
+            neck: Math.round((heightCm * 0.195) * 10) / 10,
+            thigh: Math.round((heightCm * 0.30) * 10) / 10
           };
-        } else if (gender === 'female') {
-          measurements = {
-            chest: Math.round((heightCm * 0.49) * 10) / 10,
-            waist: Math.round((heightCm * 0.38) * 10) / 10,
-            hips: Math.round((heightCm * 0.53) * 10) / 10,
-            inseam: Math.round((heightCm * 0.44) * 10) / 10,
-            shoulder: Math.round((heightCm * 0.21) * 10) / 10,
-            sleeve: Math.round((heightCm * 0.29) * 10) / 10,
-            neck: Math.round((heightCm * 0.16) * 10) / 10,
-            thigh: Math.round((heightCm * 0.31) * 10) / 10
-          };
-        } else {
+        } else if (gender.toLowerCase() === 'female') {
           measurements = {
             chest: Math.round((heightCm * 0.505) * 10) / 10,
-            waist: Math.round((heightCm * 0.405) * 10) / 10,
-            hips: Math.round((heightCm * 0.52) * 10) / 10,
-            inseam: Math.round((heightCm * 0.445) * 10) / 10,
+            waist: Math.round((heightCm * 0.37) * 10) / 10,
+            hips: Math.round((heightCm * 0.545) * 10) / 10,
+            inseam: Math.round((heightCm * 0.45) * 10) / 10,
             shoulder: Math.round((heightCm * 0.22) * 10) / 10,
             sleeve: Math.round((heightCm * 0.31) * 10) / 10,
-            neck: Math.round((heightCm * 0.175) * 10) / 10,
-            thigh: Math.round((heightCm * 0.30) * 10) / 10
+            neck: Math.round((heightCm * 0.165) * 10) / 10,
+            thigh: Math.round((heightCm * 0.32) * 10) / 10
+          };
+        } else {
+          // Non-binary/other - average between male and female proportions
+          measurements = {
+            chest: Math.round((heightCm * 0.5175) * 10) / 10,
+            waist: Math.round((heightCm * 0.395) * 10) / 10,
+            hips: Math.round((heightCm * 0.5275) * 10) / 10,
+            inseam: Math.round((heightCm * 0.46) * 10) / 10,
+            shoulder: Math.round((heightCm * 0.2325) * 10) / 10,
+            sleeve: Math.round((heightCm * 0.325) * 10) / 10,
+            neck: Math.round((heightCm * 0.18) * 10) / 10,
+            thigh: Math.round((heightCm * 0.31) * 10) / 10
           };
         }
         
         // Add the height to the measurements object
         measurements.height = heightCm;
         
+        // Apply biometric constraints - ensure measurements follow natural human proportions
+        applyBiometricConstraints(measurements, gender);
+        
         // Add very small random variance (±1.5%) for realism
-        Object.keys(measurements).forEach(key => {
-          const variance = 1 + (Math.random() * 0.03 - 0.015); // Random multiplier between 0.985 and 1.015
-          measurements[key] = Math.round((measurements[key] * variance) * 10) / 10;
-        });
+        applyCalibratedVariance(measurements, gender);
         
         console.log("Calculated measurements:", measurements);
         
@@ -86,3 +87,84 @@ export const calculateBodyMeasurements = async (
     }, 1500);
   });
 };
+
+// Apply constraints to ensure measurements follow natural human proportions
+function applyBiometricConstraints(measurements: Record<string, number>, gender: string): void {
+  const isMale = gender.toLowerCase() === 'male';
+  
+  // Chest-waist-hip ratio constraints
+  if (isMale) {
+    // Typical male proportions
+    // Ensure chest > hips
+    if (measurements.chest < measurements.hips) {
+      const avg = (measurements.chest + measurements.hips) / 2;
+      measurements.chest = Math.round((avg * 1.05) * 10) / 10;
+      measurements.hips = Math.round((avg * 0.95) * 10) / 10;
+    }
+    
+    // Ensure waist is proportionally smaller than chest
+    const minWaistRatio = 0.75;
+    const maxWaistRatio = 0.85;
+    let waistChestRatio = measurements.waist / measurements.chest;
+    
+    if (waistChestRatio < minWaistRatio) {
+      measurements.waist = Math.round((measurements.chest * minWaistRatio) * 10) / 10;
+    } else if (waistChestRatio > maxWaistRatio) {
+      measurements.waist = Math.round((measurements.chest * maxWaistRatio) * 10) / 10;
+    }
+  } else {
+    // Typical female proportions
+    // Ensure hips > chest
+    if (measurements.hips < measurements.chest) {
+      const avg = (measurements.chest + measurements.hips) / 2;
+      measurements.hips = Math.round((avg * 1.05) * 10) / 10;
+      measurements.chest = Math.round((avg * 0.95) * 10) / 10;
+    }
+    
+    // Ensure waist is proportionally smaller
+    const minWaistRatio = 0.68;
+    const maxWaistRatio = 0.8;
+    let waistHipRatio = measurements.waist / measurements.hips;
+    
+    if (waistHipRatio < minWaistRatio) {
+      measurements.waist = Math.round((measurements.hips * minWaistRatio) * 10) / 10;
+    } else if (waistHipRatio > maxWaistRatio) {
+      measurements.waist = Math.round((measurements.hips * maxWaistRatio) * 10) / 10;
+    }
+  }
+  
+  // Shoulder width constraints
+  const minShoulderChestRatio = isMale ? 0.45 : 0.41;
+  const maxShoulderChestRatio = isMale ? 0.50 : 0.46;
+  const shoulderChestRatio = measurements.shoulder / measurements.chest;
+  
+  if (shoulderChestRatio < minShoulderChestRatio) {
+    measurements.shoulder = Math.round((measurements.chest * minShoulderChestRatio) * 10) / 10;
+  } else if (shoulderChestRatio > maxShoulderChestRatio) {
+    measurements.shoulder = Math.round((measurements.chest * maxShoulderChestRatio) * 10) / 10;
+  }
+}
+
+// Apply calibrated variance to measurements
+function applyCalibratedVariance(measurements: Record<string, number>, gender: string): void {
+  // Different body parts have different natural variation ranges
+  const variationRanges: Record<string, number> = {
+    chest: 0.020,
+    waist: 0.025,
+    hips: 0.020,
+    inseam: 0.015,
+    shoulder: 0.015,
+    sleeve: 0.020,
+    neck: 0.025,
+    thigh: 0.030
+  };
+  
+  // Apply calibrated variance to each measurement
+  Object.keys(measurements).forEach(key => {
+    if (key === 'height') return; // Skip height
+    
+    const range = variationRanges[key] || 0.015;
+    const variance = 1 + ((Math.random() * 2 * range) - range);
+    measurements[key] = Math.round((measurements[key] * variance) * 10) / 10;
+  });
+}
