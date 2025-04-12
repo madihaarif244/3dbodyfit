@@ -30,7 +30,7 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
       id: 1,
       name: "ONE T-Shirt",
       type: "tshirt",
-      image: "/lovable-uploads/e6d4673c-7ff6-49f4-bcd5-99a028a5b51c.png",
+      image: "/lovable-uploads/d54a43b0-f7c3-427f-b57d-71fa67edacd5.png",
       description: "Burgundy cotton t-shirt with ONE logo"
     },
     {
@@ -133,8 +133,8 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
     <Card className="bg-card border-none shadow-lg">
       <CardHeader className="pb-3">
         <CardTitle className="text-xl font-semibold text-white flex items-center justify-between">
-          <span>Virtual Try-On</span>
-          <div className="text-sm font-normal text-gray-300 flex items-center gap-1">
+          <span className="text-white bg-electric/80 px-3 py-1 rounded">Virtual Try-On</span>
+          <div className="text-sm font-normal text-white bg-electric/80 flex items-center gap-1 px-3 py-1 rounded">
             <Ruler className="h-4 w-4" />
             <span>Recommended size: {currentSize}</span>
           </div>
@@ -176,26 +176,26 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
             <div className="flex justify-between items-center mb-4">
               <button 
                 onClick={handlePrevItem} 
-                className="p-2 bg-gray-800 rounded-full text-white hover:bg-gray-700"
+                className="p-2 bg-electric/80 rounded-full text-white hover:bg-electric"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
               
               <div className="text-center">
-                <h3 className="text-lg font-medium text-white">{currentItem.name}</h3>
-                <p className="text-sm text-gray-300">{currentItem.description}</p>
+                <h3 className="text-lg font-medium text-white bg-electric/80 px-3 py-1 rounded">{currentItem.name}</h3>
+                <p className="text-sm text-white bg-electric/70 px-2 py-1 rounded mt-1">{currentItem.description}</p>
               </div>
               
               <button 
                 onClick={handleNextItem}
-                className="p-2 bg-gray-800 rounded-full text-white hover:bg-gray-700"
+                className="p-2 bg-electric/80 rounded-full text-white hover:bg-electric"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
             </div>
             
             <div className="bg-gray-800/50 p-4 rounded-lg mb-4">
-              <h4 className="text-sm font-medium text-gray-200 mb-1">Size Recommendation</h4>
+              <h4 className="text-sm font-medium text-white mb-1">Size Recommendation</h4>
               <div className="flex justify-between items-center gap-2 mb-2">
                 {(['XS', 'S', 'M', 'L', 'XL', 'XXL'] as ClothingSize[]).map((size) => (
                   <div 
@@ -203,21 +203,21 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
                     className={`flex-1 py-2 text-center rounded text-sm font-medium ${
                       size === currentSize 
                         ? 'bg-electric text-white' 
-                        : 'bg-gray-700 text-gray-300'
+                        : 'bg-gray-700 text-white'
                     }`}
                   >
                     {size}
                   </div>
                 ))}
               </div>
-              <p className="text-sm text-gray-200 mt-2 bg-gray-800/70 p-2 rounded">
+              <p className="text-sm text-white mt-2 bg-gray-800/70 p-2 rounded">
                 {getSizeFeedback()}
               </p>
             </div>
             
             <div className="bg-gray-800/50 p-4 rounded-lg mb-4">
-              <h4 className="text-sm font-medium text-gray-200 mb-2">Fit Details</h4>
-              <ul className="text-sm text-gray-200">
+              <h4 className="text-sm font-medium text-white mb-2">Fit Details</h4>
+              <ul className="text-sm text-white">
                 <li className="flex justify-between mb-2 border-b border-gray-700 pb-1">
                   <span>Chest:</span> 
                   <span className="font-semibold">{measurements.chest.toFixed(1)} cm</span>
@@ -259,3 +259,4 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
     </Card>
   );
 }
+
