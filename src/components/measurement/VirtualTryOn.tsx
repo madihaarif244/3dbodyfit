@@ -2,11 +2,11 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, ShoppingBag, Ruler } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShoppingBag, Ruler, Shirt } from "lucide-react";
 import { Canvas } from "@react-three/fiber";
 import { Environment, OrbitControls } from "@react-three/drei";
 import AvatarModel from "../AvatarModel";
-import { calculateClothingSizes } from "@/utils/sizingUtils";
+import { calculateClothingSizes, getFitDescription } from "@/utils/sizingUtils";
 
 interface VirtualTryOnProps {
   measurements: Record<string, number>;
@@ -30,28 +30,28 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
       id: 1,
       name: "Classic T-Shirt",
       type: "tshirt",
-      image: "/lovable-uploads/8536b1ae-c608-4440-99f3-d8a50a2675c9.png",
+      image: "/lovable-uploads/e6d4673c-7ff6-49f4-bcd5-99a028a5b51c.png",
       description: "100% cotton classic fit t-shirt"
     },
     {
       id: 2,
       name: "Button-up Shirt",
       type: "shirt",
-      image: "/lovable-uploads/8536b1ae-c608-4440-99f3-d8a50a2675c9.png",
+      image: "/lovable-uploads/e6d4673c-7ff6-49f4-bcd5-99a028a5b51c.png",
       description: "Oxford cotton button-down shirt"
     },
     {
       id: 3,
       name: "Slim Fit Pants",
       type: "pants",
-      image: "/lovable-uploads/8536b1ae-c608-4440-99f3-d8a50a2675c9.png",
+      image: "/lovable-uploads/e6d4673c-7ff6-49f4-bcd5-99a028a5b51c.png",
       description: "Slim fit chino pants"
     },
     {
       id: 4,
       name: "Casual Jacket",
       type: "jacket",
-      image: "/lovable-uploads/8536b1ae-c608-4440-99f3-d8a50a2675c9.png",
+      image: "/lovable-uploads/e6d4673c-7ff6-49f4-bcd5-99a028a5b51c.png",
       description: "Lightweight casual jacket"
     }
   ]);
@@ -134,7 +134,7 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
       <CardHeader className="pb-3">
         <CardTitle className="text-xl font-semibold text-white flex items-center justify-between">
           <span>Virtual Try-On</span>
-          <div className="text-sm font-normal text-gray-400 flex items-center gap-1">
+          <div className="text-sm font-normal text-gray-300 flex items-center gap-1">
             <Ruler className="h-4 w-4" />
             <span>Recommended size: {currentSize}</span>
           </div>
@@ -143,22 +143,32 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
       
       <CardContent className="p-0">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          <div className="h-[350px] bg-gray-800/70 rounded-lg overflow-hidden relative">
-            <Canvas shadows camera={{ position: [0, 0, 2.5], fov: 50 }}>
-              <ambientLight intensity={0.8} />
-              <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-              <pointLight position={[-10, -10, -10]} />
-              <AvatarModel measurements={measurements} />
-              <OrbitControls enableZoom={true} enablePan={false} />
-              <Environment preset="city" />
-            </Canvas>
-            
-            {tryingOn && (
-              <div className="absolute bottom-4 left-0 right-0 text-center">
-                <span className="bg-electric/90 text-white px-3 py-1 rounded-lg text-sm font-medium">
-                  {currentItem.name} - Size {currentSize}
-                </span>
+          <div className="h-[350px] bg-gray-800/70 rounded-lg overflow-hidden relative flex items-center justify-center">
+            {!tryingOn ? (
+              <div className="w-full h-full flex items-center justify-center">
+                <img 
+                  src={currentItem.image} 
+                  alt={currentItem.name}
+                  className="max-w-full max-h-full object-contain"
+                />
               </div>
+            ) : (
+              <>
+                <Canvas shadows camera={{ position: [0, 0, 2.5], fov: 50 }}>
+                  <ambientLight intensity={0.8} />
+                  <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+                  <pointLight position={[-10, -10, -10]} />
+                  <AvatarModel measurements={measurements} />
+                  <OrbitControls enableZoom={true} enablePan={false} />
+                  <Environment preset="city" />
+                </Canvas>
+                
+                <div className="absolute bottom-4 left-0 right-0 text-center">
+                  <span className="bg-electric/90 text-white px-3 py-1 rounded-lg text-sm font-medium">
+                    {currentItem.name} - Size {currentSize}
+                  </span>
+                </div>
+              </>
             )}
           </div>
           
@@ -166,26 +176,26 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
             <div className="flex justify-between items-center mb-4">
               <button 
                 onClick={handlePrevItem} 
-                className="p-2 bg-gray-800 rounded-full"
+                className="p-2 bg-gray-800 rounded-full text-white hover:bg-gray-700"
               >
                 <ChevronLeft className="h-5 w-5" />
               </button>
               
               <div className="text-center">
                 <h3 className="text-lg font-medium text-white">{currentItem.name}</h3>
-                <p className="text-sm text-gray-400">{currentItem.description}</p>
+                <p className="text-sm text-gray-300">{currentItem.description}</p>
               </div>
               
               <button 
                 onClick={handleNextItem}
-                className="p-2 bg-gray-800 rounded-full"
+                className="p-2 bg-gray-800 rounded-full text-white hover:bg-gray-700"
               >
                 <ChevronRight className="h-5 w-5" />
               </button>
             </div>
             
             <div className="bg-gray-800/50 p-4 rounded-lg mb-4">
-              <h4 className="text-sm font-medium text-gray-300 mb-1">Size Recommendation</h4>
+              <h4 className="text-sm font-medium text-gray-200 mb-1">Size Recommendation</h4>
               <div className="flex justify-between items-center gap-2">
                 {(['XS', 'S', 'M', 'L', 'XL', 'XXL'] as ClothingSize[]).map((size) => (
                   <div 
@@ -200,29 +210,29 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-sm text-gray-200 mt-2 bg-gray-800/70 p-2 rounded">
                 {getSizeFeedback()}
               </p>
             </div>
             
             <div className="bg-gray-800/50 p-4 rounded-lg mb-4">
-              <h4 className="text-sm font-medium text-gray-300 mb-1">Fit Details</h4>
-              <ul className="text-xs text-gray-400">
-                <li className="flex justify-between mb-1">
+              <h4 className="text-sm font-medium text-gray-200 mb-2">Fit Details</h4>
+              <ul className="text-sm text-gray-200">
+                <li className="flex justify-between mb-2 border-b border-gray-700 pb-1">
                   <span>Chest:</span> 
-                  <span>{measurements.chest.toFixed(1)} cm</span>
+                  <span className="font-semibold">{measurements.chest.toFixed(1)} cm</span>
                 </li>
-                <li className="flex justify-between mb-1">
+                <li className="flex justify-between mb-2 border-b border-gray-700 pb-1">
                   <span>Waist:</span> 
-                  <span>{measurements.waist.toFixed(1)} cm</span>
+                  <span className="font-semibold">{measurements.waist.toFixed(1)} cm</span>
                 </li>
-                <li className="flex justify-between mb-1">
+                <li className="flex justify-between mb-2 border-b border-gray-700 pb-1">
                   <span>Shoulder:</span> 
-                  <span>{measurements.shoulder.toFixed(1)} cm</span>
+                  <span className="font-semibold">{measurements.shoulder.toFixed(1)} cm</span>
                 </li>
                 <li className="flex justify-between">
                   <span>Sleeve:</span> 
-                  <span>{measurements.sleeve.toFixed(1)} cm</span>
+                  <span className="font-semibold">{measurements.sleeve.toFixed(1)} cm</span>
                 </li>
               </ul>
             </div>
@@ -236,6 +246,7 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
           onClick={handleTryOn}
           className="w-full gap-2"
         >
+          <Shirt className="h-4 w-4" />
           Try On
         </Button>
         <Button 

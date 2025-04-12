@@ -26,6 +26,11 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
   const [activeTab, setActiveTab] = useState<string>("measurements");
   const hasLandmarks = landmarks && Object.keys(landmarks).length > 0;
   
+  // Ensure proper gender type conversion
+  const gender = typeof measurements.gender === 'number'
+    ? (measurements.gender === 1 ? 'male' : measurements.gender === 2 ? 'female' : 'other')
+    : (measurements.gender as 'male' | 'female' | 'other' || 'other');
+  
   return (
     <div className="space-y-6">
       <Tabs 
@@ -73,7 +78,7 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
         <TabsContent value="virtual-try-on">
           <VirtualTryOn 
             measurements={measurements}
-            gender={measurements.gender as 'male' | 'female' | 'other'}
+            gender={gender}
           />
         </TabsContent>
       </Tabs>
