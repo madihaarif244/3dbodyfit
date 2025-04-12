@@ -30,7 +30,7 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
       id: 1,
       name: "ONE T-Shirt",
       type: "tshirt",
-      image: "/lovable-uploads/4bc9f14b-1579-44cc-bb6b-a1543eab135c.png",
+      image: "/lovable-uploads/e6d4673c-7ff6-49f4-bcd5-99a028a5b51c.png",
       description: "Burgundy cotton t-shirt with ONE logo"
     },
     {
