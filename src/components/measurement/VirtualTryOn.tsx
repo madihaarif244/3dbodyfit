@@ -28,10 +28,10 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
   const [clothingItems, setClothingItems] = useState<ClothingItem[]>([
     {
       id: 1,
-      name: "Classic T-Shirt",
+      name: "ONE T-Shirt",
       type: "tshirt",
-      image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952",
-      description: "100% cotton classic fit t-shirt"
+      image: "/lovable-uploads/4bc9f14b-1579-44cc-bb6b-a1543eab135c.png",
+      description: "Burgundy cotton t-shirt with ONE logo"
     },
     {
       id: 2,
