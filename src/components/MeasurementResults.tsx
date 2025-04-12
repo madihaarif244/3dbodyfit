@@ -4,7 +4,7 @@ import MeasurementCard from "./measurement/MeasurementCard";
 import UserImageDisplay from "./measurement/UserImageDisplay";
 import DatasetEvaluatorToggle from "./measurement/DatasetEvaluatorToggle";
 import VirtualTryOn from "./measurement/VirtualTryOn";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface MeasurementResultsProps {
   measurements: Record<string, number>;

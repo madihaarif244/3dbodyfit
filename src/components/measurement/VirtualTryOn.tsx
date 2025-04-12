@@ -30,28 +30,28 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
       id: 1,
       name: "Classic T-Shirt",
       type: "tshirt",
-      image: "/lovable-uploads/e6d4673c-7ff6-49f4-bcd5-99a028a5b51c.png",
+      image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952",
       description: "100% cotton classic fit t-shirt"
     },
     {
       id: 2,
       name: "Button-up Shirt",
       type: "shirt",
-      image: "/lovable-uploads/e6d4673c-7ff6-49f4-bcd5-99a028a5b51c.png",
+      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
       description: "Oxford cotton button-down shirt"
     },
     {
       id: 3,
       name: "Slim Fit Pants",
       type: "pants",
-      image: "/lovable-uploads/e6d4673c-7ff6-49f4-bcd5-99a028a5b51c.png",
+      image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80",
       description: "Slim fit chino pants"
     },
     {
       id: 4,
       name: "Casual Jacket",
       type: "jacket",
-      image: "/lovable-uploads/e6d4673c-7ff6-49f4-bcd5-99a028a5b51c.png",
+      image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea",
       description: "Lightweight casual jacket"
     }
   ]);
@@ -149,7 +149,7 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
                 <img 
                   src={currentItem.image} 
                   alt={currentItem.name}
-                  className="max-w-full max-h-full object-contain"
+                  className="max-w-full max-h-full object-contain p-4"
                 />
               </div>
             ) : (
@@ -196,11 +196,11 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
             
             <div className="bg-gray-800/50 p-4 rounded-lg mb-4">
               <h4 className="text-sm font-medium text-gray-200 mb-1">Size Recommendation</h4>
-              <div className="flex justify-between items-center gap-2">
+              <div className="flex justify-between items-center gap-2 mb-2">
                 {(['XS', 'S', 'M', 'L', 'XL', 'XXL'] as ClothingSize[]).map((size) => (
                   <div 
                     key={size}
-                    className={`flex-1 py-2 text-center rounded ${
+                    className={`flex-1 py-2 text-center rounded text-sm font-medium ${
                       size === currentSize 
                         ? 'bg-electric text-white' 
                         : 'bg-gray-700 text-gray-300'
