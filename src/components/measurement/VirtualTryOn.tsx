@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -30,14 +29,14 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
       id: 1,
       name: "ONE T-Shirt",
       type: "tshirt",
-      image: "/lovable-uploads/d54a43b0-f7c3-427f-b57d-71fa67edacd5.png",
+      image: "/lovable-uploads/e6d4673c-7ff6-49f4-bcd5-99a028a5b51c.png",
       description: "Burgundy cotton t-shirt with ONE logo"
     },
     {
       id: 2,
       name: "Button-up Shirt",
       type: "shirt",
-      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
+      image: "/lovable-uploads/4bc9f14b-1579-44cc-bb6b-a1543eab135c.png",
       description: "Oxford cotton button-down shirt"
     },
     {
@@ -66,7 +65,6 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
   const [tryingOn, setTryingOn] = useState(false);
 
   useEffect(() => {
-    // Calculate recommended sizes when measurements change
     const recommendedSizes = calculateClothingSizes(measurements, gender);
     setSizes(recommendedSizes);
   }, [measurements, gender]);
@@ -88,11 +86,9 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
   const currentItem = clothingItems[currentItemIndex];
   const currentSize = sizes[currentItem.type];
   
-  // Get detailed size information based on measurements
   const getSizeFeedback = () => {
     const item = currentItem.type;
     
-    // Get relevant measurements for this clothing type
     let relevantMeasurement: number;
     let fitDescription: string;
     
@@ -259,4 +255,3 @@ export default function VirtualTryOn({ measurements, gender = 'other' }: Virtual
     </Card>
   );
 }
-
