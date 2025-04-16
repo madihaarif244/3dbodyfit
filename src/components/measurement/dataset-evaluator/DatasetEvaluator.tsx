@@ -17,17 +17,21 @@ export interface DatasetEvaluatorProps {
   measurements: Record<string, number>;
 }
 
+export interface EvaluationResults {
+  mae: number;
+  percentageDeviation: number;
+  sampleCount: number;
+  keyMeasurements: Array<{name: string; deviation: number; mae: number}>;
+}
+
 export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps) {
-  const [datasetType, setDatasetType] = useState<string>("caesar");
   const [datasetSize, setDatasetSize] = useState<number>(10);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [accuracyLevel, setAccuracyLevel] = useState<string>("standard");
-  const [results, setResults] = useState<{
-    mae: number;
-    percentageDeviation: number;
-    sampleCount: number;
-    keyMeasurements: Array<{name: string; deviation: number; mae: number}>;
-  } | null>(null);
+  const [results, setResults] = useState<EvaluationResults | null>(null);
+  
+  // Always use 3DPW dataset
+  const datasetType = "3dpw";
 
   const handleEvaluate = async () => {
     setIsLoading(true);
@@ -73,7 +77,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
       
       toast({
         title: "Evaluation Complete",
-        description: `Evaluated ${dataset.samples.length} samples from ${datasetType.toUpperCase()} dataset`,
+        description: `Evaluated ${dataset.samples.length} samples from 3DPW dataset`,
       });
     } catch (error) {
       console.error("Dataset evaluation error:", error);
@@ -93,7 +97,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
     try {
       // Format and export the data
       const exportData = formatEvaluationResultsForExport(results, datasetType);
-      const filename = `accuracy-report-${datasetType}-${new Date().toISOString().split('T')[0]}.csv`;
+      const filename = `accuracy-report-3dpw-${new Date().toISOString().split('T')[0]}.csv`;
       
       exportToCSV(exportData, filename);
       
@@ -114,12 +118,10 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
   return (
     <Card className="bg-card border-none shadow-lg text-card-foreground max-w-4xl mx-auto">
       <CardHeader className="pb-2">
-        <CardTitle className="text-xl font-semibold text-white text-center">Dataset Evaluation</CardTitle>
+        <CardTitle className="text-xl font-semibold text-white text-center">3DPW Dataset Evaluation</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <EvaluationForm 
-          datasetType={datasetType}
-          setDatasetType={setDatasetType}
           datasetSize={datasetSize}
           setDatasetSize={setDatasetSize}
           accuracyLevel={accuracyLevel}

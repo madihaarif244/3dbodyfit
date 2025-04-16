@@ -3,6 +3,8 @@
  * Utility functions for exporting data
  */
 
+import { EvaluationResults } from "@/components/measurement/dataset-evaluator/DatasetEvaluator";
+
 /**
  * Convert data to CSV format and trigger download
  */
@@ -45,13 +47,8 @@ export const exportToCSV = (
  * Format dataset evaluation results for CSV export
  */
 export const formatEvaluationResultsForExport = (
-  results: {
-    mae: number;
-    percentageDeviation: number;
-    sampleCount: number;
-    keyMeasurements: Array<{name: string; deviation: number; mae: number}>;
-  },
-  datasetType: string
+  results: EvaluationResults,
+  datasetType: string = "3dpw"
 ): any[] => {
   const currentDate = new Date().toISOString().split('T')[0];
   
@@ -63,7 +60,7 @@ export const formatEvaluationResultsForExport = (
     meanAbsoluteError: results.mae.toFixed(2),
     percentageDeviation: results.percentageDeviation.toFixed(2),
     sampleCount: results.sampleCount,
-    datasetType: datasetType,
+    datasetType: "3DPW",
     exportDate: currentDate
   };
   
@@ -75,7 +72,7 @@ export const formatEvaluationResultsForExport = (
     meanAbsoluteError: measurement.mae.toFixed(2),
     percentageDeviation: measurement.deviation.toFixed(2),
     sampleCount: results.sampleCount,
-    datasetType: datasetType,
+    datasetType: "3DPW",
     exportDate: currentDate
   }));
   

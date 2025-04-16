@@ -7,8 +7,6 @@ import { Progress } from "@/components/ui/progress";
 import { Info } from "lucide-react";
 
 interface EvaluationFormProps {
-  datasetType: string;
-  setDatasetType: (value: string) => void;
   datasetSize: number;
   setDatasetSize: (value: number) => void;
   accuracyLevel: string;
@@ -18,8 +16,6 @@ interface EvaluationFormProps {
 }
 
 export default function EvaluationForm({
-  datasetType,
-  setDatasetType,
   datasetSize,
   setDatasetSize,
   accuracyLevel,
@@ -27,34 +23,21 @@ export default function EvaluationForm({
   isLoading,
   onEvaluate
 }: EvaluationFormProps) {
-  const datasetInfo = {
-    caesar: "CAESAR (Civilian American and European Surface Anthropometry Resource) dataset with 3D body scans of thousands of individuals.",
-    renderpeople: "RenderPeople dataset with high-quality 3D scanned human models used for realistic character creation.",
-    "3dpw": "3D Poses in the Wild dataset with real-world images and accurate 3D body measurements."
-  };
-
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         <div className="flex justify-between">
-          <Label htmlFor="dataset-type" className="text-foreground">Dataset Type</Label>
+          <Label htmlFor="dataset-info" className="text-foreground">Dataset Information</Label>
           <div className="relative group">
             <Info className="h-4 w-4 text-muted-foreground cursor-help" />
             <div className="absolute bottom-full mb-2 right-0 w-64 p-2 bg-background border border-border rounded text-xs invisible group-hover:visible z-10 text-foreground">
-              {datasetType && datasetInfo[datasetType as keyof typeof datasetInfo]}
+              3D Poses in the Wild dataset with real-world images and accurate 3D body measurements.
             </div>
           </div>
         </div>
-        <Select value={datasetType} onValueChange={setDatasetType}>
-          <SelectTrigger id="dataset-type" className="text-foreground">
-            <SelectValue placeholder="Select dataset" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="caesar">CAESAR Dataset</SelectItem>
-            <SelectItem value="renderpeople">RenderPeople</SelectItem>
-            <SelectItem value="3dpw">3DPW Dataset</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="bg-gray-800/50 rounded-lg p-3 text-sm text-gray-300">
+          Using 3D Poses in the Wild (3DPW) dataset
+        </div>
       </div>
       
       <div className="grid grid-cols-2 gap-4">
@@ -98,7 +81,7 @@ export default function EvaluationForm({
         disabled={isLoading}
         className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
       >
-        {isLoading ? "Evaluating..." : "Evaluate Against Dataset"}
+        {isLoading ? "Evaluating..." : "Evaluate Against 3DPW Dataset"}
       </Button>
     </div>
   );

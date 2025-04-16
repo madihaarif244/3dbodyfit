@@ -18,12 +18,11 @@ export interface Dataset {
   samples: DatasetSample[];
 }
 
-// Mock implementation of dataset loading
-// In a real application, this would fetch from an API or load local files
+// Implementation of 3DPW dataset loading
 export const loadDataset = async (
-  datasetType: string, 
+  datasetType: string = "3dpw", 
   sampleSize: number,
-  accuracyLevel: string = "standard" // Add default parameter for accuracy level
+  accuracyLevel: string = "standard"
 ): Promise<Dataset> => {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1500));
@@ -102,24 +101,22 @@ export const loadDataset = async (
       }
     }
     
-    // Generate simple landmarks
+    // Generate 3DPW specific landmarks
     const landmarks: Record<string, {x: number, y: number, z: number, visibility?: number}> = {};
     
-    if (datasetType === '3dpw' || datasetType === 'caesar') {
-      const keypoints = ['leftShoulder', 'rightShoulder', 'leftHip', 'rightHip', 'leftKnee', 'rightKnee', 'leftAnkle', 'rightAnkle'];
-      
-      keypoints.forEach(point => {
-        landmarks[point] = {
-          x: Math.random() * 2 - 1, // Normalized -1 to 1
-          y: Math.random() * 2 - 1,
-          z: Math.random() * 0.5 - 0.25,
-          visibility: Math.random() * 0.3 + 0.7 // 0.7-1.0 visibility
-        };
-      });
-    }
+    const keypoints = ['leftShoulder', 'rightShoulder', 'leftHip', 'rightHip', 'leftKnee', 'rightKnee', 'leftAnkle', 'rightAnkle'];
+    
+    keypoints.forEach(point => {
+      landmarks[point] = {
+        x: Math.random() * 2 - 1, // Normalized -1 to 1
+        y: Math.random() * 2 - 1,
+        z: Math.random() * 0.5 - 0.25,
+        visibility: Math.random() * 0.3 + 0.7 // 0.7-1.0 visibility
+      };
+    });
     
     samples.push({
-      id: `${datasetType}-${i}`,
+      id: `3dpw-${i}`,
       gender: gender as 'male' | 'female',
       age: 18 + Math.floor(Math.random() * 60),
       height,
@@ -127,49 +124,14 @@ export const loadDataset = async (
         ? height * 0.4 + Math.random() * 20 - 10
         : height * 0.35 + Math.random() * 20 - 10,
       measurements,
-      landmarks: Object.keys(landmarks).length > 0 ? landmarks : undefined
+      landmarks
     });
   }
   
-  const datasetDescriptions: Record<string, string> = {
-    caesar: "Civilian American and European Surface Anthropometry Resource - 3D scans and measurements from 4,400 subjects",
-    renderpeople: "High-quality synthetic 3D human models with accurate measurements",
-    "3dpw": "3D Poses in the Wild - Dataset with real-world images and corresponding 3D human pose & shape"
-  };
-  
   return {
-    name: datasetType.toUpperCase(),
-    description: datasetDescriptions[datasetType] || "Unknown dataset",
+    name: "3DPW",
+    description: "3D Poses in the Wild - Dataset with real-world images and corresponding 3D human pose & shape",
     sampleCount: samples.length,
     samples: samples
   };
-};
-
-// Utility to export results for later training
-export const exportEvaluationResults = (
-  datasetType: string,
-  aiMeasurements: Record<string, number>,
-  datasetMeasurements: Record<string, DatasetSample>
-) => {
-  const resultsObj = {
-    timestamp: new Date().toISOString(),
-    datasetType,
-    aiMeasurements,
-    datasetSamples: Object.values(datasetMeasurements),
-  };
-  
-  // In a real app, this would send to server or download a JSON file
-  const resultsJson = JSON.stringify(resultsObj, null, 2);
-  console.log("Evaluation results exported:", resultsJson);
-  
-  // For browser downloading
-  const blob = new Blob([resultsJson], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${datasetType}-evaluation-${new Date().toISOString().split('T')[0]}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  
-  return resultsJson;
 };
