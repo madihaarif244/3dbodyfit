@@ -1,10 +1,14 @@
 
 import { Label } from "@/components/ui/label";
 import { TabsContent } from "@/components/ui/tabs";
-import type { EvaluationResults } from "./types";
 
 interface ResultsSummaryProps {
-  results: EvaluationResults | null;
+  results: {
+    mae: number;
+    percentageDeviation: number;
+    sampleCount: number;
+    keyMeasurements: Array<{name: string; deviation: number; mae: number}>;
+  } | null;
 }
 
 export default function ResultsSummary({ results }: ResultsSummaryProps) {
