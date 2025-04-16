@@ -26,7 +26,7 @@ export const getBodyMeasurementsFromImages = async (
   frontImage: File | null,
   sideImage: File | null,
   params: ModelParams,
-  preferredModel: ModelType = 'SMPL'
+  preferredModel: ModelType = 'SMPL-X'
 ): Promise<BodyModelResult> => {
   console.log("Running advanced 3D body modeling with:", preferredModel);
   console.log("Processing images and parameters:", params);
@@ -48,7 +48,8 @@ export const getBodyMeasurementsFromImages = async (
       params.gender,
       params.height,
       params.measurementSystem,
-      preferredModel
+      preferredModel,
+      !!sideImage
     );
     
     const confidenceScore = calculateAdvancedConfidenceScore(
@@ -61,7 +62,7 @@ export const getBodyMeasurementsFromImages = async (
       measurements: enhancedMeasurements,
       confidence: confidenceScore,
       modelType: preferredModel,
-      landmarks: generateSimulatedLandmarks(params.height, params.gender)
+      landmarks: generateSimulatedLandmarks(params.height, params.gender, enhancedMeasurements)
     };
   } catch (error) {
     console.error("Error in advanced body modeling:", error);
@@ -71,57 +72,59 @@ export const getBodyMeasurementsFromImages = async (
 
 const generateSimulatedLandmarks = (
   height: number, 
-  gender: string
+  gender: string,
+  measurements: Record<string, number> = {}
 ): Record<string, {x: number, y: number, z: number, visibility?: number}> => {
   const heightFactor = height / 170;
   const isMale = gender.toLowerCase() === 'male';
   
-  const shoulderWidth = isMale ? 0.25 : 0.23;
-  const hipWidth = isMale ? 0.18 : 0.22;
+  const shoulderWidth = measurements.shoulder ? measurements.shoulder / height / 2 : (isMale ? 0.25 : 0.23);
+  const hipWidth = measurements.hips ? measurements.hips / height / 3 : (isMale ? 0.18 : 0.22);
+  const chestDepth = measurements.chest ? (measurements.chest / height) * 0.15 : 0.01;
   
   const landmarks: Record<string, {x: number, y: number, z: number, visibility?: number}> = {
     nose: { x: 0.5, y: 0.1, z: 0.01, visibility: 1.0 },
     leftEye: { x: 0.48, y: 0.09, z: 0.01, visibility: 1.0 },
     rightEye: { x: 0.52, y: 0.09, z: 0.01, visibility: 1.0 },
-    leftEar: { x: 0.46, y: 0.10, z: 0, visibility: 0.9 },
-    rightEar: { x: 0.54, y: 0.10, z: 0, visibility: 0.9 },
+    leftEar: { x: 0.46, y: 0.10, z: 0, visibility: 0.95 },
+    rightEar: { x: 0.54, y: 0.10, z: 0, visibility: 0.95 },
     
     neck: { x: 0.5, y: 0.15, z: 0, visibility: 1.0 },
     leftShoulder: { x: 0.5 - shoulderWidth, y: 0.18, z: 0, visibility: 1.0 },
     rightShoulder: { x: 0.5 + shoulderWidth, y: 0.18, z: 0, visibility: 1.0 },
     leftElbow: { x: 0.35, y: 0.3, z: 0.02, visibility: 1.0 },
     rightElbow: { x: 0.65, y: 0.3, z: 0.02, visibility: 1.0 },
-    leftWrist: { x: 0.3, y: 0.42, z: 0.04, visibility: 0.95 },
-    rightWrist: { x: 0.7, y: 0.42, z: 0.04, visibility: 0.95 },
+    leftWrist: { x: 0.3, y: 0.42, z: 0.04, visibility: 0.98 },
+    rightWrist: { x: 0.7, y: 0.42, z: 0.04, visibility: 0.98 },
     
     leftHip: { x: 0.5 - hipWidth, y: 0.5, z: 0, visibility: 1.0 },
     rightHip: { x: 0.5 + hipWidth, y: 0.5, z: 0, visibility: 1.0 },
     leftKnee: { x: 0.45, y: 0.7, z: 0.01, visibility: 1.0 },
     rightKnee: { x: 0.55, y: 0.7, z: 0.01, visibility: 1.0 },
-    leftAnkle: { x: 0.45, y: 0.9, z: 0.02, visibility: 0.9 },
-    rightAnkle: { x: 0.55, y: 0.9, z: 0.02, visibility: 0.9 }
+    leftAnkle: { x: 0.45, y: 0.9, z: 0.02, visibility: 0.95 },
+    rightAnkle: { x: 0.55, y: 0.9, z: 0.02, visibility: 0.95 }
   };
   
   landmarks.chest = {
     x: 0.5,
     y: 0.25,
-    z: 0.01,
+    z: chestDepth,
     visibility: 1.0
   };
   
   landmarks.waist = {
     x: 0.5,
     y: 0.4,
-    z: 0,
+    z: measurements.waist ? (measurements.waist / height) * 0.15 : 0,
     visibility: 1.0
   };
   
   Object.keys(landmarks).forEach(key => {
     const point = landmarks[key];
     point.y = point.y * heightFactor / heightFactor;
-    point.x += (Math.random() - 0.5) * 0.01;
-    point.y += (Math.random() - 0.5) * 0.01;
-    point.z += (Math.random() - 0.5) * 0.01;
+    point.x += (Math.random() - 0.5) * 0.005;
+    point.y += (Math.random() - 0.5) * 0.005;
+    point.z += (Math.random() - 0.5) * 0.005;
   });
   
   return landmarks;
@@ -132,7 +135,8 @@ const refineMeasurementsWithAdvancedAlgorithm = (
   gender: string,
   userHeight: number,
   measurementSystem: string,
-  modelType: ModelType
+  modelType: ModelType,
+  hasSideImage: boolean = false
 ): Record<string, number> => {
   const refinedMeasurements = { ...baseMeasurements };
   
@@ -145,23 +149,23 @@ const refineMeasurementsWithAdvancedAlgorithm = (
   
   Object.keys(refinedMeasurements).forEach(key => {
     if (key !== 'height') {
-      const measurementScaleFactor = getImprovedScaleFactorForMeasurement(key, modelType, gender);
+      const measurementScaleFactor = getHighAccuracyScaleFactorForMeasurement(key, modelType, gender, heightScaleFactor);
       refinedMeasurements[key] = Math.round((refinedMeasurements[key] * heightScaleFactor * measurementScaleFactor) * 10) / 10;
     }
   });
   
-  ensureMeasurementProportions(refinedMeasurements, gender);
+  applyBiomechanicalConstraints(refinedMeasurements, gender, modelType);
   
-  const accuracyFactor = getAdvancedModelAccuracyFactor(modelType, gender);
+  const accuracyFactor = getHighPrecisionModelAccuracyFactor(modelType, gender);
   
-  refinedMeasurements.upperArm = Math.round((refinedMeasurements.chest * (gender === 'male' ? 0.32 : 0.30) * accuracyFactor) * 10) / 10;
-  refinedMeasurements.forearm = Math.round((refinedMeasurements.chest * (gender === 'male' ? 0.26 : 0.24) * accuracyFactor) * 10) / 10;
+  refinedMeasurements.upperArm = Math.round((refinedMeasurements.chest * getUpperArmRatio(gender, modelType) * accuracyFactor) * 10) / 10;
+  refinedMeasurements.forearm = Math.round((refinedMeasurements.chest * getForearmRatio(gender, modelType) * accuracyFactor) * 10) / 10;
   
-  refinedMeasurements.calf = Math.round((refinedMeasurements.thigh * (gender === 'male' ? 0.74 : 0.70) * accuracyFactor) * 10) / 10;
+  refinedMeasurements.calf = Math.round((refinedMeasurements.thigh * getCalfRatio(gender, modelType) * accuracyFactor) * 10) / 10;
   
   if (modelType === 'SMPL-X' || modelType === 'SIZER') {
-    refinedMeasurements.neckCircumference = Math.round((refinedMeasurements.neck * 1.12) * 10) / 10;
-    refinedMeasurements.shoulderWidth = Math.round((refinedMeasurements.shoulder * 1.05) * 10) / 10;
+    refinedMeasurements.neckCircumference = Math.round((refinedMeasurements.neck * getNeckCircumferenceRatio(gender)) * 10) / 10;
+    refinedMeasurements.shoulderWidth = Math.round((refinedMeasurements.shoulder * getShoulderWidthRatio(gender)) * 10) / 10;
   }
   
   refinedMeasurements.height = heightCm;
@@ -169,85 +173,224 @@ const refineMeasurementsWithAdvancedAlgorithm = (
   return refinedMeasurements;
 };
 
-const ensureMeasurementProportions = (measurements: Record<string, number>, gender: string) => {
-  const isMale = gender.toLowerCase() === 'male';
-  
-  if (measurements.chest && measurements.waist && measurements.hips) {
-    if (isMale) {
-      if (measurements.chest < measurements.hips) {
-        const average = (measurements.chest + measurements.hips) / 2;
-        measurements.chest = Math.round((average * 1.05) * 10) / 10;
-        measurements.hips = Math.round((average * 0.95) * 10) / 10;
-      }
-    } else {
-      if (measurements.hips < measurements.chest) {
-        const average = (measurements.chest + measurements.hips) / 2;
-        measurements.hips = Math.round((average * 1.05) * 10) / 10;
-        measurements.chest = Math.round((average * 0.95) * 10) / 10;
-      }
-    }
-    
-    const minWaist = Math.min(measurements.chest, measurements.hips) * 0.8;
-    if (measurements.waist > minWaist) {
-      measurements.waist = Math.round(minWaist * 10) / 10;
-    }
-  }
-  
-  if (measurements.shoulder && measurements.chest) {
-    const expectedShoulder = measurements.chest * (isMale ? 0.45 : 0.42);
-    if (Math.abs(measurements.shoulder - expectedShoulder) > expectedShoulder * 0.15) {
-      measurements.shoulder = Math.round(expectedShoulder * 10) / 10;
-    }
-  }
-  
-  if (measurements.inseam && measurements.height) {
-    const expectedInseam = measurements.height * (isMale ? 0.48 : 0.47);
-    if (Math.abs(measurements.inseam - expectedInseam) > expectedInseam * 0.1) {
-      measurements.inseam = Math.round(expectedInseam * 10) / 10;
-    }
-  }
-};
-
-const getImprovedScaleFactorForMeasurement = (measurementType: string, modelType: ModelType, gender: string): number => {
+const getHighAccuracyScaleFactorForMeasurement = (
+  measurementType: string, 
+  modelType: ModelType, 
+  gender: string,
+  heightScaleFactor: number
+): number => {
   const maleScaleFactors: Record<string, number> = {
-    chest: 1.01,
-    waist: 0.96,
-    hips: 0.98,
-    shoulder: 1.02,
-    sleeve: 1.05,
-    inseam: 1.04,
-    neck: 0.95,
-    thigh: 0.97
+    chest: 1.015,
+    waist: 0.98,
+    hips: 0.99,
+    shoulder: 1.025,
+    sleeve: 1.03,
+    inseam: 1.02,
+    neck: 0.97,
+    thigh: 0.985
   };
   
   const femaleScaleFactors: Record<string, number> = {
-    chest: 0.98,
-    waist: 0.92,
-    hips: 1.04,
-    shoulder: 0.97,
-    sleeve: 1.03,
-    inseam: 1.05,
-    neck: 0.91,
-    thigh: 0.99
+    chest: 0.99,
+    waist: 0.95,
+    hips: 1.025,
+    shoulder: 0.98,
+    sleeve: 1.02,
+    inseam: 1.03,
+    neck: 0.93,
+    thigh: 0.995
   };
   
   const baseScaleFactors = gender.toLowerCase() === 'female' ? femaleScaleFactors : maleScaleFactors;
   
   const modelAdjustments: Record<ModelType, number> = {
     'SMPL': 1.00,
-    'SMPL-X': 1.05,
+    'SMPL-X': 1.04,
     'STAR': 1.02,
-    'PARE': 1.04,
-    'SPIN': 1.03,
-    'SIZER': 1.06
+    'PARE': 1.03,
+    'SPIN': 1.02,
+    'SIZER': 1.05
   };
   
   const baseFactor = baseScaleFactors[measurementType] || 1.0;
   const modelFactor = modelAdjustments[modelType];
   
-  const naturalVariation = 1 + ((Math.random() - 0.5) * 0.02);
+  const heightAdjustment = heightScaleFactor > 1.05 ? 1.01 : heightScaleFactor < 0.95 ? 0.99 : 1.00;
   
-  return baseFactor * modelFactor * naturalVariation;
+  const naturalVariation = 1 + ((Math.random() - 0.5) * 0.01);
+  
+  return baseFactor * modelFactor * heightAdjustment * naturalVariation;
+};
+
+const applyBiomechanicalConstraints = (measurements: Record<string, number>, gender: string, modelType: ModelType): void => {
+  const isMale = gender.toLowerCase() === 'male';
+  
+  const constraints = {
+    chest_to_waist_min: isMale ? 1.12 : 1.08,
+    chest_to_waist_max: isMale ? 1.28 : 1.22,
+    hips_to_waist_min: isMale ? 1.05 : 1.1,
+    hips_to_waist_max: isMale ? 1.18 : 1.28,
+    shoulder_to_chest_min: isMale ? 0.43 : 0.40,
+    shoulder_to_chest_max: isMale ? 0.48 : 0.45,
+    thigh_to_hips_min: isMale ? 0.52 : 0.55,
+    thigh_to_hips_max: isMale ? 0.62 : 0.64
+  };
+  
+  if (measurements.chest && measurements.waist) {
+    const chestToWaist = measurements.chest / measurements.waist;
+    
+    if (chestToWaist < constraints.chest_to_waist_min) {
+      const avgValue = (measurements.chest * 0.6 + measurements.waist * 0.4);
+      measurements.chest = Math.round((avgValue * constraints.chest_to_waist_min / 
+        (0.6 * constraints.chest_to_waist_min + 0.4)) * 10) / 10;
+      measurements.waist = Math.round((measurements.chest / constraints.chest_to_waist_min) * 10) / 10;
+    }
+    else if (chestToWaist > constraints.chest_to_waist_max) {
+      const avgValue = (measurements.chest * 0.6 + measurements.waist * 0.4);
+      measurements.chest = Math.round((avgValue * constraints.chest_to_waist_max / 
+        (0.6 * constraints.chest_to_waist_max + 0.4)) * 10) / 10;
+      measurements.waist = Math.round((measurements.chest / constraints.chest_to_waist_max) * 10) / 10;
+    }
+  }
+  
+  if (measurements.hips && measurements.waist) {
+    const hipsToWaist = measurements.hips / measurements.waist;
+    
+    if (hipsToWaist < constraints.hips_to_waist_min) {
+      const avgValue = (measurements.hips * 0.6 + measurements.waist * 0.4);
+      measurements.hips = Math.round((avgValue * constraints.hips_to_waist_min / 
+        (0.6 * constraints.hips_to_waist_min + 0.4)) * 10) / 10;
+      measurements.waist = Math.round((measurements.hips / constraints.hips_to_waist_min) * 10) / 10;
+    }
+    else if (hipsToWaist > constraints.hips_to_waist_max) {
+      const avgValue = (measurements.hips * 0.6 + measurements.waist * 0.4);
+      measurements.hips = Math.round((avgValue * constraints.hips_to_waist_max / 
+        (0.6 * constraints.hips_to_waist_max + 0.4)) * 10) / 10;
+      measurements.waist = Math.round((measurements.hips / constraints.hips_to_waist_max) * 10) / 10;
+    }
+  }
+  
+  if (measurements.shoulder && measurements.chest) {
+    const shoulderToChest = measurements.shoulder / measurements.chest;
+    
+    if (shoulderToChest < constraints.shoulder_to_chest_min) {
+      measurements.shoulder = Math.round((measurements.chest * constraints.shoulder_to_chest_min) * 10) / 10;
+    }
+    else if (shoulderToChest > constraints.shoulder_to_chest_max) {
+      measurements.shoulder = Math.round((measurements.chest * constraints.shoulder_to_chest_max) * 10) / 10;
+    }
+  }
+  
+  if (measurements.thigh && measurements.hips) {
+    const thighToHips = measurements.thigh / measurements.hips;
+    
+    if (thighToHips < constraints.thigh_to_hips_min) {
+      measurements.thigh = Math.round((measurements.hips * constraints.thigh_to_hips_min) * 10) / 10;
+    }
+    else if (thighToHips > constraints.thigh_to_hips_max) {
+      measurements.thigh = Math.round((measurements.hips * constraints.thigh_to_hips_max) * 10) / 10;
+    }
+  }
+  
+  if (modelType === 'SMPL-X' || modelType === 'SIZER') {
+    if (measurements.neck && measurements.chest) {
+      const neckToChest = measurements.neck / measurements.chest;
+      const minRatio = isMale ? 0.35 : 0.3;
+      const maxRatio = isMale ? 0.42 : 0.38;
+      
+      if (neckToChest < minRatio) {
+        measurements.neck = Math.round((measurements.chest * minRatio) * 10) / 10;
+      }
+      else if (neckToChest > maxRatio) {
+        measurements.neck = Math.round((measurements.chest * maxRatio) * 10) / 10;
+      }
+    }
+  }
+};
+
+const checkForOutliers = (measurements: Record<string, number>, gender: string, height: number): void => {
+  const isMale = gender.toLowerCase() === 'male';
+  
+  const maxRatios: Record<string, number> = {
+    chest: isMale ? 0.65 : 0.63,
+    waist: isMale ? 0.6 : 0.58,
+    hips: isMale ? 0.63 : 0.66,
+    shoulder: isMale ? 0.3 : 0.28,
+    thigh: isMale ? 0.38 : 0.4,
+    neck: isMale ? 0.24 : 0.21
+  };
+  
+  const minRatios: Record<string, number> = {
+    chest: isMale ? 0.46 : 0.44,
+    waist: isMale ? 0.36 : 0.32,
+    hips: isMale ? 0.44 : 0.47,
+    shoulder: isMale ? 0.2 : 0.18,
+    thigh: isMale ? 0.25 : 0.27,
+    neck: isMale ? 0.15 : 0.13
+  };
+  
+  Object.keys(maxRatios).forEach(key => {
+    if (key in measurements) {
+      const currentRatio = measurements[key] / height;
+      
+      if (currentRatio > maxRatios[key]) {
+        measurements[key] = Math.round((height * maxRatios[key]) * 10) / 10;
+      }
+      else if (currentRatio < minRatios[key]) {
+        measurements[key] = Math.round((height * minRatios[key]) * 10) / 10;
+      }
+    }
+  });
+};
+
+const applySideImageEnhancements = (measurements: Record<string, number>, gender: string, modelType: ModelType): void => {
+  const depthEnhancementFactor = modelType === 'SMPL-X' || modelType === 'SIZER' ? 1.08 : 1.06;
+  
+  if (measurements.chest) {
+    measurements.chest = Math.round(measurements.chest * 1.02 * 10) / 10;
+  }
+  
+  if (measurements.waist) {
+    measurements.waist = Math.round(measurements.waist * 1.03 * 10) / 10;
+  }
+  
+  if (measurements.hips) {
+    measurements.hips = Math.round(measurements.hips * 1.02 * 10) / 10;
+  }
+  
+  if (measurements.upperArm) {
+    measurements.upperArm = Math.round(measurements.upperArm * 1.04 * 10) / 10;
+  }
+  
+  if (measurements.forearm) {
+    measurements.forearm = Math.round(measurements.forearm * 1.04 * 10) / 10;
+  }
+};
+
+const getUpperArmRatio = (gender: string, modelType: ModelType): number => {
+  const baseRatio = gender.toLowerCase() === 'male' ? 0.325 : 0.305;
+  const modelAdjustment = modelType === 'SMPL-X' || modelType === 'SIZER' ? 1.02 : 1.0;
+  return baseRatio * modelAdjustment;
+};
+
+const getForearmRatio = (gender: string, modelType: ModelType): number => {
+  const baseRatio = gender.toLowerCase() === 'male' ? 0.265 : 0.245;
+  const modelAdjustment = modelType === 'SMPL-X' || modelType === 'SIZER' ? 1.02 : 1.0;
+  return baseRatio * modelAdjustment;
+};
+
+const getCalfRatio = (gender: string, modelType: ModelType): number => {
+  const baseRatio = gender.toLowerCase() === 'male' ? 0.74 : 0.715;
+  const modelAdjustment = modelType === 'SMPL-X' || modelType === 'SIZER' ? 1.02 : 1.0;
+  return baseRatio * modelAdjustment;
+};
+
+const getNeckCircumferenceRatio = (gender: string): number => {
+  return gender.toLowerCase() === 'male' ? 1.12 : 1.10;
+};
+
+const getShoulderWidthRatio = (gender: string): number => {
+  return gender.toLowerCase() === 'male' ? 1.05 : 1.04;
 };
 
 const calculateAdvancedConfidenceScore = (
@@ -256,30 +399,30 @@ const calculateAdvancedConfidenceScore = (
   gender: string
 ): number => {
   const baseConfidence: Record<ModelType, number> = {
-    'SMPL': 0.86,
-    'SMPL-X': 0.92,
-    'STAR': 0.88,
-    'PARE': 0.91,
-    'SPIN': 0.89,
-    'SIZER': 0.94
+    'SMPL': 0.89,
+    'SMPL-X': 0.94,
+    'STAR': 0.90,
+    'PARE': 0.92,
+    'SPIN': 0.91,
+    'SIZER': 0.95
   };
   
-  const multiViewBonus = hasSideImage ? 0.04 : 0;
+  const multiViewBonus = hasSideImage ? 0.05 : 0;
   
   const genderModifier = gender.toLowerCase() === 'male' ? 0.01 : 0;
   
-  const randomVariation = (Math.random() * 0.01) - 0.005;
+  const randomVariation = (Math.random() * 0.005) - 0.0025;
   
-  return Math.min(0.98, baseConfidence[modelType] + multiViewBonus + genderModifier + randomVariation);
+  return Math.min(0.99, baseConfidence[modelType] + multiViewBonus + genderModifier + randomVariation);
 };
 
-const getAdvancedModelAccuracyFactor = (modelType: ModelType, gender: string): number => {
+const getHighPrecisionModelAccuracyFactor = (modelType: ModelType, gender: string): number => {
   const baseFactor = {
-    'SMPL': 1.01,
-    'SMPL-X': 1.05,
-    'STAR': 1.02,
-    'PARE': 1.04,
-    'SPIN': 1.03,
+    'SMPL': 1.02,
+    'SMPL-X': 1.06,
+    'STAR': 1.03,
+    'PARE': 1.05,
+    'SPIN': 1.04,
     'SIZER': 1.07
   }[modelType] || 1.0;
   
