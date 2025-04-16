@@ -71,7 +71,7 @@ export default function EvaluationForm({
         disabled={isLoading}
         className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
       >
-        {isLoading ? "Evaluating..." : "Evaluate Against Dataset"}
+        {isLoading ? "Evaluating..." : "Evaluate Against CAESAR Dataset"}
       </Button>
     </div>
   );

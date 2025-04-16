@@ -1,8 +1,6 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
 import { Download } from "lucide-react";
 import { calculateMAE, calculatePercentageDeviation } from "@/utils/measurementStats";
@@ -125,7 +123,6 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
     if (!results) return;
     
     try {
-      // Format and export the data
       const exportData = formatEvaluationResultsForExport(results, "caesar");
       const filename = `accuracy-report-caesar-${new Date().toISOString().split('T')[0]}.csv`;
       
