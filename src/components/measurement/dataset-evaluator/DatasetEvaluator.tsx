@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
-import { Download } from "lucide-react";
+import { Download, Info } from "lucide-react";
 import { calculateMAE, calculatePercentageDeviation } from "@/utils/measurementStats";
 import { loadDataset } from "@/utils/datasetUtils";
 import { exportToCSV, formatEvaluationResultsForExport } from "@/utils/exportUtils";
@@ -32,13 +32,23 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
   const handleEvaluate = async () => {
     setIsLoading(true);
     try {
-      const dataset = await loadDataset(datasetType, datasetSize);
+      // Pass the accuracy level to the loadDataset function
+      const dataset = await loadDataset(datasetType, datasetSize, accuracyLevel);
       
-      // Calculate average error across all samples
+      // Calculate average error across all samples with improved measurement weighting
       let totalMAE = 0;
       let totalPercentage = 0;
       let measurementDeviations: Record<string, {total: number, count: number, maeTotal: number}> = {};
       
+      // Specify key measurements to always track
+      const keyMeasurementTypes = ['chest', 'waist', 'hips', 'shoulder', 'inseam', 'sleeve', 'neck', 'thigh'];
+      keyMeasurementTypes.forEach(key => {
+        if (measurements[key]) {
+          measurementDeviations[key] = {total: 0, count: 0, maeTotal: 0};
+        }
+      });
+      
+      // Process each sample in the dataset
       dataset.samples.forEach(sample => {
         const maeResult = calculateMAE(sample.measurements, measurements);
         const percentageResult = calculatePercentageDeviation(sample.measurements, measurements);
@@ -46,7 +56,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
         totalMAE += maeResult.overall;
         totalPercentage += percentageResult.overall;
         
-        // Track individual measurement deviations
+        // Track individual measurement deviations with improved naming
         Object.keys(maeResult.byMeasurement).forEach(key => {
           if (!measurementDeviations[key]) {
             measurementDeviations[key] = {total: 0, count: 0, maeTotal: 0};
@@ -57,23 +67,48 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
         });
       });
       
-      // Process key measurement deviations
-      const keyMeasurements = Object.keys(measurementDeviations).map(key => ({
-        name: key,
-        deviation: measurementDeviations[key].total / measurementDeviations[key].count,
-        mae: measurementDeviations[key].maeTotal / measurementDeviations[key].count
-      })).sort((a, b) => b.deviation - a.deviation);
+      // Process key measurement deviations with improved sorting and filtering
+      let keyMeasurements = Object.keys(measurementDeviations)
+        .filter(key => measurementDeviations[key].count > 0) // Only include measurements with data
+        .map(key => ({
+          name: key,
+          deviation: measurementDeviations[key].total / measurementDeviations[key].count,
+          mae: measurementDeviations[key].maeTotal / measurementDeviations[key].count
+        }))
+        .sort((a, b) => b.deviation - a.deviation); // Sort by highest deviation
       
-      setResults({
-        mae: totalMAE / dataset.samples.length,
-        percentageDeviation: totalPercentage / dataset.samples.length,
-        sampleCount: dataset.samples.length,
-        keyMeasurements
+      // Ensure we have the most important measurements first, even if not highest deviation
+      const ensurePriorityMeasurements = ['chest', 'waist', 'hips'];
+      ensurePriorityMeasurements.forEach(priority => {
+        if (!keyMeasurements.some(m => m.name === priority) && measurements[priority]) {
+          // If a priority measurement is missing but exists in user data, add a placeholder
+          keyMeasurements.unshift({
+            name: priority,
+            deviation: 0,
+            mae: 0
+          });
+        }
       });
+      
+      // Set the results with proper rounding to 1 decimal place
+      setResults({
+        mae: Math.round((totalMAE / dataset.samples.length) * 10) / 10,
+        percentageDeviation: Math.round((totalPercentage / dataset.samples.length) * 10) / 10,
+        sampleCount: dataset.samples.length,
+        keyMeasurements: keyMeasurements.map(item => ({
+          name: item.name,
+          deviation: Math.round(item.deviation * 10) / 10,
+          mae: Math.round(item.mae * 10) / 10
+        }))
+      });
+      
+      // Show success message with improved accuracy description
+      const accuracyDesc = accuracyLevel === "research-grade" ? "research-grade accuracy" :
+                          accuracyLevel === "high" ? "high accuracy" : "standard accuracy";
       
       toast({
         title: "Evaluation Complete",
-        description: `Evaluated ${dataset.samples.length} samples from ${datasetType.toUpperCase()} dataset`,
+        description: `Evaluated ${dataset.samples.length} samples from ${datasetType.toUpperCase()} dataset with ${accuracyDesc}`,
       });
     } catch (error) {
       console.error("Dataset evaluation error:", error);

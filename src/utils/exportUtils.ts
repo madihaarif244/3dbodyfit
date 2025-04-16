@@ -1,48 +1,8 @@
 
-/**
- * Utility functions for exporting data
- */
+// Utility functions for exporting measurement data
 
 /**
- * Convert data to CSV format and trigger download
- */
-export const exportToCSV = (
-  data: any[], 
-  filename: string = 'export.csv'
-): void => {
-  // Convert data to CSV string
-  const csvRows: string[] = [];
-  
-  // Get headers (column names)
-  const headers = Object.keys(data[0]);
-  csvRows.push(headers.join(','));
-  
-  // Add data rows
-  for (const row of data) {
-    const values = headers.map(header => {
-      const value = row[header];
-      // Handle values that need quotes (strings with commas, etc.)
-      return typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value;
-    });
-    csvRows.push(values.join(','));
-  }
-  
-  const csvString = csvRows.join('\n');
-  
-  // Create a blob and download
-  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', filename);
-  link.style.visibility = 'hidden';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
-/**
- * Format dataset evaluation results for CSV export
+ * Format evaluation results for export to CSV
  */
 export const formatEvaluationResultsForExport = (
   results: {
@@ -52,33 +12,74 @@ export const formatEvaluationResultsForExport = (
     keyMeasurements: Array<{name: string; deviation: number; mae: number}>;
   },
   datasetType: string
-): any[] => {
-  const currentDate = new Date().toISOString().split('T')[0];
+) => {
+  // Header row
+  const header = ["Measurement", "Avg Deviation (%)", "MAE (cm)", "Accuracy Rating"];
   
-  // Create a row for summary data
-  const summaryData = {
-    category: 'Summary',
-    name: 'Overall Results',
-    value: '',
-    meanAbsoluteError: results.mae.toFixed(2),
-    percentageDeviation: results.percentageDeviation.toFixed(2),
-    sampleCount: results.sampleCount,
-    datasetType: datasetType,
-    exportDate: currentDate
-  };
+  // Data rows
+  const rows = results.keyMeasurements.map(item => {
+    // Calculate accuracy rating
+    const accuracyRating = getAccuracyRating(item.deviation);
+    
+    return [
+      item.name,
+      item.deviation.toFixed(2),
+      item.mae.toFixed(2),
+      accuracyRating
+    ];
+  });
   
-  // Create rows for each measurement
-  const measurementRows = results.keyMeasurements.map(measurement => ({
-    category: 'Measurement',
-    name: measurement.name,
-    value: '',
-    meanAbsoluteError: measurement.mae.toFixed(2),
-    percentageDeviation: measurement.deviation.toFixed(2),
-    sampleCount: results.sampleCount,
-    datasetType: datasetType,
-    exportDate: currentDate
-  }));
+  // Add summary row
+  rows.push([
+    "OVERALL",
+    results.percentageDeviation.toFixed(2),
+    results.mae.toFixed(2),
+    getAccuracyRating(results.percentageDeviation)
+  ]);
   
-  // Combine all rows
-  return [summaryData, ...measurementRows];
+  // Add metadata
+  const metadata = [
+    ["Dataset", datasetType.toUpperCase()],
+    ["Sample Count", results.sampleCount.toString()],
+    ["Date", new Date().toISOString().split('T')[0]],
+    ["", ""], // Empty row as separator
+  ];
+  
+  return [...metadata, header, ...rows];
+};
+
+/**
+ * Convert data array to CSV and download
+ */
+export const exportToCSV = (data: string[][], filename: string) => {
+  // Format CSV content
+  const csvContent = data.map(row => row.map(cell => {
+    // Wrap in quotes if cell contains commas
+    if (cell.includes(',')) {
+      return `"${cell}"`;
+    }
+    return cell;
+  }).join(",")).join("\n");
+  
+  // Create blob and download link
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+/**
+ * Helper to get accuracy rating from deviation percentage
+ */
+const getAccuracyRating = (deviationPercentage: number): string => {
+  if (deviationPercentage <= 3) return "Excellent";
+  if (deviationPercentage <= 6) return "Very Good";
+  if (deviationPercentage <= 10) return "Good";
+  if (deviationPercentage <= 15) return "Fair";
+  return "Needs Improvement";
 };
