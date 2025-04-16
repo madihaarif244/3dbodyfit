@@ -1,16 +1,11 @@
 
-// Utility functions for exporting measurement data
+import type { EvaluationResults } from "../components/measurement/dataset-evaluator/types";
 
 /**
  * Format evaluation results for export to CSV
  */
 export const formatEvaluationResultsForExport = (
-  results: {
-    mae: number;
-    percentageDeviation: number;
-    sampleCount: number;
-    keyMeasurements: Array<{name: string; deviation: number; mae: number}>;
-  },
+  results: EvaluationResults,
   datasetType: string
 ) => {
   // Header row

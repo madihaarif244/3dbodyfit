@@ -2,14 +2,10 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList, Legend } from "recharts";
 import { TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import type { EvaluationResults } from "./types";
 
 interface DetailedAnalysisProps {
-  results: {
-    mae: number;
-    percentageDeviation: number;
-    sampleCount: number;
-    keyMeasurements: Array<{name: string; deviation: number; mae: number}>;
-  } | null;
+  results: EvaluationResults | null;
 }
 
 export default function DetailedAnalysis({ results }: DetailedAnalysisProps) {
