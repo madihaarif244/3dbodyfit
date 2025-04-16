@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
-import { Download, Info } from "lucide-react";
+import { Download } from "lucide-react";
 import { calculateMAE, calculatePercentageDeviation } from "@/utils/measurementStats";
 import { loadDataset } from "@/utils/datasetUtils";
 import { exportToCSV, formatEvaluationResultsForExport } from "@/utils/exportUtils";
@@ -18,7 +18,6 @@ export interface DatasetEvaluatorProps {
 }
 
 export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps) {
-  const [datasetType, setDatasetType] = useState<string>("caesar");
   const [datasetSize, setDatasetSize] = useState<number>(10);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [accuracyLevel, setAccuracyLevel] = useState<string>("standard");
@@ -32,8 +31,8 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
   const handleEvaluate = async () => {
     setIsLoading(true);
     try {
-      // Pass the accuracy level to the loadDataset function
-      const dataset = await loadDataset(datasetType, datasetSize, accuracyLevel);
+      // Use only the CAESAR dataset
+      const dataset = await loadDataset("caesar", datasetSize, accuracyLevel);
       
       // Calculate average error across all samples with improved measurement weighting
       let totalMAE = 0;
@@ -108,7 +107,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
       
       toast({
         title: "Evaluation Complete",
-        description: `Evaluated ${dataset.samples.length} samples from ${datasetType.toUpperCase()} dataset with ${accuracyDesc}`,
+        description: `Evaluated ${dataset.samples.length} samples from CAESAR dataset with ${accuracyDesc}`,
       });
     } catch (error) {
       console.error("Dataset evaluation error:", error);
@@ -127,8 +126,8 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
     
     try {
       // Format and export the data
-      const exportData = formatEvaluationResultsForExport(results, datasetType);
-      const filename = `accuracy-report-${datasetType}-${new Date().toISOString().split('T')[0]}.csv`;
+      const exportData = formatEvaluationResultsForExport(results, "caesar");
+      const filename = `accuracy-report-caesar-${new Date().toISOString().split('T')[0]}.csv`;
       
       exportToCSV(exportData, filename);
       
@@ -149,12 +148,10 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
   return (
     <Card className="bg-card border-none shadow-lg text-card-foreground max-w-4xl mx-auto">
       <CardHeader className="pb-2">
-        <CardTitle className="text-xl font-semibold text-white text-center">Dataset Evaluation</CardTitle>
+        <CardTitle className="text-xl font-semibold text-white text-center">CAESAR Dataset Evaluation</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <EvaluationForm 
-          datasetType={datasetType}
-          setDatasetType={setDatasetType}
           datasetSize={datasetSize}
           setDatasetSize={setDatasetSize}
           accuracyLevel={accuracyLevel}

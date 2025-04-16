@@ -39,7 +39,7 @@ export const formatEvaluationResultsForExport = (
   
   // Add metadata
   const metadata = [
-    ["Dataset", datasetType.toUpperCase()],
+    ["Dataset", "CAESAR"],
     ["Sample Count", results.sampleCount.toString()],
     ["Date", new Date().toISOString().split('T')[0]],
     ["", ""], // Empty row as separator
