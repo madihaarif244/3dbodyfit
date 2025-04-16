@@ -14,9 +14,10 @@ export default function ResultsSummary({ results }: ResultsSummaryProps) {
   
   // Determine accuracy level based on percentage deviation
   const getAccuracyLevel = (deviation: number) => {
-    if (deviation <= 3) return { label: "Excellent", color: "bg-green-500 text-white" };
-    if (deviation <= 5) return { label: "Good", color: "bg-blue-500 text-white" };
-    if (deviation <= 8) return { label: "Fair", color: "bg-amber-500 text-black" };
+    if (deviation <= 2) return { label: "Excellent", color: "bg-green-500 text-white" };
+    if (deviation <= 4) return { label: "Very Good", color: "bg-emerald-500 text-white" };
+    if (deviation <= 6) return { label: "Good", color: "bg-blue-500 text-white" };
+    if (deviation <= 10) return { label: "Fair", color: "bg-amber-500 text-black" };
     return { label: "Needs Improvement", color: "bg-red-500 text-white" };
   };
   
@@ -61,12 +62,14 @@ export default function ResultsSummary({ results }: ResultsSummaryProps) {
           <h4 className="text-sm font-medium text-gray-300 mb-2">Key Measurement Insights</h4>
           <div className="space-y-2">
             <div className="text-sm text-white">
-              {results.percentageDeviation <= 3 ? (
-                <>Model accuracy exceeds professional tailoring standards (<3% deviation)</>
-              ) : results.percentageDeviation <= 5 ? (
-                <>Accuracy comparable to professional measurement standards (<5% deviation)</>
-              ) : results.percentageDeviation <= 8 ? (
-                <>Acceptable accuracy for general sizing guidance (<8% deviation)</>
+              {results.percentageDeviation <= 2 ? (
+                <>Model accuracy is exceptional with less than 2% deviation</>
+              ) : results.percentageDeviation <= 4 ? (
+                <>Model accuracy is very high (<4% deviation), exceeding professional standards</>
+              ) : results.percentageDeviation <= 6 ? (
+                <>Model accuracy exceeds professional tailoring standards (<6% deviation)</>
+              ) : results.percentageDeviation <= 10 ? (
+                <>Acceptable accuracy for general sizing guidance (<10% deviation)</>
               ) : (
                 <>Requires calibration for improved accuracy ({results.percentageDeviation.toFixed(1)}% deviation)</>
               )}
