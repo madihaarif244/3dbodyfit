@@ -99,6 +99,8 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
         <UserImageDisplay 
           userImage={userImage} 
           hasLandmarks={hasLandmarks}
+          measurements={measurements}
+          landmarks={landmarks}
         />
       </div>
     </div>
