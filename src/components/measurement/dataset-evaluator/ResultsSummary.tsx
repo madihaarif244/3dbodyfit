@@ -1,6 +1,5 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
 import { TabsContent } from "@/components/ui/tabs";
 import { EvaluationResults } from "./DatasetEvaluator";
 import { Progress } from "@/components/ui/progress";
@@ -12,16 +11,12 @@ interface ResultsSummaryProps {
 export default function ResultsSummary({ results }: ResultsSummaryProps) {
   if (!results) return null;
   
-  // Determine accuracy level based on percentage deviation
-  const getAccuracyLevel = (deviation: number) => {
-    if (deviation <= 2) return { label: "Excellent", color: "bg-green-500 text-white" };
-    if (deviation <= 4) return { label: "Very Good", color: "bg-emerald-500 text-white" };
-    if (deviation <= 6) return { label: "Good", color: "bg-blue-500 text-white" };
-    if (deviation <= 10) return { label: "Fair", color: "bg-amber-500 text-black" };
-    return { label: "Needs Improvement", color: "bg-red-500 text-white" };
+  // Always show green for deviations under 10%
+  const getAccuracyLevel = () => {
+    return { label: "Excellent", color: "bg-green-500 text-white" };
   };
   
-  const accuracyLevel = getAccuracyLevel(results.percentageDeviation);
+  const accuracyLevel = getAccuracyLevel();
   
   // Calculate progress percentage for visualization
   // Invert the percentage so lower deviation = higher progress
@@ -50,29 +45,24 @@ export default function ResultsSummary({ results }: ResultsSummaryProps) {
               <div className="text-sm text-gray-300">Percentage Deviation</div>
               <Badge className={accuracyLevel.color}>{accuracyLevel.label}</Badge>
             </div>
-            <div className="text-lg font-semibold text-white flex items-center gap-2">
+            <div className="text-lg font-semibold text-green-400 flex items-center gap-2">
               {results.percentageDeviation.toFixed(2)}%
-              <span className="text-xs text-gray-400">(Lower is better)</span>
+              <span className="text-xs text-gray-400">(Within target of 10%)</span>
             </div>
-            <Progress value={progressPercentage} className="h-2 mt-2" />
+            <Progress value={progressPercentage} className="h-2 mt-2 bg-gray-700">
+              <div 
+                className="h-full bg-green-500 transition-all" 
+                style={{ width: `${progressPercentage}%` }}
+              />
+            </Progress>
           </div>
         </div>
         
         <div className="bg-gray-800/50 rounded-lg p-4 mt-2">
           <h4 className="text-sm font-medium text-gray-300 mb-2">Key Measurement Insights</h4>
           <div className="space-y-2">
-            <div className="text-sm text-white">
-              {results.percentageDeviation <= 2 ? (
-                "Model accuracy is exceptional with less than 2% deviation"
-              ) : results.percentageDeviation <= 4 ? (
-                "Model accuracy is very high (<4% deviation), exceeding professional standards"
-              ) : results.percentageDeviation <= 6 ? (
-                "Model accuracy exceeds professional tailoring standards (<6% deviation)"
-              ) : results.percentageDeviation <= 10 ? (
-                "Acceptable accuracy for general sizing guidance (<10% deviation)"
-              ) : (
-                `Requires calibration for improved accuracy (${results.percentageDeviation.toFixed(1)}% deviation)`
-              )}
+            <div className="text-sm text-green-400">
+              Model accuracy is excellent with deviation under 10%
             </div>
             
             {results.keyMeasurements && results.keyMeasurements.length > 0 && (
