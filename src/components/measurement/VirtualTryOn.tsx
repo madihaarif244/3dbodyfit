@@ -1,112 +1,258 @@
-
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { ChevronLeft, ChevronRight, ShoppingBag, Ruler, Shirt } from "lucide-react";
+import { Canvas } from "@react-three/fiber";
+import { Environment, OrbitControls } from "@react-three/drei";
+import AvatarModel from "../AvatarModel";
+import { calculateClothingSizes, getFitDescription } from "@/utils/sizingUtils";
 
 interface VirtualTryOnProps {
   measurements: Record<string, number>;
-  confidenceScore: number;
+  gender?: 'male' | 'female' | 'other';
 }
 
-const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ measurements, confidenceScore }) => {
-  const [currentItem, setCurrentItem] = useState(0);
+type ClothingType = 'tshirt' | 'shirt' | 'pants' | 'jacket';
+type ClothingSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'Custom';
 
-  const garmentItems = [
-    { type: 'T-Shirt', sizeRanges: {
-      'S': { chest: [86, 94], waist: [71, 79] },
-      'M': { chest: [94, 102], waist: [79, 87] },
-      'L': { chest: [102, 110], waist: [87, 95] },
-      'XL': { chest: [110, 118], waist: [95, 103] },
-      'XXL': { chest: [118, 126], waist: [103, 111] }
-    }},
-    { type: 'Button-Up', sizeRanges: {
-      'S': { chest: [88, 96], waist: [73, 81] },
-      'M': { chest: [96, 104], waist: [81, 89] },
-      'L': { chest: [104, 112], waist: [89, 97] },
-      'XL': { chest: [112, 120], waist: [97, 105] },
-      'XXL': { chest: [120, 128], waist: [105, 113] }
-    }}
-  ];
+interface ClothingItem {
+  id: number;
+  name: string;
+  type: ClothingType;
+  image: string;
+  description: string;
+}
 
-  const determineSize = (measurements: Record<string, number>, ranges: any) => {
-    const { chest, waist } = measurements;
+export default function VirtualTryOn({ measurements, gender = 'other' }: VirtualTryOnProps) {
+  const [clothingItems, setClothingItems] = useState<ClothingItem[]>([
+    {
+      id: 1,
+      name: "ONE T-Shirt",
+      type: "tshirt",
+      image: "/lovable-uploads/e6d4673c-7ff6-49f4-bcd5-99a028a5b51c.png",
+      description: "Burgundy cotton t-shirt with ONE logo"
+    },
+    {
+      id: 2,
+      name: "Button-up Shirt",
+      type: "shirt",
+      image: "/lovable-uploads/4bc9f14b-1579-44cc-bb6b-a1543eab135c.png",
+      description: "Oxford cotton button-down shirt"
+    },
+    {
+      id: 3,
+      name: "Slim Fit Pants",
+      type: "pants",
+      image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80",
+      description: "Slim fit chino pants"
+    },
+    {
+      id: 4,
+      name: "Casual Jacket",
+      type: "jacket",
+      image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea",
+      description: "Lightweight casual jacket"
+    }
+  ]);
+  
+  const [currentItemIndex, setCurrentItemIndex] = useState(0);
+  const [sizes, setSizes] = useState<Record<ClothingType, ClothingSize>>({
+    tshirt: 'M',
+    shirt: 'M',
+    pants: 'M',
+    jacket: 'M'
+  });
+  const [tryingOn, setTryingOn] = useState(false);
+
+  useEffect(() => {
+    const recommendedSizes = calculateClothingSizes(measurements, gender);
+    setSizes(recommendedSizes);
+  }, [measurements, gender]);
+
+  const handleNextItem = () => {
+    setCurrentItemIndex((prev) => (prev + 1) % clothingItems.length);
+    setTryingOn(false);
+  };
+
+  const handlePrevItem = () => {
+    setCurrentItemIndex((prev) => (prev === 0 ? clothingItems.length - 1 : prev - 1));
+    setTryingOn(false);
+  };
+
+  const handleTryOn = () => {
+    setTryingOn(true);
+  };
+
+  const currentItem = clothingItems[currentItemIndex];
+  const currentSize = sizes[currentItem.type];
+  
+  const getSizeFeedback = () => {
+    const item = currentItem.type;
     
-    for (const [size, range] of Object.entries(ranges)) {
-      if (
-        chest >= range.chest[0] && 
-        chest <= range.chest[1] && 
-        waist >= range.waist[0] && 
-        waist <= range.waist[1]
-      ) {
-        return size;
+    let relevantMeasurement: number;
+    let fitDescription: string;
+    
+    if (item === 'tshirt' || item === 'shirt' || item === 'jacket') {
+      relevantMeasurement = measurements.chest;
+      
+      if (currentSize === 'S') {
+        fitDescription = "This will be a slim fit on your chest.";
+      } else if (currentSize === 'M') {
+        fitDescription = "This will be a regular fit on your chest.";
+      } else if (currentSize === 'L') {
+        fitDescription = "This will be a relaxed fit on your chest.";
+      } else if (currentSize === 'XL' || currentSize === 'XXL') {
+        fitDescription = "This will be a loose fit on your chest.";
+      } else {
+        fitDescription = "This is tailored to your exact measurements.";
+      }
+    } else { // pants
+      relevantMeasurement = measurements.waist;
+      
+      if (currentSize === 'S') {
+        fitDescription = "These will sit snug on your waist.";
+      } else if (currentSize === 'M') {
+        fitDescription = "These will sit comfortably on your waist.";
+      } else if (currentSize === 'L') {
+        fitDescription = "These will have some room at your waist.";
+      } else if (currentSize === 'XL' || currentSize === 'XXL') {
+        fitDescription = "These will be loose at the waist.";
+      } else {
+        fitDescription = "These are tailored to your exact measurements.";
       }
     }
     
-    // If no exact match, find closest size
-    const chestSizes = Object.entries(ranges).map(([size, range]) => ({
-      size,
-      diff: Math.abs((range.chest[0] + range.chest[1]) / 2 - chest)
-    }));
-    
-    return chestSizes.sort((a, b) => a.diff - b.diff)[0].size;
-  };
-
-  const recommendedSize = determineSize(measurements, garmentItems[currentItem].sizeRanges);
-
-  const nextItem = () => {
-    setCurrentItem((prev) => (prev + 1) % garmentItems.length);
-  };
-
-  const prevItem = () => {
-    setCurrentItem((prev) => (prev - 1 + garmentItems.length) % garmentItems.length);
+    return fitDescription;
   };
 
   return (
-    <Card className="p-6 bg-gray-900">
-      <h3 className="text-xl font-semibold mb-4 text-white">Virtual Try-On</h3>
-      
-      <div className="flex items-center justify-between gap-4">
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={prevItem}
-          className="text-white hover:bg-gray-800"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
-
-        <div className="flex-1 text-center space-y-4">
-          <div className="bg-gray-800 rounded-lg p-4">
-            <h4 className="text-lg font-medium text-white mb-2">{garmentItems[currentItem].type}</h4>
-            <div className="text-3xl font-bold text-electric mb-2">{recommendedSize}</div>
-            <p className="text-sm text-gray-300">
-              Best fit for your measurements:
-              <br />
-              Chest: {measurements.chest?.toFixed(1)} cm
-              <br />
-              Waist: {measurements.waist?.toFixed(1)} cm
-            </p>
+    <Card className="bg-card border-none shadow-lg">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-xl font-semibold text-white flex items-center justify-between">
+          <span className="text-white bg-electric/80 px-3 py-1 rounded">Virtual Try-On</span>
+          <div className="text-sm font-normal text-white bg-electric/80 flex items-center gap-1 px-3 py-1 rounded">
+            <Ruler className="h-4 w-4" />
+            <span>Recommended size: {currentSize}</span>
           </div>
-
-          <Button 
-            className="w-full bg-electric hover:bg-electric/90"
-          >
-            Try On
-          </Button>
+        </CardTitle>
+      </CardHeader>
+      
+      <CardContent className="p-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="h-[350px] bg-gray-800/70 rounded-lg overflow-hidden relative flex items-center justify-center">
+            {!tryingOn ? (
+              <div className="w-full h-full flex items-center justify-center">
+                <img 
+                  src={currentItem.image} 
+                  alt={currentItem.name}
+                  className="max-w-full max-h-full object-contain p-4"
+                />
+              </div>
+            ) : (
+              <>
+                <Canvas shadows camera={{ position: [0, 0, 2.5], fov: 50 }}>
+                  <ambientLight intensity={0.8} />
+                  <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+                  <pointLight position={[-10, -10, -10]} />
+                  <AvatarModel measurements={measurements} />
+                  <OrbitControls enableZoom={true} enablePan={false} />
+                  <Environment preset="city" />
+                </Canvas>
+                
+                <div className="absolute bottom-4 left-0 right-0 text-center">
+                  <span className="bg-electric/90 text-white px-3 py-1 rounded-lg text-sm font-medium">
+                    {currentItem.name} - Size {currentSize}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+          
+          <div className="p-4 flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <button 
+                onClick={handlePrevItem} 
+                className="p-2 bg-electric/80 rounded-full text-white hover:bg-electric"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              
+              <div className="text-center">
+                <h3 className="text-lg font-medium text-white bg-electric/80 px-3 py-1 rounded">{currentItem.name}</h3>
+                <p className="text-sm text-white bg-electric/70 px-2 py-1 rounded mt-1">{currentItem.description}</p>
+              </div>
+              
+              <button 
+                onClick={handleNextItem}
+                className="p-2 bg-electric/80 rounded-full text-white hover:bg-electric"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="bg-gray-800/50 p-4 rounded-lg mb-4">
+              <h4 className="text-sm font-medium text-white mb-1">Size Recommendation</h4>
+              <div className="flex justify-between items-center gap-2 mb-2">
+                {(['XS', 'S', 'M', 'L', 'XL', 'XXL'] as ClothingSize[]).map((size) => (
+                  <div 
+                    key={size}
+                    className={`flex-1 py-2 text-center rounded text-sm font-medium ${
+                      size === currentSize 
+                        ? 'bg-electric text-white' 
+                        : 'bg-gray-700 text-white'
+                    }`}
+                  >
+                    {size}
+                  </div>
+                ))}
+              </div>
+              <p className="text-sm text-white mt-2 bg-gray-800/70 p-2 rounded">
+                {getSizeFeedback()}
+              </p>
+            </div>
+            
+            <div className="bg-gray-800/50 p-4 rounded-lg mb-4">
+              <h4 className="text-sm font-medium text-white mb-2">Fit Details</h4>
+              <ul className="text-sm text-white">
+                <li className="flex justify-between mb-2 border-b border-gray-700 pb-1">
+                  <span>Chest:</span> 
+                  <span className="font-semibold">{measurements.chest.toFixed(1)} cm</span>
+                </li>
+                <li className="flex justify-between mb-2 border-b border-gray-700 pb-1">
+                  <span>Waist:</span> 
+                  <span className="font-semibold">{measurements.waist.toFixed(1)} cm</span>
+                </li>
+                <li className="flex justify-between mb-2 border-b border-gray-700 pb-1">
+                  <span>Shoulder:</span> 
+                  <span className="font-semibold">{measurements.shoulder.toFixed(1)} cm</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Sleeve:</span> 
+                  <span className="font-semibold">{measurements.sleeve.toFixed(1)} cm</span>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
-
+      </CardContent>
+      
+      <CardFooter className="flex justify-between gap-2 pt-4">
         <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={nextItem}
-          className="text-white hover:bg-gray-800"
+          variant="outline" 
+          onClick={handleTryOn}
+          className="w-full gap-2"
         >
-          <ChevronRight className="h-6 w-6" />
+          <Shirt className="h-4 w-4" />
+          Try On
         </Button>
-      </div>
+        <Button 
+          className="w-full gap-2 bg-electric hover:bg-electric-dark"
+        >
+          <ShoppingBag className="h-4 w-4" />
+          Shop This Size
+        </Button>
+      </CardFooter>
     </Card>
   );
-};
+}
 
-export default VirtualTryOn;
