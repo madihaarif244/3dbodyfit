@@ -152,8 +152,8 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
                       }}
                       defaultValue={field.value}
                     >
-                      <ToggleGroupItem value="metric" className="text-gray-800">Metric (cm)</ToggleGroupItem>
-                      <ToggleGroupItem value="imperial" className="text-gray-800">Imperial (in)</ToggleGroupItem>
+                      <ToggleGroupItem value="metric" aria-label="Metric">Metric (cm)</ToggleGroupItem>
+                      <ToggleGroupItem value="imperial" aria-label="Imperial">Imperial (in)</ToggleGroupItem>
                     </ToggleGroup>
                   </FormControl>
                   <FormMessage />
@@ -173,7 +173,7 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
                         placeholder={measurementSystem === "metric" ? "Height in cm" : "Height in inches"}
                         {...field}
                         type="number"
-                        className="text-gray-800 font-medium bg-white border-gray-300" // Override styling for this input
+                        className="text-gray-800 font-medium bg-white border-gray-300"
                       />
                       <span className="flex items-center text-sm text-gray-800">
                         {measurementSystem === "metric" ? "cm" : "in"}
@@ -197,7 +197,7 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
             </p>
             
             <div className="space-y-3">
-              <Label htmlFor="frontImage" className="text-gray-800">Front View</Label>
+              <Label htmlFor="frontImage">Front View</Label>
               <div 
                 className={`border-2 border-dashed rounded-lg p-4 h-64 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors ${
                   frontImagePreview ? "border-electric" : "border-gray-300"
@@ -242,7 +242,7 @@ export default function BodyScanForm({ onSubmit }: BodyScanFormProps) {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel className="text-gray-800">
+                  <FormLabel>
                     I consent to the processing of my data for measurement purposes
                   </FormLabel>
                   <FormDescription className="text-gray-600">

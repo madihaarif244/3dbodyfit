@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -165,7 +164,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <div className="flex justify-between">
-            <Label htmlFor="dataset-type" className="text-white">Dataset Type</Label>
+            <Label className="text-white">Dataset Type</Label>
             <div className="relative group">
               <Info className="h-4 w-4 text-gray-400 cursor-help" />
               <div className="absolute bottom-full mb-2 right-0 w-64 p-2 bg-gray-800 rounded text-xs invisible group-hover:visible z-10">
@@ -174,7 +173,7 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
             </div>
           </div>
           <Select value={datasetType} onValueChange={setDatasetType}>
-            <SelectTrigger id="dataset-type" className="text-white">
+            <SelectTrigger className="text-white">
               <SelectValue placeholder="Select dataset" />
             </SelectTrigger>
             <SelectContent>
@@ -187,9 +186,8 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
         
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="dataset-size" className="text-white">Sample Size</Label>
+            <Label className="text-white">Sample Size</Label>
             <Input 
-              id="dataset-size"
               type="number" 
               min={5} 
               max={100}
@@ -200,9 +198,9 @@ export default function DatasetEvaluator({ measurements }: DatasetEvaluatorProps
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="accuracy-level" className="text-white">Accuracy Level</Label>
+            <Label className="text-white">Accuracy Level</Label>
             <Select value={accuracyLevel} onValueChange={setAccuracyLevel}>
-              <SelectTrigger id="accuracy-level" className="text-white">
+              <SelectTrigger className="text-white">
                 <SelectValue placeholder="Select accuracy" />
               </SelectTrigger>
               <SelectContent>

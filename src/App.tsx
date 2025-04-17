@@ -2,18 +2,15 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { MobileProvider } from "./hooks/use-mobile";
 import AppRoutes from "./routes";
 import DevicePreview from "./components/DevicePreview";
 import "./App.css";
 
-// Create a new QueryClient instance
-const queryClient = new QueryClientProvider({
-  client: {},
-  children: null
-}).props.client;
+// Create a new QueryClient instance correctly
+const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
