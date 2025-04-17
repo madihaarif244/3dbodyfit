@@ -32,7 +32,7 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
   landmarks,
   userImage
 }) => {
-  const [activeTab, setActiveTab] = useState<string>("measurements");
+  const [activeTab, setActiveTab] = useState<string>("recommendations");
   const hasLandmarks = landmarks && Object.keys(landmarks).length > 0;
   
   // Calculate accuracy level based on confidence score with improved thresholds
@@ -73,7 +73,7 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
   const generateSizeRecommendations = (): SizeRecommendation[] => {
     const recommendations: SizeRecommendation[] = [];
     
-    // Helper function to determine size
+    // Helper function to determine size - Fixed TypeScript error by using tuple type
     const determineSize = (measurement: number, ranges: Record<string, [number, number]>): string => {
       for (const [size, [min, max]] of Object.entries(ranges)) {
         if (measurement >= min && measurement <= max) {
@@ -95,9 +95,9 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
       return "Regular";
     };
     
-    // Add recommendations based on chest/bust
+    // Add recommendations based on chest/bust - Fixed TypeScript error with correct tuple type
     if (measurements.chest) {
-      const chestRanges = {
+      const chestRanges: Record<string, [number, number]> = {
         'XS': [80, 88],
         'S': [88, 96],
         'M': [96, 104],
@@ -117,16 +117,16 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
       });
       
       recommendations.push({
-        garment: "Jacket/Coat",
+        garment: "Button-up Shirt",
         recommendedSize: size,
         fit: fit === "Regular" ? "Standard" : fit,
         confidence: confidenceScore * 0.9
       });
     }
     
-    // Add recommendations based on waist
+    // Add recommendations based on waist - Fixed TypeScript error with correct tuple type
     if (measurements.waist) {
-      const waistRanges = {
+      const waistRanges: Record<string, [number, number]> = {
         'XS': [65, 73],
         'S': [73, 81],
         'M': [81, 89],
@@ -146,9 +146,9 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
       });
     }
     
-    // Add recommendations based on hips
+    // Add recommendations based on hips - Fixed TypeScript error with correct tuple type
     if (measurements.hips) {
-      const hipRanges = {
+      const hipRanges: Record<string, [number, number]> = {
         'XS': [85, 93],
         'S': [93, 101],
         'M': [101, 109],
@@ -201,7 +201,7 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
       </div>
       
       {confidenceScore < 0.87 && (
-        <Alert variant="warning" className="bg-amber-900/30 border-amber-600">
+        <Alert className="bg-amber-900/30 border-amber-600">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="text-amber-200 text-sm">
             For higher accuracy, consider providing clearer images with good lighting and proper pose.
@@ -214,10 +214,10 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="measurements" className="text-sm">
-                Measurements
+                Body Measurements
               </TabsTrigger>
               <TabsTrigger value="recommendations" className="text-sm">
-                Size Recommendations
+                Virtual Try-On
               </TabsTrigger>
             </TabsList>
             
@@ -246,14 +246,58 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
                       Based on your measurements, we recommend the following sizes:
                     </p>
                     
-                    <div className="grid grid-cols-4 text-xs font-medium text-gray-500 border-b pb-1">
-                      <div>Garment</div>
+                    <div className="grid grid-cols-1 gap-4">
+                      {sizeRecommendations.filter(rec => rec.garment === "Button-up Shirt").map((rec, index) => (
+                        <div key={index} className="border border-gray-200 rounded p-3">
+                          <div className="flex justify-between mb-2">
+                            <h4 className="font-medium text-blue-700">{rec.garment}</h4>
+                            <span className="text-sm text-gray-500">Optimal chest: {measurements.chest?.toFixed(1)} cm</span>
+                          </div>
+                          
+                          <div className="flex gap-2 mb-3">
+                            {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(size => (
+                              <div 
+                                key={size}
+                                className={`text-center flex-1 py-1 px-2 rounded ${
+                                  size === rec.recommendedSize 
+                                    ? 'bg-blue-500 text-white' 
+                                    : 'bg-gray-100 text-gray-500'
+                                }`}
+                              >
+                                {size}
+                              </div>
+                            ))}
+                          </div>
+                          
+                          <div className="text-center py-2 bg-gray-50 rounded text-sm">
+                            This will be a <strong>{rec.fit} fit</strong> on your chest.
+                          </div>
+                          
+                          <div className="mt-3 pt-2 border-t text-sm text-gray-600">
+                            <div className="flex items-center gap-1">
+                              <span>Fit Details:</span>
+                              <div className="ml-1 flex-1">
+                                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                  <div 
+                                    className="bg-blue-600 h-1.5 rounded-full" 
+                                    style={{ width: `${rec.confidence * 100}%` }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="grid grid-cols-4 text-xs font-medium text-gray-500 border-b pb-1 mt-4">
+                      <div>Other Garments</div>
                       <div>Size</div>
                       <div>Fit</div>
                       <div>Accuracy</div>
                     </div>
                     
-                    {sizeRecommendations.map((rec, index) => (
+                    {sizeRecommendations.filter(rec => rec.garment !== "Button-up Shirt").map((rec, index) => (
                       <div key={index} className="grid grid-cols-4 py-2 border-b border-gray-100 items-center text-sm">
                         <div className="font-medium">{rec.garment}</div>
                         <div className="font-bold text-blue-700">{rec.recommendedSize}</div>
