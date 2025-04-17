@@ -2,8 +2,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { ArrowRight, Redo, Download, Share2 } from "lucide-react";
+import { Redo, Download, Share2 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { MeasurementItem } from "./MeasurementItem";
+import { SystemToggle } from "./SystemToggle";
+import { formatHeight } from "@/utils/formatMeasurements";
 
 interface MeasurementCardProps {
   measurements: Record<string, number>;
@@ -26,16 +29,6 @@ export default function MeasurementCard({
     setMeasurementSystem(measurementSystem === "metric" ? "imperial" : "metric");
   };
   
-  const formatMeasurement = (valueInCm: number) => {
-    if (measurementSystem === "imperial") {
-      const inches = valueInCm / 2.54;
-      const roundedInches = Math.round(inches * 4) / 4;
-      return `${roundedInches.toFixed(1)}"`;
-    } else {
-      return `${valueInCm.toFixed(1)} cm`;
-    }
-  };
-  
   const displayedMeasurements = [
     { name: "Chest", value: measurements.chest },
     { name: "Waist", value: measurements.waist },
@@ -45,51 +38,18 @@ export default function MeasurementCard({
     { name: "Sleeve", value: measurements.sleeve }
   ];
   
-  const additionalMeasurements = [];
-  
-  if (measurements.neck) {
-    additionalMeasurements.push({ name: "Neck", value: measurements.neck });
-  }
-  
-  if (measurements.thigh) {
-    additionalMeasurements.push({ name: "Thigh", value: measurements.thigh });
-  }
-  
-  if (measurements.upperArm) {
-    additionalMeasurements.push({ name: "Upper Arm", value: measurements.upperArm });
-  }
-  
-  if (measurements.forearm) {
-    additionalMeasurements.push({ name: "Forearm", value: measurements.forearm });
-  }
-  
-  if (measurements.calf) {
-    additionalMeasurements.push({ name: "Calf", value: measurements.calf });
-  }
-  
-  if (measurements.neckCircumference) {
-    additionalMeasurements.push({ name: "Neck Circumference", value: measurements.neckCircumference });
-  }
-  
-  if (measurements.shoulderWidth) {
-    additionalMeasurements.push({ name: "Shoulder Width", value: measurements.shoulderWidth });
-  }
-  
-  const formatHeight = () => {
-    if (measurementSystem === "imperial") {
-      const totalInches = measurements.height / 2.54;
-      const feet = Math.floor(totalInches / 12);
-      const inches = Math.round(totalInches % 12);
-      return `${feet}'${inches}"`;
-    } else {
-      return `${measurements.height.toFixed(1)} cm`;
-    }
-  };
-  
-  // Helper function to get avatar fallback text
+  const additionalMeasurements = [
+    { name: "Neck", value: measurements.neck },
+    { name: "Thigh", value: measurements.thigh },
+    { name: "Upper Arm", value: measurements.upperArm },
+    { name: "Forearm", value: measurements.forearm },
+    { name: "Calf", value: measurements.calf },
+    { name: "Neck Circumference", value: measurements.neckCircumference },
+    { name: "Shoulder Width", value: measurements.shoulderWidth }
+  ].filter(item => item.value !== undefined);
+
   const getAvatarFallback = () => {
     const gender = measurements.hasOwnProperty('gender') ? String(measurements.gender) : 'U';
-    
     if (gender === 'male' || gender === 'Male') return 'M';
     if (gender === 'female' || gender === 'Female') return 'F';
     return 'U';
@@ -110,19 +70,14 @@ export default function MeasurementCard({
             )}
             <CardTitle className="text-xl font-semibold text-white">Your Body Measurements</CardTitle>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={toggleMeasurementSystem}
-            className="gap-1 text-xs bg-gray-700 hover:bg-gray-600 text-white border-gray-600"
-          >
-            <ArrowRight className="h-3 w-3" />
-            {measurementSystem === "metric" ? "Imperial" : "Metric"}
-          </Button>
+          <SystemToggle 
+            measurementSystem={measurementSystem} 
+            onToggle={toggleMeasurementSystem}
+          />
         </div>
         
         <div className="text-sm text-gray-400 flex items-center gap-2">
-          Height: <span className="font-medium text-electric">{formatHeight()}</span>
+          Height: <span className="font-medium text-electric">{formatHeight(measurements.height, measurementSystem)}</span>
           {isEstimated && <span className="text-xs text-amber-400">(Estimated)</span>}
         </div>
         
@@ -140,10 +95,13 @@ export default function MeasurementCard({
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
           {displayedMeasurements.map((item) => (
-            <div key={item.name} className="bg-gray-800 rounded-lg p-3">
-              <div className="text-sm text-gray-400">{item.name}</div>
-              <div className="text-lg font-semibold text-white">{formatMeasurement(item.value)}</div>
-            </div>
+            <MeasurementItem
+              key={item.name}
+              name={item.name}
+              value={item.value}
+              measurementSystem={measurementSystem}
+              variant="primary"
+            />
           ))}
         </div>
         
@@ -152,10 +110,13 @@ export default function MeasurementCard({
             <h3 className="text-sm font-medium text-gray-400 mb-2">Advanced Measurements</h3>
             <div className="grid grid-cols-2 gap-4">
               {additionalMeasurements.map((item) => (
-                <div key={item.name} className="bg-gray-800/70 rounded-lg p-3">
-                  <div className="text-xs text-gray-400">{item.name}</div>
-                  <div className="text-md font-medium text-white">{formatMeasurement(item.value)}</div>
-                </div>
+                <MeasurementItem
+                  key={item.name}
+                  name={item.name}
+                  value={item.value}
+                  measurementSystem={measurementSystem}
+                  variant="secondary"
+                />
               ))}
             </div>
           </div>
@@ -184,3 +145,4 @@ export default function MeasurementCard({
     </Card>
   );
 }
+
