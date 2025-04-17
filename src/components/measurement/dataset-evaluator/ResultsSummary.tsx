@@ -63,15 +63,15 @@ export default function ResultsSummary({ results }: ResultsSummaryProps) {
           <div className="space-y-2">
             <div className="text-sm text-white">
               {results.percentageDeviation <= 2 ? (
-                <>Model accuracy is exceptional with less than 2% deviation</>
+                "Model accuracy is exceptional with less than 2% deviation"
               ) : results.percentageDeviation <= 4 ? (
-                <>Model accuracy is very high (<4% deviation), exceeding professional standards</>
+                "Model accuracy is very high (<4% deviation), exceeding professional standards"
               ) : results.percentageDeviation <= 6 ? (
-                <>Model accuracy exceeds professional tailoring standards (<6% deviation)</>
+                "Model accuracy exceeds professional tailoring standards (<6% deviation)"
               ) : results.percentageDeviation <= 10 ? (
-                <>Acceptable accuracy for general sizing guidance (<10% deviation)</>
+                "Acceptable accuracy for general sizing guidance (<10% deviation)"
               ) : (
-                <>Requires calibration for improved accuracy ({results.percentageDeviation.toFixed(1)}% deviation)</>
+                `Requires calibration for improved accuracy (${results.percentageDeviation.toFixed(1)}% deviation)`
               )}
             </div>
             
