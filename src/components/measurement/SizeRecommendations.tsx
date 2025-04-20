@@ -1,6 +1,5 @@
-
 import React from "react";
-import { Ruler, Shirt, ShirtIcon, JacketIcon, PantsIcon } from "lucide-react";
+import { Ruler, Shirt, ShirtIcon, Jacket, Pants } from "lucide-react";
 
 interface SizeRecommendation {
   garment: string;
@@ -74,7 +73,7 @@ const SizeRecommendations = ({ confidenceScore, measurements }: SizeRecommendati
         garment: "Jacket",
         recommendedSize: size,
         fit: fit === "Regular" ? "Standard" : fit,
-        icon: <JacketIcon className="h-5 w-5" />,
+        icon: <Jacket className="h-5 w-5" />,
         confidence: confidenceScore * 0.9
       });
     }
@@ -96,7 +95,7 @@ const SizeRecommendations = ({ confidenceScore, measurements }: SizeRecommendati
         garment: "Pants",
         recommendedSize: size,
         fit,
-        icon: <PantsIcon className="h-5 w-5" />,
+        icon: <Pants className="h-5 w-5" />,
         confidence: confidenceScore * 0.92
       });
     }
