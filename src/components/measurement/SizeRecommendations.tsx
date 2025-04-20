@@ -1,12 +1,14 @@
-import React from "react";
-import { Ruler, ShirtIcon, Shirt } from "lucide-react";
+import React, { useState } from "react";
+import { Ruler } from "lucide-react";
+import { GARMENT_IMAGES } from "@/constants/garmentImages";
+import { cn } from "@/lib/utils";
 
 interface SizeRecommendation {
   garment: string;
+  image: string;
   recommendedSize: string;
   fit: string;
   confidence: number;
-  icon?: React.ReactNode;
 }
 
 interface SizeRecommendationsProps {
@@ -15,6 +17,8 @@ interface SizeRecommendationsProps {
 }
 
 const SizeRecommendations = ({ confidenceScore, measurements }: SizeRecommendationsProps) => {
+  const [selectedGarment, setSelectedGarment] = useState<number>(0);
+
   const determineSize = (measurement: number, ranges: Record<string, [number, number]>): string => {
     for (const [size, [min, max]] of Object.entries(ranges)) {
       if (measurement >= min && measurement <= max) {
@@ -40,6 +44,7 @@ const SizeRecommendations = ({ confidenceScore, measurements }: SizeRecommendati
     
     if (measurements.chest) {
       const chestRanges = {
+        'XS': [80, 88] as [number, number],
         'S': [88, 96] as [number, number],
         'M': [96, 104] as [number, number],
         'L': [104, 112] as [number, number],
@@ -51,32 +56,33 @@ const SizeRecommendations = ({ confidenceScore, measurements }: SizeRecommendati
       const fit = determineFit(measurements.chest, chestRanges, size);
       
       recommendations.push({
-        garment: "Shirt",
+        garment: "Button-up Shirt",
+        image: GARMENT_IMAGES.shirt,
         recommendedSize: size,
         fit,
-        icon: <ShirtIcon className="h-5 w-5" />,
         confidence: confidenceScore * 0.95
       });
 
       recommendations.push({
         garment: "T-Shirt",
+        image: GARMENT_IMAGES.tshirt,
         recommendedSize: size,
         fit,
-        icon: <Shirt className="h-5 w-5" />,
         confidence: confidenceScore * 0.95
       });
       
       recommendations.push({
         garment: "Jacket",
+        image: GARMENT_IMAGES.jacket,
         recommendedSize: size,
         fit: fit === "Regular" ? "Standard" : fit,
-        icon: <ShirtIcon className="h-5 w-5" />,
         confidence: confidenceScore * 0.9
       });
     }
     
     if (measurements.waist) {
       const waistRanges = {
+        'XS': [65, 73] as [number, number],
         'S': [73, 81] as [number, number],
         'M': [81, 89] as [number, number],
         'L': [89, 97] as [number, number],
@@ -89,9 +95,9 @@ const SizeRecommendations = ({ confidenceScore, measurements }: SizeRecommendati
       
       recommendations.push({
         garment: "Pants",
+        image: GARMENT_IMAGES.pants,
         recommendedSize: size,
         fit,
-        icon: <ShirtIcon className="h-5 w-5" rotate={90} />,
         confidence: confidenceScore * 0.92
       });
     }
@@ -100,49 +106,93 @@ const SizeRecommendations = ({ confidenceScore, measurements }: SizeRecommendati
   };
   
   const sizeRecommendations = generateSizeRecommendations();
-  
+  const currentGarment = sizeRecommendations[selectedGarment];
+  const sizeOptions = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
   return (
-    <div className="bg-white rounded-lg p-4 shadow-md text-black">
+    <div className="bg-white rounded-lg p-4 shadow-md">
       <div className="flex items-center gap-2 mb-4 border-b pb-2">
         <Ruler className="h-5 w-5 text-blue-600" />
-        <h3 className="font-semibold">Virtual Try-On Size Recommendations</h3>
+        <h3 className="font-semibold">Virtual Try-On</h3>
       </div>
       
       {sizeRecommendations.length > 0 ? (
         <div className="space-y-4">
-          <p className="text-sm text-gray-600 mb-2">
-            Based on your measurements, we recommend the following sizes:
-          </p>
-          
-          <div className="grid grid-cols-4 text-xs font-medium text-gray-500 border-b pb-1">
-            <div>Garment</div>
-            <div>Size</div>
-            <div>Fit</div>
-            <div>Accuracy</div>
-          </div>
-          
-          {sizeRecommendations.map((rec, index) => (
-            <div key={index} className="grid grid-cols-4 py-3 border-b border-gray-100 items-center text-sm">
-              <div className="font-medium flex items-center gap-2">
-                {rec.icon}
-                {rec.garment}
+          <div className="flex justify-between items-center">
+            <button 
+              onClick={() => setSelectedGarment(prev => 
+                prev > 0 ? prev - 1 : sizeRecommendations.length - 1
+              )}
+              className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+            >
+              ←
+            </button>
+            
+            <div className="flex-1 text-center">
+              <div className="bg-blue-100 text-blue-700 inline-block px-3 py-1 rounded-full text-sm">
+                Recommended size: {currentGarment.recommendedSize}
               </div>
-              <div className="font-bold text-blue-700">{rec.recommendedSize}</div>
-              <div>{rec.fit}</div>
-              <div>
-                <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div 
-                    className="bg-blue-600 h-1.5 rounded-full" 
-                    style={{ width: `${rec.confidence * 100}%` }}
-                  />
-                </div>
-              </div>
+              <h4 className="text-lg font-semibold mt-2">{currentGarment.garment}</h4>
+              <p className="text-sm text-gray-600">Premium cotton blend</p>
             </div>
-          ))}
-          
-          <div className="mt-4 text-xs text-gray-500 bg-gray-50 p-3 rounded">
-            <p>These recommendations are generated based on standard sizing charts and your body measurements.</p>
-            <p className="mt-1">Actual fit may vary by brand and style preferences.</p>
+            
+            <button 
+              onClick={() => setSelectedGarment(prev => 
+                prev < sizeRecommendations.length - 1 ? prev + 1 : 0
+              )}
+              className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+            >
+              →
+            </button>
+          </div>
+
+          <div className="aspect-square w-full max-w-md mx-auto bg-gray-100 rounded-lg overflow-hidden">
+            <img 
+              src={currentGarment.image} 
+              alt={currentGarment.garment}
+              className="w-full h-full object-contain"
+            />
+          </div>
+
+          <div className="bg-gray-100 p-4 rounded-lg space-y-3">
+            <div className="flex justify-center gap-2">
+              {sizeOptions.map((size) => (
+                <button
+                  key={size}
+                  className={cn(
+                    "px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                    size === currentGarment.recommendedSize
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-600 hover:bg-gray-50"
+                  )}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+            <p className="text-center text-gray-600">
+              This will be a {currentGarment.fit.toLowerCase()} fit on your body.
+            </p>
+          </div>
+
+          <div className="mt-4 bg-gray-100 p-4 rounded-lg">
+            <h5 className="font-medium mb-2">Fit Details</h5>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span>Chest:</span>
+                <span>{measurements.chest} cm</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Waist:</span>
+                <span>{measurements.waist} cm</span>
+              </div>
+              {measurements.shoulder && (
+                <div className="flex justify-between">
+                  <span>Shoulder:</span>
+                  <span>{measurements.shoulder} cm</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       ) : (
