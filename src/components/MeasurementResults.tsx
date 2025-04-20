@@ -1,10 +1,9 @@
-
 import { FC, useState } from "react";
 import MeasurementCard from "./measurement/MeasurementCard";
 import UserImageDisplay from "./measurement/UserImageDisplay";
 import DatasetEvaluatorToggle from "./measurement/DatasetEvaluatorToggle";
 import { Badge } from "./ui/badge";
-import { AlertCircle, CheckCircle2, Info, Ruler } from "lucide-react";
+import { AlertCircle, CheckCircle2, Info, Ruler, Shirt, TShirt, Jacket, Pants } from "lucide-react";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
@@ -22,6 +21,7 @@ interface SizeRecommendation {
   recommendedSize: string;
   fit: string;
   confidence: number;
+  icon?: React.ReactNode;
 }
 
 const MeasurementResults: FC<MeasurementResultsProps> = ({ 
@@ -69,7 +69,6 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
     };
   };
   
-  // Generate size recommendations based on measurements
   const generateSizeRecommendations = (): SizeRecommendation[] => {
     const recommendations: SizeRecommendation[] = [];
     
@@ -98,7 +97,6 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
     // Add recommendations based on chest/bust
     if (measurements.chest) {
       const chestRanges = {
-        'XS': [80, 88],
         'S': [88, 96],
         'M': [96, 104],
         'L': [104, 112],
@@ -110,16 +108,26 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
       const fit = determineFit(measurements.chest, chestRanges, size);
       
       recommendations.push({
-        garment: "Shirt/T-Shirt",
+        garment: "Shirt",
         recommendedSize: size,
         fit,
+        icon: <Shirt className="h-5 w-5" />,
+        confidence: confidenceScore * 0.95
+      });
+
+      recommendations.push({
+        garment: "T-Shirt",
+        recommendedSize: size,
+        fit,
+        icon: <TShirt className="h-5 w-5" />,
         confidence: confidenceScore * 0.95
       });
       
       recommendations.push({
-        garment: "Jacket/Coat",
+        garment: "Jacket",
         recommendedSize: size,
         fit: fit === "Regular" ? "Standard" : fit,
+        icon: <Jacket className="h-5 w-5" />,
         confidence: confidenceScore * 0.9
       });
     }
@@ -127,7 +135,6 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
     // Add recommendations based on waist
     if (measurements.waist) {
       const waistRanges = {
-        'XS': [65, 73],
         'S': [73, 81],
         'M': [81, 89],
         'L': [89, 97],
@@ -139,46 +146,11 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
       const fit = determineFit(measurements.waist, waistRanges, size);
       
       recommendations.push({
-        garment: "Pants/Trousers",
+        garment: "Pants",
         recommendedSize: size,
         fit,
+        icon: <Pants className="h-5 w-5" />,
         confidence: confidenceScore * 0.92
-      });
-    }
-    
-    // Add recommendations based on hips
-    if (measurements.hips) {
-      const hipRanges = {
-        'XS': [85, 93],
-        'S': [93, 101],
-        'M': [101, 109],
-        'L': [109, 117],
-        'XL': [117, 125],
-        'XXL': [125, 133]
-      };
-      
-      const size = determineSize(measurements.hips, hipRanges);
-      const fit = determineFit(measurements.hips, hipRanges, size);
-      
-      recommendations.push({
-        garment: "Skirt/Dress",
-        recommendedSize: size,
-        fit,
-        confidence: confidenceScore * 0.88
-      });
-    }
-    
-    // If we have inseam measurement, add pants length recommendation
-    if (measurements.inseam) {
-      let lengthRec = "Regular";
-      if (measurements.inseam < 76) lengthRec = "Short";
-      if (measurements.inseam > 86) lengthRec = "Long";
-      
-      recommendations.push({
-        garment: "Pants Length",
-        recommendedSize: lengthRec,
-        fit: "Standard",
-        confidence: confidenceScore * 0.85
       });
     }
     
@@ -254,8 +226,11 @@ const MeasurementResults: FC<MeasurementResultsProps> = ({
                     </div>
                     
                     {sizeRecommendations.map((rec, index) => (
-                      <div key={index} className="grid grid-cols-4 py-2 border-b border-gray-100 items-center text-sm">
-                        <div className="font-medium">{rec.garment}</div>
+                      <div key={index} className="grid grid-cols-4 py-3 border-b border-gray-100 items-center text-sm">
+                        <div className="font-medium flex items-center gap-2">
+                          {rec.icon}
+                          {rec.garment}
+                        </div>
                         <div className="font-bold text-blue-700">{rec.recommendedSize}</div>
                         <div>{rec.fit}</div>
                         <div>
