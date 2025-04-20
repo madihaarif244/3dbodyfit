@@ -1,5 +1,5 @@
 import React from "react";
-import { Ruler, Shirt, ShirtIcon, Jacket, Pants } from "lucide-react";
+import { Ruler, ShirtIcon, Shirt } from "lucide-react";
 
 interface SizeRecommendation {
   garment: string;
@@ -15,7 +15,6 @@ interface SizeRecommendationsProps {
 }
 
 const SizeRecommendations = ({ confidenceScore, measurements }: SizeRecommendationsProps) => {
-  // Helper function to determine size
   const determineSize = (measurement: number, ranges: Record<string, [number, number]>): string => {
     for (const [size, [min, max]] of Object.entries(ranges)) {
       if (measurement >= min && measurement <= max) {
@@ -27,7 +26,6 @@ const SizeRecommendations = ({ confidenceScore, measurements }: SizeRecommendati
       : Object.keys(ranges)[0];
   };
   
-  // Helper function to determine fit
   const determineFit = (measurement: number, ranges: Record<string, [number, number]>, size: string): string => {
     const [min, max] = ranges[size];
     const mid = (min + max) / 2;
@@ -40,7 +38,6 @@ const SizeRecommendations = ({ confidenceScore, measurements }: SizeRecommendati
   const generateSizeRecommendations = (): SizeRecommendation[] => {
     const recommendations: SizeRecommendation[] = [];
     
-    // Add recommendations based on chest/bust
     if (measurements.chest) {
       const chestRanges = {
         'S': [88, 96] as [number, number],
@@ -73,12 +70,11 @@ const SizeRecommendations = ({ confidenceScore, measurements }: SizeRecommendati
         garment: "Jacket",
         recommendedSize: size,
         fit: fit === "Regular" ? "Standard" : fit,
-        icon: <Jacket className="h-5 w-5" />,
+        icon: <ShirtIcon className="h-5 w-5" />,
         confidence: confidenceScore * 0.9
       });
     }
     
-    // Add recommendations based on waist
     if (measurements.waist) {
       const waistRanges = {
         'S': [73, 81] as [number, number],
@@ -95,7 +91,7 @@ const SizeRecommendations = ({ confidenceScore, measurements }: SizeRecommendati
         garment: "Pants",
         recommendedSize: size,
         fit,
-        icon: <Pants className="h-5 w-5" />,
+        icon: <ShirtIcon className="h-5 w-5" rotate={90} />,
         confidence: confidenceScore * 0.92
       });
     }
