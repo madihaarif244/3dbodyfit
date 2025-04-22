@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { MobileProvider } from "./hooks/use-mobile";
+import { ChatWindow } from "./components/chat/ChatWindow";
 import AppRoutes from "./routes";
 import DevicePreview from "./components/DevicePreview";
 import "./App.css";
@@ -22,6 +23,7 @@ const App = () => (
           <BrowserRouter>
             <AppRoutes />
             <DevicePreview />
+            <ChatWindow />
           </BrowserRouter>
         </div>
       </MobileProvider>
