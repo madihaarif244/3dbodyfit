@@ -2,12 +2,12 @@
 import { cn } from "@/lib/utils";
 
 interface ChatMessageProps {
-  message: string;
+  text: string;
   isBot: boolean;
   timestamp: Date;
 }
 
-export function ChatMessage({ message, isBot, timestamp }: ChatMessageProps) {
+export function ChatMessage({ text, isBot, timestamp }: ChatMessageProps) {
   return (
     <div
       className={cn(
@@ -23,7 +23,7 @@ export function ChatMessage({ message, isBot, timestamp }: ChatMessageProps) {
             : "bg-primary text-primary-foreground"
         )}
       >
-        <p className="text-sm">{message}</p>
+        <p className="text-sm">{text}</p>
         <time className="text-xs opacity-50">
           {timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </time>

@@ -83,7 +83,12 @@ export function ChatWindow() {
 
             <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
               {messages.map((message, index) => (
-                <ChatMessage key={index} {...message} />
+                <ChatMessage 
+                  key={index} 
+                  text={message.text}
+                  isBot={message.isBot}
+                  timestamp={message.timestamp}
+                />
               ))}
             </ScrollArea>
 
