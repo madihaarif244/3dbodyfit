@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Bot, MessageCircle, X } from "lucide-react";
 import { ChatMessage } from "./ChatMessage";
+import { findBestResponse } from "@/utils/chatResponses";
 
 interface Message {
   text: string;
@@ -45,15 +45,18 @@ export function ChatWindow() {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
 
-    // Simulate bot response
+    // Get appropriate response based on user input
+    const response = findBestResponse(input);
+    
+    // Add bot response with a small delay to simulate processing
     setTimeout(() => {
       const botMessage: Message = {
-        text: "Thank you for your message! This is a demo response. The chatbot can be connected to various AI services for more meaningful interactions.",
+        text: response,
         isBot: true,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, botMessage]);
-    }, 1000);
+    }, 500);
   };
 
   return (
