@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +7,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Bot, MessageCircle, X } from "lucide-react";
 import { ChatMessage } from "./ChatMessage";
 import { findBestResponse } from "@/utils/chatResponses";
+import { toast } from "@/hooks/use-toast";
 
 interface Message {
   text: string;
@@ -18,7 +20,7 @@ export function ChatWindow() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
-      text: "Hello! How can I help you today?",
+      text: "Hello! How can I help you today? Try asking about image privacy, measurement accuracy, or what this application does!",
       isBot: true,
       timestamp: new Date(),
     },
@@ -65,25 +67,30 @@ export function ChatWindow() {
         onClick={() => {
           console.log("Chat button clicked"); // Debug log
           setIsOpen(true);
+          toast({
+            title: "Chat opened",
+            description: "Ask questions about our app!",
+          });
         }}
-        className="fixed bottom-4 right-4 rounded-full h-12 w-12 p-0 z-50"
+        className="fixed bottom-4 right-4 rounded-full h-12 w-12 p-0 z-50 shadow-lg hover:shadow-xl transition-all duration-300 bg-primary hover:bg-primary/90"
         variant="default"
       >
         <MessageCircle className="h-6 w-6" />
       </Button>
 
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetContent className="w-[90vw] sm:w-[440px] p-0">
+        <SheetContent className="w-[90vw] sm:w-[440px] p-0 z-[100]">
           <div className="flex flex-col h-full">
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center justify-between p-4 border-b bg-primary text-primary-foreground">
               <div className="flex items-center gap-2">
                 <Bot className="h-5 w-5" />
-                <h2 className="font-semibold">Chat Assistant</h2>
+                <h2 className="font-semibold">3DBodyFit Assistant</h2>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsOpen(false)}
+                className="text-primary-foreground hover:bg-primary/90"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -115,8 +122,9 @@ export function ChatWindow() {
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Type a message..."
                   className="flex-1"
+                  autoFocus
                 />
-                <Button type="submit">Send</Button>
+                <Button type="submit" className="bg-primary hover:bg-primary/90">Send</Button>
               </form>
             </div>
           </div>
